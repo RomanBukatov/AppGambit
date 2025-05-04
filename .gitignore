@@ -1,0 +1,43 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+
+# Rider
+.idea/
+*.sln.iml
+
+# User secrets (не коммитить локальные секреты)
+secrets.json
+
+# SQL scripts (если не нужны в репозитории)
+*.sql
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# ASP.NET static assets
+AppGambit/wwwroot/lib/
+
+# Не коммитить временные скрипты (если не нужны)
+# encrypt-connection.ps1
+
+# Не коммитить publish-артефакты
+publish/
+
+# Не коммитить локальные настройки
+AppGambit/*.csproj.user
+AppGambit.Security.Tools/*.csproj.user
+
+# Не коммитить миграции, если не хотите их хранить
+# AppGambit/Migrations/ 

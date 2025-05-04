@@ -1,0 +1,30 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppGambit", "AppGambit\AppGambit.csproj", "{0203F6D4-77F7-4A2B-AC18-908546870122}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppGambit.Security.Tools", "AppGambit.Security.Tools\AppGambit.Security.Tools.csproj", "{9B28B6D2-4F3A-4B17-9D6C-AA90D8BCD2D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0203F6D4-77F7-4A2B-AC18-908546870122}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0203F6D4-77F7-4A2B-AC18-908546870122}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0203F6D4-77F7-4A2B-AC18-908546870122}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0203F6D4-77F7-4A2B-AC18-908546870122}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B28B6D2-4F3A-4B17-9D6C-AA90D8BCD2D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B28B6D2-4F3A-4B17-9D6C-AA90D8BCD2D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B28B6D2-4F3A-4B17-9D6C-AA90D8BCD2D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B28B6D2-4F3A-4B17-9D6C-AA90D8BCD2D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BFE0FB9D-06C5-4C64-B885-F265A2E4E56C}
+	EndGlobalSection
+EndGlobal
