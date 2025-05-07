@@ -1,28 +1,70 @@
-# Visual Studio
+# Visual Studio files
 .vs/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-
-# Build results
 bin/
 obj/
+*.user
+*.suo
+*.cache
+*.dll.config
+*.exe.config
 
-# Rider
+# Sensitive settings
+# Don't ignore appsettings.json since we're using placeholders
+# appsettings.*.json
+# !appsettings.Example.json
+# !appsettings.json
+# AppGambit/appsettings.Development.json
+
+# User secrets
+*.usersecretsjson
+
+# Environment variables
+.env
+
+# IDE files
 .idea/
+.vscode/
 *.sln.iml
 
-# User secrets (не коммитить локальные секреты)
-secrets.json
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
 
-# SQL scripts (если не нужны в репозитории)
-*.sql
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+
+# Local postgresql data
+pgdata/
 
 # Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# OS generated files
+# OS specific files
 .DS_Store
 Thumbs.db
 
