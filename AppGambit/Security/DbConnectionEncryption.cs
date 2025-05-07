@@ -1,57 +1,55 @@
+using System;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace AppGambit.Security
 {
     /// <summary>
-    /// Utility class for encrypting and decrypting database connection strings.
-    /// This can be used for scenarios where you need to store the connection string in a config file,
-    /// but want to provide an additional layer of security.
+    /// Provides methods for encrypting and decrypting database connection strings
     /// </summary>
     public static class DbConnectionEncryption
     {
-        // WARNING: In a real-world application, this key should be properly managed
-        // (e.g., stored in Key Vault, environment variables, etc.)
-        // This is just a demo implementation to show the concept
-        private static readonly byte[] EncryptionKey = new byte[32] { 
-            72, 158, 214, 179, 111, 23, 89, 109, 
-            42, 5, 167, 80, 151, 236, 170, 211, 
-            53, 178, 233, 3, 172, 10, 198, 241, 
-            77, 237, 108, 197, 48, 64, 19, 152 
-        };
-        private static readonly byte[] IV = new byte[16] { 
-            19, 57, 121, 47, 83, 74, 33, 185, 
-            92, 44, 134, 78, 173, 12, 99, 43 
-        };
+        // ВАЖНО: В реальном приложении ключи должны храниться в безопасном месте (Azure Key Vault, AWS KMS и т.д.)
+        // Этот ключ используется только для демонстрации
+        private static readonly byte[] Key = Encoding.UTF8.GetBytes("YourSecretKey12345678901234567890");
+        private static readonly byte[] Iv = Encoding.UTF8.GetBytes("1234567890123456");
 
         /// <summary>
-        /// Encrypts a connection string 
+        /// Encrypts a database connection string
         /// </summary>
         /// <param name="connectionString">The connection string to encrypt</param>
-        /// <returns>Base64 encoded encrypted string</returns>
+        /// <returns>Base64 encoded encrypted connection string</returns>
         public static string EncryptConnectionString(string connectionString)
         {
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentException("Connection string cannot be null or empty", nameof(connectionString));
 
-            using var aes = Aes.Create();
-            aes.Key = EncryptionKey;
-            aes.IV = IV;
-
-            using var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-            using var memoryStream = new MemoryStream();
-            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-            using (var streamWriter = new StreamWriter(cryptoStream))
+            using (Aes aes = Aes.Create())
             {
-                streamWriter.Write(connectionString);
-            }
+                aes.Key = Key;
+                aes.IV = Iv;
 
-            var encryptedBytes = memoryStream.ToArray();
-            return Convert.ToBase64String(encryptedBytes);
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                byte[] encryptedBytes;
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (var sw = new System.IO.StreamWriter(cs))
+                        {
+                            sw.Write(connectionString);
+                        }
+                        encryptedBytes = ms.ToArray();
+                    }
+                }
+
+                return Convert.ToBase64String(encryptedBytes);
+            }
         }
 
         /// <summary>
-        /// Decrypts an encrypted connection string
+        /// Decrypts an encrypted database connection string
         /// </summary>
         /// <param name="encryptedConnectionString">Base64 encoded encrypted connection string</param>
         /// <returns>Decrypted connection string</returns>
@@ -60,18 +58,26 @@ namespace AppGambit.Security
             if (string.IsNullOrEmpty(encryptedConnectionString))
                 throw new ArgumentException("Encrypted connection string cannot be null or empty", nameof(encryptedConnectionString));
 
-            var encryptedBytes = Convert.FromBase64String(encryptedConnectionString);
+            byte[] cipherBytes = Convert.FromBase64String(encryptedConnectionString);
 
-            using var aes = Aes.Create();
-            aes.Key = EncryptionKey;
-            aes.IV = IV;
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Key;
+                aes.IV = Iv;
 
-            using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-            using var memoryStream = new MemoryStream(encryptedBytes);
-            using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
-            using var streamReader = new StreamReader(cryptoStream);
-            
-            return streamReader.ReadToEnd();
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (var ms = new System.IO.MemoryStream(cipherBytes))
+                {
+                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (var sr = new System.IO.StreamReader(cs))
+                        {
+                            return sr.ReadToEnd();
+                        }
+                    }
+                }
+            }
         }
     }
 } 

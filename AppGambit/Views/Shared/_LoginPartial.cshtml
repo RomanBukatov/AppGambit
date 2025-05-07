@@ -1,0 +1,163 @@
+@using Microsoft.AspNetCore.Identity
+@using AppGambit.Models
+@using Microsoft.EntityFrameworkCore
+@using AppGambit.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+
+@{
+    // Получаем DisplayName из профиля пользователя или используем email как запасной вариант
+    string? displayName = null;
+    string? userId = null;
+    
+    if (SignInManager.IsSignedIn(User))
+    {
+        // Получаем пользователя
+        var user = await UserManager.GetUserAsync(User);
+        if (user != null)
+        {
+            userId = user.Id;
+            
+            try {
+                // Используем внедренный DbContext для доступа к данным
+                var userProfile = await DbContext.UserProfiles
+                    .Where(p => p.UserId == userId)
+                    .FirstOrDefaultAsync();
+                
+                if (userProfile?.DisplayName != null)
+                {
+                    displayName = userProfile.DisplayName;
+                }
+                else
+                {
+                    displayName = User.Identity?.Name?.Split('@')[0]; // Используем часть email до @ как имя
+                }
+            }
+            catch (Exception) {
+                // В случае ошибки используем данные из навигационного свойства
+                if (user.Profile?.DisplayName != null)
+                {
+                    displayName = user.Profile.DisplayName;
+                }
+                else
+                {
+                    displayName = User.Identity?.Name?.Split('@')[0]; // Используем часть email до @ как имя
+                }
+            }
+        }
+    }
+}
+
+<div id="user-auth-container">
+@if (SignInManager.IsSignedIn(User))
+{
+    <!-- Статичное отображение имени пользователя и выпадающее меню для других действий -->
+    <ul class="navbar-nav align-items-center">
+        <li class="nav-item me-3">
+            @if (!string.IsNullOrEmpty(displayName))
+            {
+                <a class="nav-link text-white p-0" href="@Url.Action("ProfileByName", "Account", new { username = displayName })" id="user-display-name-link">
+                    <strong class="fs-6 user-display-name" id="user-display-name">@displayName</strong>
+                </a>
+            }
+            else
+            {
+                <a class="nav-link text-white p-0" href="@Url.Action("Profile", "Account", new { userId = userId })">
+                    <strong class="fs-6 user-display-name">@displayName</strong>
+                </a>
+            }
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link p-0 user-avatar-container" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="rounded-circle bg-white d-flex align-items-center justify-content-center border border-2 border-light" style="width: 40px; height: 40px;">
+                    <i class="bi bi-person-fill text-primary fs-5"></i>
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                @if (!string.IsNullOrEmpty(displayName))
+                {
+                    <li><a class="dropdown-item" href="/user/@displayName" id="user-profile-link"><i class="bi bi-person me-2"></i>Мой профиль</a></li>
+                }
+                else
+                {
+                    <li><a class="dropdown-item" href="/user/@userId"><i class="bi bi-person me-2"></i>Мой профиль</a></li>
+                }
+                <li><a class="dropdown-item" asp-controller="Account" asp-action="EditProfile"><i class="bi bi-pencil me-2"></i>Редактировать профиль</a></li>
+                <li><a class="dropdown-item" asp-controller="Programs" asp-action="MyPrograms"><i class="bi bi-grid-3x3-gap me-2"></i>Мои программы</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                        <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Выйти</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    </ul>
+}
+else
+{
+    <!-- Кнопки для входа или регистрации, если пользователь не вошел -->
+    <div class="btn-group">
+        <a class="btn btn-sm btn-outline-light me-2" asp-controller="Account" asp-action="Login">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Войти
+        </a>
+        <a class="btn btn-sm btn-light" asp-controller="Account" asp-action="Register">
+            <i class="bi bi-person-plus me-1"></i>Регистрация
+        </a>
+    </div>
+}
+</div>
+
+<script>
+    // Эта функция используется для определения и обработки состояния аутентификации при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Функция получения параметров URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+        
+        // Функция получения куки
+        function getCookie(name) {
+            var matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+        
+        // Функция обновления DOM элементов с новым именем пользователя
+        // Эта функция теперь используется только в _LoginPartial.cshtml
+        // Основное обновление происходит в _Layout.cshtml
+        window.updateUserData = function() {
+            // Проверяем, изменилось ли имя пользователя
+            var newDisplayName = getCookie('UserDisplayName');
+            if (newDisplayName) {
+                console.log('LoginPartial: Обнаружено новое имя пользователя в куки:', newDisplayName);
+                
+                // Обновляем элементы без перезагрузки страницы
+                var displayNameElement = document.getElementById('user-display-name');
+                var displayNameLinkElement = document.getElementById('user-display-name-link');
+                var profileLinkElement = document.getElementById('user-profile-link');
+                
+                if (displayNameElement) {
+                    displayNameElement.textContent = newDisplayName;
+                }
+                
+                if (displayNameLinkElement) {
+                    displayNameLinkElement.href = '/user/' + encodeURIComponent(newDisplayName);
+                }
+                
+                if (profileLinkElement) {
+                    profileLinkElement.href = '/user/' + encodeURIComponent(newDisplayName);
+                }
+            }
+        };
+        
+        // Запускаем функцию обновления при загрузке страницы
+        window.updateUserData();
+    });
+</script> 

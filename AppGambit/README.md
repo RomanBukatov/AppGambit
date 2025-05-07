@@ -22,6 +22,18 @@ This application uses PostgreSQL as its database. Follow these steps to set up t
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=appgambit;Username=postgres;Password=your_password" --project AppGambit
    ```
 
+   ### Development Environment - Using appsettings.Development.json
+
+   Alternatively, you can use the `appsettings.Development.json` file which is excluded from git:
+
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Host=localhost;Port=5432;Database=appgambit;Username=postgres;Password=your_password"
+     }
+   }
+   ```
+
    ### Production Environment - Using Environment Variables
 
    For production, use environment variables to store the connection string:
@@ -57,36 +69,9 @@ This application uses PostgreSQL as its database. Follow these steps to set up t
    </configuration>
    ```
 
-   ### Production Environment - Using Encrypted Connection String
-
-   For a more secure approach, you can encrypt your connection string:
-
-   1. Run the encryption tool:
-      ```
-      .\encrypt-connection.ps1
-      ```
-
-   2. Enter your database connection details when prompted.
-
-   3. Copy the generated encrypted string to your `appsettings.json` file:
-      ```json
-      {
-        "ConnectionStrings": {
-          "EncryptedDefaultConnection": "YOUR_ENCRYPTED_STRING_HERE"
-        },
-        ...
-      }
-      ```
-
-   4. The application will automatically decrypt this string at runtime.
-
-   > **Note:** The encryption is only as secure as your key management. In production, use a proper key management solution like Azure Key Vault.
-
 3. Run database migrations to create the database schema:
    - Open a command prompt in the project directory
-   - Run the PowerShell script: `.\migration.ps1`
    
-   Alternatively, you can run the migrations manually:
    ```
    dotnet tool install --global dotnet-ef
    dotnet ef migrations add InitialCreate --project AppGambit
@@ -136,3 +121,44 @@ The database schema follows the design specified in the requirements, with the f
 For more information about secure connection string management, see:
 - [User Secrets in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets)
 - [Safe storage of app secrets in development in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) 
+
+## Конфигурация приложения
+
+В проекте используются следующие файлы конфигурации:
+
+1. **appsettings.json** - базовая конфигурация с плейсхолдерами для секретов. Этот файл должен быть добавлен в систему контроля версий.
+
+2. **appsettings.Development.json** - локальная конфигурация для разработки с фактическими параметрами подключения. Этот файл **не должен** добавляться в систему контроля версий, так как он содержит секретные данные.
+
+### Чувствительные данные
+
+Для хранения чувствительных данных рекомендуется использовать:
+
+- **Для разработки**: User Secrets или appsettings.Development.json
+- **Для продакшн**: Переменные окружения или внешние хранилища секретов
+
+### Структура конфигурации
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=appgambit_db;Username=postgres;Password=your_password"
+  },
+  "Authentication": {
+    "Google": {
+      "ClientId": "YOUR_GOOGLE_CLIENT_ID",
+      "ClientSecret": "YOUR_GOOGLE_CLIENT_SECRET"
+    },
+    "Yandex": {
+      "ClientId": "YOUR_YANDEX_CLIENT_ID",
+      "ClientSecret": "YOUR_YANDEX_CLIENT_SECRET"
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+``` 

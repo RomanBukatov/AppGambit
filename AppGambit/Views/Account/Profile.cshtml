@@ -1,0 +1,219 @@
+@model AppGambit.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = Model.DisplayName ?? "Профиль пользователя";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    @if (TempData["StatusMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["StatusMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                            {
+                                <img src="@Model.AvatarUrl" alt="Аватар" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded-circle mx-auto" style="width: 150px; height: 150px;">
+                                    <i class="bi bi-person display-1 text-secondary"></i>
+                                </div>
+                            }
+                            
+                            <h2 class="mt-3 user-display-name">@Model.DisplayName</h2>
+                            
+                            @if (!string.IsNullOrEmpty(Model.DisplayName))
+                            {
+                                <p class="text-muted">
+                                    Постоянная ссылка на профиль: <a href="/user/@Html.Raw(Uri.EscapeDataString(Model.DisplayName))">@Context.Request.Scheme://@Context.Request.Host/user/@Html.Raw(Uri.EscapeDataString(Model.DisplayName))</a>
+                                </p>
+                            }
+                            
+                            @if (Model.IsCurrentUser)
+                            {
+                                <div class="mt-3">
+                                    <a asp-action="EditProfile" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square me-1"></i> Редактировать профиль
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="profile-details">
+                                <div class="mb-3">
+                                    <h4>Информация о пользователе</h4>
+                                    <hr />
+                                </div>
+                                
+                                @if (!string.IsNullOrEmpty(Model.Bio))
+                                {
+                                    <div class="mb-3">
+                                        <h5>О себе</h5>
+                                        <p>@Model.Bio</p>
+                                    </div>
+                                }
+                                
+                                <div class="mb-3">
+                                    <div class="row">
+                                        @if (!string.IsNullOrEmpty(Model.Location))
+                                        {
+                                            <div class="col-md-6 mb-2">
+                                                <p class="text-muted mb-1">Местоположение</p>
+                                                <p><i class="bi bi-geo-alt me-2"></i>@Model.Location</p>
+                                            </div>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.WebsiteUrl))
+                                        {
+                                            <div class="col-md-6 mb-2">
+                                                <p class="text-muted mb-1">Сайт</p>
+                                                <p><i class="bi bi-link me-2"></i><a href="@Model.WebsiteUrl" target="_blank">@Model.WebsiteUrl</a></p>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p class="text-muted mb-1">Дата регистрации</p>
+                                    <p><i class="bi bi-calendar me-2"></i>@Model.RegistrationDate.ToString("d MMMM yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (Model.IsCurrentUser)
+                    {
+                        <div class="mt-4">
+                            <h4>Активность</h4>
+                            <hr />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Мои программы</h5>
+                                            <p class="card-text">Управление загруженными программами</p>
+                                            <a asp-controller="Programs" asp-action="MyPrograms" class="btn btn-outline-primary">
+                                                <i class="bi bi-grid-3x3-gap me-1"></i> Перейти
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Загрузить программу</h5>
+                                            <p class="card-text">Добавить новую программу в каталог</p>
+                                            <a asp-controller="Programs" asp-action="New" class="btn btn-outline-primary">
+                                                <i class="bi bi-upload me-1"></i> Загрузить
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Инициализация скрипта профиля');
+            
+            // Функция для получения куки
+            function getCookie(name) {
+                var matches = document.cookie.match(new RegExp(
+                    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+                ));
+                return matches ? decodeURIComponent(matches[1]) : undefined;
+            }
+
+            // Чтение параметров из URL
+            function getURLParam(name) {
+                var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+                return results ? decodeURIComponent(results[1]) : null;
+            }
+            
+            // Обработка изменения имени пользователя
+            function handleUsernameChange() {
+                var displayNameChanged = '@TempData["DisplayNameChanged"]' === 'true';
+                var newDisplayName = '@TempData["NewDisplayName"]';
+                var cookieDisplayName = getCookie('UserDisplayName');
+                
+                console.log('Проверка изменения имени:', {
+                    displayNameChanged: displayNameChanged,
+                    newDisplayName: newDisplayName,
+                    cookieDisplayName: cookieDisplayName,
+                    currentPath: window.location.pathname
+                });
+                
+                // Если имя изменилось (по TempData или по куки)
+                if ((displayNameChanged && newDisplayName) || cookieDisplayName) {
+                    var username = newDisplayName || cookieDisplayName;
+                    if (!username) return;
+                    
+                    // Путь к профилю с новым именем
+                    var expectedPath = '/user/' + encodeURIComponent(username);
+                    var currentPath = window.location.pathname;
+                    
+                    // Если текущий путь отличается от ожидаемого - перенаправляем
+                    if (currentPath !== expectedPath) {
+                        console.log('Перенаправление на новый URL профиля:', expectedPath);
+                        // Добавляем метку времени для предотвращения кэширования
+                        window.location.href = expectedPath + '?t=' + new Date().getTime();
+                        return;
+                    }
+                    
+                    // Если мы уже на правильной странице, обновляем заголовок и элементы DOM
+                    document.title = username || "Профиль пользователя";
+                    
+                    // Обновляем заголовок профиля
+                    var nameHeader = document.querySelector('h2.mt-3');
+                    if (nameHeader) nameHeader.textContent = username;
+                    
+                    // Обновляем ссылку на постоянный профиль
+                    var profileLinks = document.querySelectorAll('.text-muted a');
+                    profileLinks.forEach(function(link) {
+                        var fullUrl = window.location.protocol + '//' + window.location.host + expectedPath;
+                        link.href = expectedPath;
+                        link.textContent = fullUrl;
+                    });
+                    
+                    // Принудительно обновляем страницу один раз для согласованности
+                    // Используем параметр URL для предотвращения цикла обновлений
+                    if (!getURLParam('refreshed')) {
+                        setTimeout(function() {
+                            window.location.href = expectedPath + '?refreshed=true';
+                        }, 100);
+                    }
+                }
+                
+                // Очищаем куки после использования
+                if (cookieDisplayName) {
+                    document.cookie = 'UserDisplayName=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                }
+            }
+            
+            // Начальное выполнение функции
+            handleUsernameChange();
+            
+            // Примечание: мы НЕ устанавливаем обработчик popstate, так как это
+            // может вызвать циклы перезагрузки. Вместо этого полагаемся на
+            // единовременное обновление при загрузке страницы.
+        });
+    </script>
+} 

@@ -13,7 +13,6 @@ namespace AppGambit.Data
         }
 
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
-        public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<SoftwareProgram> Programs { get; set; } = null!;
         public DbSet<Screenshot> Screenshots { get; set; } = null!;
         public DbSet<Tag> Tags { get; set; } = null!;
@@ -23,12 +22,23 @@ namespace AppGambit.Data
         public DbSet<Download> Downloads { get; set; } = null!;
         public DbSet<Notification> Notifications { get; set; } = null!;
         public DbSet<ProgramSubscription> ProgramSubscriptions { get; set; } = null!;
-        public DbSet<AboutCreatorInfo> AboutCreatorInfo { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // Применяем кастомную конфигурацию для ApplicationUser
+            modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());
+            
+            // Настройка для программ - удаляем CreatedAt, UpdatedAt, IsPublished
+            modelBuilder.Entity<SoftwareProgram>(entity =>
+            {
+                // Убедитесь, что поля, которые нужно удалить, уже не включены в модель
+                entity.Ignore("IsPublished");
+                entity.Ignore("CreatedAt");
+                entity.Ignore("UpdatedAt");
+            });
+            
             // Customize ASP.NET Identity table names to match your SQL script
             modelBuilder.Entity<ApplicationUser>().ToTable("AspNetUsers");
             modelBuilder.Entity<IdentityRole>().ToTable("AspNetRoles");
@@ -40,7 +50,6 @@ namespace AppGambit.Data
 
             // Add snake_case table naming convention for all other entities
             modelBuilder.Entity<UserProfile>().ToTable("user_profiles");
-            modelBuilder.Entity<Category>().ToTable("categories");
             modelBuilder.Entity<SoftwareProgram>().ToTable("programs");
             modelBuilder.Entity<Screenshot>().ToTable("screenshots");
             modelBuilder.Entity<Tag>().ToTable("tags");
@@ -50,7 +59,6 @@ namespace AppGambit.Data
             modelBuilder.Entity<Download>().ToTable("downloads");
             modelBuilder.Entity<Notification>().ToTable("notifications");
             modelBuilder.Entity<ProgramSubscription>().ToTable("program_subscriptions");
-            modelBuilder.Entity<AboutCreatorInfo>().ToTable("about_creator_info");
 
             // Явное указание связей
             // ApplicationUser -> Comment
@@ -158,20 +166,15 @@ namespace AppGambit.Data
             modelBuilder.Entity<UserProfile>().Property(u => u.WebsiteUrl).HasColumnName("website_url");
             modelBuilder.Entity<UserProfile>().Property(u => u.Location).HasColumnName("location");
 
+            // Добавляем индекс на поле DisplayName для быстрого поиска по имени пользователя
+            modelBuilder.Entity<UserProfile>()
+                .HasIndex(p => p.DisplayName)
+                .HasDatabaseName("IX_user_profiles_display_name")
+                .IsUnique();
+
             modelBuilder.Entity<ApplicationUser>().Property(u => u.RegistrationDate).HasColumnName("registration_date");
             modelBuilder.Entity<ApplicationUser>().Property(u => u.LastLoginDate).HasColumnName("last_login_date");
             modelBuilder.Entity<ApplicationUser>().Property(u => u.IsActive).HasColumnName("is_active");
-
-            // Custom AboutCreatorInfo configuration
-            modelBuilder.Entity<AboutCreatorInfo>()
-                .HasData(new AboutCreatorInfo
-                {
-                    InfoId = 1,
-                    CreatorName = "AppGambit",
-                    ContactEmail = "contact@appgambit.com",
-                    AboutText = "Software catalog for Windows applications.",
-                    LastUpdated = DateTime.UtcNow
-                });
         }
     }
 } 

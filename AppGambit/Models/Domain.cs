@@ -33,30 +33,9 @@ namespace AppGambit.Models
         public virtual ApplicationUser User { get; set; } = null!;
     }
 
-    // Класс Category
-    public class Category
-    {
-        [Key]
-        public int CategoryId { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; } = null!;
-
-        public string? Description { get; set; }
-
-        public int? ParentCategoryId { get; set; }
-
-        // Self-reference navigation properties
-        [ForeignKey("ParentCategoryId")]
-        public virtual Category? ParentCategory { get; set; }
-        public virtual ICollection<Category> SubCategories { get; set; } = new List<Category>();
-
-        // Navigation property for programs
-        public virtual ICollection<SoftwareProgram> Programs { get; set; } = new List<SoftwareProgram>();
-    }
-
     // Класс Program переименован в SoftwareProgram
+    // Избыточное поле IsPublished убрано, т.к. нет черновиков/модерации
+    // CreatedAt/UpdatedAt не добавлены, т.к. UploadDate содержит дату добавления
     public class SoftwareProgram
     {
         [Key]
@@ -85,14 +64,9 @@ namespace AppGambit.Models
 
         public double? AverageRating { get; set; }
 
-        public int? CategoryId { get; set; }
-
         // Navigation properties
         [ForeignKey("AuthorId")]
         public virtual ApplicationUser? Author { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public virtual Category? Category { get; set; }
 
         public virtual ICollection<Screenshot> Screenshots { get; set; } = new List<Screenshot>();
         public virtual ICollection<ProgramTag> ProgramTags { get; set; } = new List<ProgramTag>();
@@ -305,30 +279,5 @@ namespace AppGambit.Models
 
         [ForeignKey("ProgramId")]
         public virtual SoftwareProgram Program { get; set; } = null!;
-    }
-
-    // Класс AboutCreatorInfo
-    public class AboutCreatorInfo
-    {
-        [Key]
-        public int InfoId { get; set; } = 1;
-
-        [Required]
-        [StringLength(100)]
-        public string CreatorName { get; set; } = null!;
-
-        [StringLength(255)]
-        public string? ContactEmail { get; set; }
-
-        [StringLength(50)]
-        public string? ContactPhone { get; set; }
-
-        [StringLength(255)]
-        public string? WebsiteUrl { get; set; }
-
-        public string? AboutText { get; set; }
-
-        [Required]
-        public DateTime LastUpdated { get; set; }
     }
 } 

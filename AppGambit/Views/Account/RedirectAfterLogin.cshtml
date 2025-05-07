@@ -1,0 +1,75 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Перенаправление...";
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var updateLocalStorage = TempData["UpdateLocalStorage"] as string == "true";
+    var userDisplayNameValue = TempData["UserDisplayNameValue"] as string;
+}
+
+<div class="container text-center mt-5">
+    <h3>Обновление профиля</h3>
+    <p id="message">Ваш профиль обновляется, пожалуйста, подождите...</p>
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Получаем данные из ViewBag и TempData
+        const redirectTo = '@ViewBag.RedirectTo';
+        const displayNameChanged = '@ViewBag.DisplayNameChanged' === 'true';
+        const newDisplayName = '@ViewBag.NewDisplayName';
+        const statusMessage = '@ViewBag.StatusMessage';
+        const updateLocalStorage = @Json.Serialize(updateLocalStorage);
+        const userDisplayNameValue = '@Html.Raw(Json.Serialize(userDisplayNameValue))';
+        
+        // Функция для обновления локального хранилища
+        function updateUserData() {
+            if (displayNameChanged && newDisplayName) {
+                // Обновляем данные пользователя в localStorage
+                localStorage.setItem('userDisplayName', newDisplayName);
+                
+                // Добавляем метку для обновления UI при загрузке следующей страницы
+                localStorage.setItem('displayNameUpdated', 'true');
+                localStorage.setItem('statusMessage', statusMessage || 'Профиль успешно обновлен');
+            }
+            
+            // Дополнительное обновление из TempData
+            if (updateLocalStorage && userDisplayNameValue) {
+                localStorage.setItem('userDisplayName', userDisplayNameValue);
+                localStorage.setItem('displayNameUpdated', 'true');
+            }
+        }
+        
+        // Функция для перенаправления с задержкой
+        function redirectWithDelay() {
+            // Обновляем текст сообщения
+            document.getElementById('message').innerText = 'Профиль успешно обновлен. Перенаправляем...';
+            
+            // Обновляем данные пользователя
+            updateUserData();
+            
+            // Убеждаемся, что все куки для обновления сессии установлены
+            document.cookie = "SessionRefresh=true; path=/; max-age=300; SameSite=Lax";
+            
+            // Добавляем случайный параметр для предотвращения кэширования
+            const cacheBuster = Math.random().toString(36).substring(2, 15);
+            const targetUrl = redirectTo || '/';
+            const finalUrl = targetUrl.includes('?') 
+                ? `${targetUrl}&_cb=${cacheBuster}` 
+                : `${targetUrl}?_cb=${cacheBuster}`;
+            
+            // Задержка перед перенаправлением
+            setTimeout(() => {
+                window.location.href = finalUrl;
+            }, 1800);
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Запускаем перенаправление с задержкой
+            redirectWithDelay();
+        });
+    </script>
+} 

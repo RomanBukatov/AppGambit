@@ -1,0 +1,128 @@
+@model AppGambit.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Редактирование профиля";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">@ViewData["Title"]</h2>
+            </div>
+            <div class="card-body">
+                @if (TempData["StatusMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["StatusMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                <form asp-action="UpdateProfile" method="post" id="profileForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <input type="hidden" asp-for="UserId" />
+                    
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <div id="avatar-preview" class="mb-3">
+                                    @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                                    {
+                                        <img src="@Model.AvatarUrl" alt="Аватар" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light d-flex align-items-center justify-content-center rounded-circle mx-auto" style="width: 150px; height: 150px;">
+                                            <i class="bi bi-person display-1 text-secondary"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="AvatarUrl" class="control-label">URL аватара (необязательно)</label>
+                                    <input asp-for="AvatarUrl" class="form-control" placeholder="https://example.com/avatar.jpg" id="avatar-url-input" />
+                                    <span asp-validation-for="AvatarUrl" class="text-danger"></span>
+                                    <small class="form-text text-muted">Введите URL изображения для аватара</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="DisplayName" class="form-label">Имя пользователя <span class="text-danger">*</span></label>
+                                <input asp-for="DisplayName" class="form-control" required />
+                                <span asp-validation-for="DisplayName" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" disabled />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Location" class="form-label">Местоположение (необязательно)</label>
+                                <input asp-for="Location" class="form-control" placeholder="Например: Москва, Россия" />
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="WebsiteUrl" class="form-label">Веб-сайт (необязательно)</label>
+                                <input asp-for="WebsiteUrl" class="form-control" placeholder="https://example.com" />
+                                <span asp-validation-for="WebsiteUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Bio" class="form-label">О себе (необязательно)</label>
+                        <textarea asp-for="Bio" class="form-control" rows="5" placeholder="Расскажите немного о себе..."></textarea>
+                        <span asp-validation-for="Bio" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        @if (!string.IsNullOrEmpty(Model.DisplayName))
+                        {
+                            <a href="@Url.Action("ProfileByName", "Account", new { username = Model.DisplayName })" class="btn btn-secondary">Назад к профилю</a>
+                        }
+                        else 
+                        {
+                            <a asp-action="Profile" asp-route-userId="@Model.UserId" class="btn btn-secondary">Назад к профилю</a>
+                        }
+                        <button type="submit" class="btn btn-primary" id="saveButton">
+                            <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status" aria-hidden="true"></span>
+                            Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    
+    <script>
+        $(document).ready(function() {
+            // Предпросмотр аватара при вводе URL
+            $('#avatar-url-input').on('input', function() {
+                var url = $(this).val();
+                if (url) {
+                    $('#avatar-preview').html('<img src="' + url + '" alt="Аватар" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">');
+                } else {
+                    $('#avatar-preview').html('<div class="bg-light d-flex align-items-center justify-content-center rounded-circle mx-auto" style="width: 150px; height: 150px;"><i class="bi bi-person display-1 text-secondary"></i></div>');
+                }
+            });
+        });
+
+        // Показываем спиннер при отправке формы
+        document.getElementById('profileForm').addEventListener('submit', function() {
+            // Показываем спиннер
+            document.getElementById('saveSpinner').classList.remove('d-none');
+            
+            // Блокируем кнопку
+            document.getElementById('saveButton').setAttribute('disabled', 'disabled');
+        });
+    </script>
+} 

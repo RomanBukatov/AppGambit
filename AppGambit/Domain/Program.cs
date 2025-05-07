@@ -32,14 +32,9 @@ namespace AppGambit.Domain
 
         public double? AverageRating { get; set; }
 
-        public int? CategoryId { get; set; }
-
         // Navigation properties
         [ForeignKey("AuthorId")]
         public virtual ApplicationUser? Author { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public virtual Category? Category { get; set; }
 
         public virtual ICollection<Screenshot> Screenshots { get; set; } = new List<Screenshot>();
         public virtual ICollection<ProgramTag> ProgramTags { get; set; } = new List<ProgramTag>();

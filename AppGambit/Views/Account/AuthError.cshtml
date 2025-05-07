@@ -1,0 +1,80 @@
+@{
+    ViewData["Title"] = "Ошибка аутентификации";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-5">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="text-center">Ошибка аутентификации</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <p>При попытке входа произошла ошибка:</p>
+                        <p><strong>@ViewBag.ErrorMessage</strong></p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0">Наиболее вероятные причины:</h4>
+                        </div>
+                        <div class="card-body">
+                            <ol>
+                                <li class="mb-2">
+                                    <strong>Блокировка cookie:</strong> Ваш браузер блокирует необходимые файлы cookie для авторизации через Google.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Защита от отслеживания:</strong> Включена функция защиты от отслеживания или блокировщик рекламы.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Режим инкогнито:</strong> Вы используете режим инкогнито, который может ограничивать файлы cookie.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Устаревшая сессия:</strong> Сессия авторизации устарела или была прервана.
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Как исправить:</h4>
+                        </div>
+                        <div class="card-body">
+                            <ol>
+                                <li class="mb-2">
+                                    <strong>Разрешите файлы cookie:</strong> Убедитесь, что в настройках вашего браузера разрешены файлы cookie для этого сайта.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Отключите блокировщики:</strong> Временно отключите блокировщики рекламы и защиту от отслеживания.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Используйте обычный режим:</strong> Если вы в режиме инкогнито, попробуйте открыть сайт в обычном режиме.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Очистите кэш и cookie:</strong> Очистите кэш и файлы cookie для данного сайта и попробуйте снова.
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Используйте другой браузер:</strong> Если проблема не решается, попробуйте другой браузер (Chrome, Firefox, Edge).
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a class="btn btn-primary btn-lg" href="@(ViewBag.RetryUrl ?? Url.Action("Login", "Account"))">
+                            <i class="bi bi-arrow-repeat me-2"></i>Попробовать снова
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">
+                            <i class="bi bi-person-fill me-2"></i>Вернуться на страницу входа
+                        </a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark">
+                            <i class="bi bi-house-fill me-2"></i>На главную
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

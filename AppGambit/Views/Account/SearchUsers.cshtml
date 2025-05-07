@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Поиск пользователей";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Поиск пользователей</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Введите имя пользователя" />
+                            <button id="searchButton" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Найти
+                            </button>
+                        </div>
+                        <small class="text-muted">Поиск работает по имени пользователя, не по email</small>
+                    </div>
+                    
+                    <div id="searchResults" class="mt-4">
+                        <!-- Сюда будут загружены результаты поиска -->
+                    </div>
+                    
+                    <div id="noResults" class="alert alert-info mt-3" style="display: none;">
+                        Пользователи не найдены. Попробуйте изменить поисковый запрос.
+                    </div>
+                    
+                    <div id="searchLoading" class="text-center mt-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-2">Поиск пользователей...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Функция поиска пользователей
+            function searchUsers() {
+                const username = $('#searchInput').val().trim();
+                
+                if (!username) {
+                    return;
+                }
+                
+                // Показываем индикатор загрузки
+                $('#searchResults').hide();
+                $('#noResults').hide();
+                $('#searchLoading').show();
+                
+                $.ajax({
+                    url: '@Url.Action("FindUsers", "Account")',
+                    data: { username: username },
+                    type: 'GET',
+                    success: function(data) {
+                        $('#searchLoading').hide();
+                        
+                        if (data && data.length > 0) {
+                            // Очищаем и показываем результаты
+                            const $results = $('#searchResults');
+                            $results.empty().show();
+                            
+                            // Создаем HTML для результатов
+                            const $userList = $('<div class="list-group"></div>');
+                            
+                            data.forEach(function(user) {
+                                const $userItem = $(`
+                                    <a href="/user/${encodeURIComponent(user.displayName)}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                ${user.avatarUrl 
+                                                    ? `<img src="${user.avatarUrl}" alt="${user.displayName}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">` 
+                                                    : `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-person text-secondary"></i></div>`
+                                                }
+                                            </div>
+                                            <div class="ms-3">
+                                                <h5 class="mb-0">${user.displayName}</h5>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `);
+                                
+                                $userList.append($userItem);
+                            });
+                            
+                            $results.append($userList);
+                        } else {
+                            // Показываем сообщение, что результаты не найдены
+                            $('#noResults').show();
+                        }
+                    },
+                    error: function() {
+                        $('#searchLoading').hide();
+                        $('#noResults').text('Произошла ошибка при поиске. Пожалуйста, попробуйте позже.').show();
+                    }
+                });
+            }
+            
+            // Обработчик нажатия на кнопку поиска
+            $('#searchButton').click(function() {
+                searchUsers();
+            });
+            
+            // Обработчик нажатия Enter в поле ввода
+            $('#searchInput').keypress(function(e) {
+                if (e.which === 13) {
+                    searchUsers();
+                    return false;
+                }
+            });
+        });
+    </script>
+} 

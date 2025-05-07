@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google OAuth Test</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        code {
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google OAuth Test Page</h1>
+    
+    <div class="instructions">
+        <h2>Инструкции</h2>
+        <p>Эта страница предназначена для тестирования OAuth авторизации Google напрямую, без дополнительного кода ASP.NET Core.</p>
+        <p>URL для перенаправления: <code id="redirectUrl"></code></p>
+    </div>
+    
+    <div>
+        <a href="#" id="googleAuthButton" class="btn">Тестировать авторизацию через Google</a>
+    </div>
+    
+    <div>
+        <h3>Результаты</h3>
+        <div id="results">
+            Нажмите кнопку для начала тестирования
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Получаем текущие настройки
+            const clientId = '159523836860-blspsr98kurlibf6kmd528v96urnqbkt.apps.googleusercontent.com';
+            const redirectUri = window.location.origin + '/signin-google';
+            
+            // Отображаем URL перенаправления
+            document.getElementById('redirectUrl').textContent = redirectUri;
+            
+            // Создаем URL для авторизации
+            const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth' +
+                            '?client_id=' + encodeURIComponent(clientId) +
+                            '&redirect_uri=' + encodeURIComponent(redirectUri) +
+                            '&response_type=code' +
+                            '&scope=openid%20email%20profile' +
+                            '&state=test_' + Math.random().toString(36).substring(2, 15);
+            
+            // Устанавливаем URL для кнопки
+            document.getElementById('googleAuthButton').href = authUrl;
+            
+            // Проверяем, есть ли параметры в URL (вернулись ли мы после авторизации)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('code')) {
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+                
+                document.getElementById('results').innerHTML = `
+                    <div style="background-color: #d4edda; padding: 15px; border-radius: 4px;">
+                        <h4>Успешная авторизация!</h4>
+                        <p><strong>Код:</strong> ${code}</p>
+                        <p><strong>State:</strong> ${state}</p>
+                        <p>Теперь этот код можно обменять на токен доступа.</p>
+                    </div>
+                `;
+            } else if (urlParams.has('error')) {
+                const error = urlParams.get('error');
+                const errorDescription = urlParams.get('error_description');
+                
+                document.getElementById('results').innerHTML = `
+                    <div style="background-color: #f8d7da; padding: 15px; border-radius: 4px;">
+                        <h4>Ошибка авторизации!</h4>
+                        <p><strong>Ошибка:</strong> ${error}</p>
+                        <p><strong>Описание:</strong> ${errorDescription || 'Нет описания'}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 

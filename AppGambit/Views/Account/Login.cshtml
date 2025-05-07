@@ -1,0 +1,89 @@
+@model AppGambit.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Вход в аккаунт";
+    
+    // Проверяем наличие ошибки в URL
+    if (Context.Request.Query.ContainsKey("error"))
+    {
+        TempData["ErrorMessage"] = "Ошибка при входе через Google: " + Context.Request.Query["error"];
+    }
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">@ViewData["Title"]</h2>
+            </div>
+            <div class="card-body">
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <section>
+                            <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" id="loginForm">
+                                <h4>Войти с помощью логина и пароля</h4>
+                                <hr />
+                                <div asp-validation-summary="All" class="text-danger"></div>
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label"></label>
+                                    <input asp-for="Email" class="form-control" autocomplete="username" autofocus />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="Password" class="form-label"></label>
+                                    <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input asp-for="RememberMe" class="form-check-input" checked />
+                                    <label asp-for="RememberMe" class="form-check-label"></label>
+                                </div>
+                                <div class="mb-3">
+                                    <button type="submit" class="btn btn-primary w-100" id="loginButton">
+                                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loginSpinner"></span>
+                                        Войти
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="ForgotPassword">Забыли пароль?</a>
+                                        <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">Зарегистрироваться</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                    <div class="col-md-6">
+                        <section>
+                            <h4>Войти с помощью другого сервиса</h4>
+                            <hr />
+                            
+                            <div class="d-grid gap-2">
+                                <form asp-action="ExternalLogin" asp-controller="Account" asp-route-provider="Google" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" id="googleAuthForm">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger d-flex align-items-center justify-content-center gap-2 w-100" id="googleAuthButton">
+                                        <i class="bi bi-google"></i>
+                                        <span>Войти через Google</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script src="~/js/login.js"></script>
+} 
