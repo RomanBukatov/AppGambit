@@ -1,0 +1,495 @@
+@model AppGambit.Models.Application
+@{
+    ViewData["Title"] = Model.Name;
+    var userRating = ViewBag.UserRating as AppGambit.Models.Rating;
+}
+
+<div class="container">
+    <div class="row">
+        <!-- Основная информация -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            @if (!string.IsNullOrEmpty(Model.IconUrl))
+                            {
+                                <img src="~/@Model.IconUrl" class="img-fluid rounded mb-3" alt="@Model.Name" style="max-height: 150px;">
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 150px;">
+                                    <i class="fas fa-desktop fa-4x text-muted"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-9">
+                            <h1 class="h2 mb-2">@Model.Name</h1>
+                            <p class="text-muted mb-3">@Model.Description</p>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-6">
+                                    <strong>Версия:</strong> @Model.Version
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Размер:</strong> @(Model.FileSize / 1024 / 1024) МБ
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Категория:</strong> 
+                                    @if (!string.IsNullOrEmpty(Model.Category))
+                                    {
+                                        <span class="badge bg-primary">@Model.Category</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Не указана</span>
+                                    }
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Скачиваний:</strong> @Model.DownloadCount
+                                </div>
+                            </div>
+
+                            <!-- Теги -->
+                            @if (Model.Tags != null && Model.Tags.Any())
+                            {
+                                <div class="mb-3">
+                                    <strong>Теги:</strong>
+                                    <div class="tags-container">
+                                        @foreach (var tag in Model.Tags)
+                                        {
+                                            <a href="@Url.Action("Index", "Applications", new { search = tag })" class="tag">#@tag</a>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Рейтинг -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rating me-3">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Model.AverageRating)
+                                        {
+                                            <i class="fas fa-star text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star text-muted"></i>
+                                        }
+                                    }
+                                    <span class="ms-2">@Model.AverageRating.ToString("F1") (@Model.TotalRatings отзывов)</span>
+                                </div>
+                                <div class="likes-dislikes">
+                                    <span class="text-success me-2">
+                                        <i class="fas fa-thumbs-up"></i> @Model.LikesCount
+                                    </span>
+                                    <span class="text-danger">
+                                        <i class="fas fa-thumbs-down"></i> @Model.DislikesCount
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Автор -->
+                            <div class="mb-3">
+                                <strong>Автор:</strong>
+                                <a href="/u/@Model.User.DisplayName" class="text-decoration-none">
+                                    @Model.User.DisplayName
+                                </a>
+                                <small class="text-muted ms-2">@Model.CreatedAt.ToString("dd.MM.yyyy")</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Подробное описание -->
+            @if (!string.IsNullOrEmpty(Model.DetailedDescription))
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Описание</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@Html.Raw(Model.DetailedDescription.Replace("\n", "<br>"))</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Скриншоты -->
+            @if (Model.Screenshots != null && Model.Screenshots.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-images me-2"></i>Скриншоты</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @foreach (var screenshot in Model.Screenshots)
+                            {
+                                <div class="col-md-6">
+                                    <img src="~/@screenshot" class="img-fluid rounded shadow-sm" alt="Скриншот" 
+                                         data-bs-toggle="modal" data-bs-target="#screenshotModal" 
+                                         data-bs-image="~/@screenshot" style="cursor: pointer;">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Комментарии -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Комментарии (@Model.Comments.Count)</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Форма добавления комментария -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form asp-action="AddComment" method="post" class="mb-4">
+                            <input type="hidden" name="applicationId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <textarea name="content" class="form-control" rows="3" placeholder="Напишите ваш комментарий..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Отправить
+                            </button>
+                        </form>
+                        <hr>
+                    }
+
+                    <!-- Список комментариев -->
+                    @if (Model.Comments.Any())
+                    {
+                        @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                        {
+                            <div class="comment mb-3 pb-3 border-bottom" id="comment-@comment.Id">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <strong>@comment.User.DisplayName</strong>
+                                        @if (comment.UserId == ViewBag.CurrentUserId)
+                                        {
+                                            <span class="badge bg-primary ms-2">Автор</span>
+                                        }
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <small class="text-muted">@comment.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                        @if (User.Identity?.IsAuthenticated == true && (comment.UserId == ViewBag.CurrentUserId || ViewBag.IsAdmin == true))
+                                        {
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <button class="dropdown-item" onclick="editComment(@comment.Id, '@Html.Raw(comment.Content.Replace("'", "\\'"))')">
+                                                            <i class="fas fa-edit me-2"></i>Редактировать
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item text-danger" onclick="deleteComment(@comment.Id)">
+                                                            <i class="fas fa-trash me-2"></i>Удалить
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="comment-content">
+                                    <p class="mb-0">@comment.Content</p>
+                                </div>
+                                <div class="comment-edit-form" style="display: none;">
+                                    <form onsubmit="updateComment(event, @comment.Id)">
+                                        <div class="mb-2">
+                                            <textarea class="form-control" rows="3" required>@comment.Content</textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                                            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit(@comment.Id)">Отмена</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-3">
+                            <i class="fas fa-comment-slash fa-2x mb-2 d-block"></i>
+                            Комментариев пока нет. Будьте первым!
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Скачивание -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Скачать приложение</h5>
+                    <form asp-action="Download" method="post" class="d-grid">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-download me-2"></i>Скачать
+                        </button>
+                    </form>
+                    <small class="text-muted mt-2 d-block">
+                        Размер: @(Model.FileSize / 1024 / 1024) МБ
+                    </small>
+                </div>
+            </div>
+
+            <!-- Оценка -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">Оценить приложение</h6>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Rate" method="post">
+                            <input type="hidden" name="applicationId" value="@Model.Id" />
+                            
+                            <!-- Рейтинг звездами -->
+                            <div class="mb-3">
+                                <label class="form-label">Рейтинг:</label>
+                                <div class="rating-input">
+                                    @for (int i = 5; i >= 1; i--)
+                                    {
+                                        <input type="radio" name="value" value="@i" id="star@i"
+                                               @(userRating != null && userRating.Value == i ? "checked" : "") />
+                                        <label for="star@i" class="star">
+                                            <i class="fas fa-star"></i>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Лайк/Дизлайк -->
+                            <div class="mb-3">
+                                <label class="form-label">Рекомендация:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" name="isLike" value="true" id="like" class="btn-check" 
+                                           @(userRating != null && userRating.IsLike ? "checked" : "") />
+                                    <label for="like" class="btn btn-outline-success">
+                                        <i class="fas fa-thumbs-up me-1"></i>Нравится
+                                    </label>
+                                    
+                                    <input type="radio" name="isLike" value="false" id="dislike" class="btn-check" 
+                                           @(userRating != null && !userRating.IsLike ? "checked" : "") />
+                                    <label for="dislike" class="btn btn-outline-danger">
+                                        <i class="fas fa-thumbs-down me-1"></i>Не нравится
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-star me-1"></i>Оценить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- Информация -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Информация</h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-item mb-2">
+                        <strong>Добавлено:</strong><br>
+                        <small class="text-muted">@Model.CreatedAt.ToString("dd MMMM yyyy")</small>
+                    </div>
+                    <div class="info-item mb-2">
+                        <strong>Обновлено:</strong><br>
+                        <small class="text-muted">@Model.UpdatedAt.ToString("dd MMMM yyyy")</small>
+                    </div>
+                    <div class="info-item">
+                        <strong>Всего скачиваний:</strong><br>
+                        <small class="text-muted">@Model.DownloadCount</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для скриншотов -->
+<div class="modal fade" id="screenshotModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Скриншот</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Скриншот">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .rating-input {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+        }
+        
+        .rating-input input {
+            display: none;
+        }
+        
+        .rating-input label {
+            cursor: pointer;
+            color: #ddd;
+            font-size: 1.5rem;
+            margin: 0 2px;
+        }
+        
+        .rating-input label:hover,
+        .rating-input label:hover ~ label,
+        .rating-input input:checked ~ label {
+            color: #ffc107;
+        }
+    </style>
+    
+    <script>
+        // Обработка модального окна для скриншотов
+        document.addEventListener('DOMContentLoaded', function() {
+            const screenshotModal = document.getElementById('screenshotModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            screenshotModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const imageSrc = button.getAttribute('data-bs-image');
+                modalImage.src = imageSrc;
+            });
+        });
+
+        // Функции для работы с комментариями
+        function editComment(commentId, currentContent) {
+            const commentDiv = document.getElementById(`comment-${commentId}`);
+            const contentDiv = commentDiv.querySelector('.comment-content');
+            const editForm = commentDiv.querySelector('.comment-edit-form');
+            const textarea = editForm.querySelector('textarea');
+            
+            textarea.value = currentContent;
+            contentDiv.style.display = 'none';
+            editForm.style.display = 'block';
+        }
+
+        function cancelEdit(commentId) {
+            const commentDiv = document.getElementById(`comment-${commentId}`);
+            const contentDiv = commentDiv.querySelector('.comment-content');
+            const editForm = commentDiv.querySelector('.comment-edit-form');
+            
+            contentDiv.style.display = 'block';
+            editForm.style.display = 'none';
+        }
+
+        async function updateComment(event, commentId) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const textarea = form.querySelector('textarea');
+            const newContent = textarea.value.trim();
+            
+            if (!newContent) {
+                alert('Комментарий не может быть пустым');
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("UpdateComment", "Applications")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        commentId: commentId,
+                        content: newContent
+                    })
+                });
+
+                if (response.ok) {
+                    const commentDiv = document.getElementById(`comment-${commentId}`);
+                    const contentDiv = commentDiv.querySelector('.comment-content p');
+                    const editForm = commentDiv.querySelector('.comment-edit-form');
+                    
+                    contentDiv.textContent = newContent;
+                    contentDiv.parentElement.style.display = 'block';
+                    editForm.style.display = 'none';
+                    
+                    showNotification('Комментарий обновлен', 'success');
+                } else {
+                    throw new Error('Ошибка при обновлении комментария');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка при обновлении комментария', 'error');
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("DeleteComment", "Applications")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        commentId: commentId
+                    })
+                });
+
+                if (response.ok) {
+                    const commentDiv = document.getElementById(`comment-${commentId}`);
+                    commentDiv.remove();
+                    
+                    // Обновляем счетчик комментариев
+                    const commentsHeader = document.querySelector('.card-header h5');
+                    const currentCount = parseInt(commentsHeader.textContent.match(/\((\d+)\)/)[1]);
+                    commentsHeader.innerHTML = `<i class="fas fa-comments me-2"></i>Комментарии (${currentCount - 1})`;
+                    
+                    showNotification('Комментарий удален', 'success');
+                } else {
+                    throw new Error('Ошибка при удалении комментария');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка при удалении комментария', 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    </script>
+}

@@ -1,0 +1,187 @@
+@{
+    ViewData["Title"] = "Поиск пользователей";
+    var usersWithIndexes = ViewBag.UsersWithIndexes as List<dynamic>;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="fas fa-users me-2"></i>Поиск пользователей
+            </h1>
+            
+            <!-- Форма поиска -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-10">
+                            <label for="query" class="form-label">Поиск по имени или email</label>
+                            <input type="text" class="form-control" id="query" name="query" 
+                                   value="@ViewBag.CurrentQuery" placeholder="Введите имя пользователя или email...">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>Найти
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Результаты поиска -->
+            @if (!string.IsNullOrEmpty(ViewBag.CurrentQuery as string))
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Результаты поиска для: <strong>"@ViewBag.CurrentQuery"</strong>
+                    <a asp-action="Search" class="btn btn-sm btn-outline-primary ms-2">
+                        <i class="fas fa-times me-1"></i>Сбросить
+                    </a>
+                </div>
+            }
+
+            <!-- Список пользователей -->
+            @if (usersWithIndexes != null && usersWithIndexes.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var item in usersWithIndexes)
+                    {
+                        var user = item.User as AppGambit.Models.User;
+                        var index = item.Index;
+                        
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card h-100 shadow-sm user-card">
+                                <div class="card-body text-center">
+                                    <!-- Аватар пользователя -->
+                                    <div class="mb-3">
+                                        @if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                                        {
+                                            <img src="~/@user.ProfileImageUrl" class="rounded-circle img-fluid" 
+                                                 alt="@user.DisplayName" style="width: 80px; height: 80px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center text-white" 
+                                                 style="width: 80px; height: 80px; font-size: 2rem;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- Информация о пользователе -->
+                                    <h5 class="card-title mb-1">@(user.DisplayName ?? user.UserName)</h5>
+                                    <p class="text-muted small mb-2">@user.Email</p>
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-link me-1"></i>Профиль #@index
+                                    </p>
+
+                                    <!-- Статистика -->
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <div class="border-end">
+                                                <h6 class="text-primary mb-0">@ViewBag.UserStats?[user.Id]?.ApplicationsCount ?? 0</h6>
+                                                <small class="text-muted">Приложений</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="border-end">
+                                                <h6 class="text-success mb-0">@ViewBag.UserStats?[user.Id]?.TotalDownloads ?? 0</h6>
+                                                <small class="text-muted">Скачиваний</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <h6 class="text-warning mb-0">@ViewBag.UserStats?[user.Id]?.AverageRating?.ToString("F1") ?? "0.0"</h6>
+                                            <small class="text-muted">Рейтинг</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Дата регистрации -->
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Зарегистрирован @user.CreatedAt.ToString("dd.MM.yyyy")
+                                    </p>
+
+                                    <!-- Кнопка просмотра профиля -->
+                                    <a asp-action="Details" asp-route-id="@index" class="btn btn-primary">
+                                        <i class="fas fa-eye me-1"></i>Посмотреть профиль
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Пагинация -->
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Навигация по страницам" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Search" 
+                                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                       asp-route-query="@ViewBag.CurrentQuery">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+                            
+                            @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Search" 
+                                       asp-route-page="@i"
+                                       asp-route-query="@ViewBag.CurrentQuery">@i</a>
+                                </li>
+                            }
+                            
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Search" 
+                                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                       asp-route-query="@ViewBag.CurrentQuery">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentQuery as string))
+                    {
+                        <i class="fas fa-user-slash fa-4x text-muted mb-3"></i>
+                        <h3 class="text-muted">Пользователи не найдены</h3>
+                        <p class="text-muted">Попробуйте изменить параметры поиска</p>
+                        <a asp-action="Search" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Новый поиск
+                        </a>
+                    }
+                    else
+                    {
+                        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                        <h3 class="text-muted">Поиск пользователей</h3>
+                        <p class="text-muted">Введите имя пользователя или email для поиска</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .user-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+}

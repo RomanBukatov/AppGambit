@@ -1,0 +1,222 @@
+@model AppGambit.Models.User
+@{
+    ViewData["Title"] = "Редактировать профиль";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Редактировать профиль
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <!-- Текущее изображение профиля -->
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Текущее фото профиля</label>
+                                    <div id="currentImage">
+                                        @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                                        {
+                                            <img src="~/@Model.ProfileImageUrl" class="rounded-circle img-fluid mb-2" 
+                                                 alt="Текущее фото" style="width: 150px; height: 150px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center text-white mb-2" 
+                                                 style="width: 150px; height: 150px; font-size: 3rem;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="profileImage" class="form-label">Новое фото профиля</label>
+                                    <input type="file" id="profileImage" name="profileImage" class="form-control" 
+                                           accept="image/*" />
+                                    <div class="form-text">Рекомендуемый размер: 200x200 пикселей</div>
+                                </div>
+                                
+                                <div id="imagePreview"></div>
+                            </div>
+
+                            <!-- Информация профиля -->
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="DisplayName" class="form-label">Отображаемое имя</label>
+                                    <input asp-for="DisplayName" class="form-control" 
+                                           placeholder="Введите ваше отображаемое имя" />
+                                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                                    <div class="form-text">
+                                        Это имя будет отображаться в ваших приложениях и комментариях
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label">Email</label>
+                                    <input asp-for="Email" class="form-control" type="email" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <div class="form-text">
+                                        Изменение email потребует подтверждения
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Имя пользователя</label>
+                                    <input value="@Model.UserName" class="form-control" readonly />
+                                    <div class="form-text text-muted">
+                                        Имя пользователя нельзя изменить
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Дата регистрации</label>
+                                    <input value="@Model.CreatedAt.ToString("dd MMMM yyyy")" class="form-control" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Дополнительная информация -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Статистика профиля</h5>
+                            </div>
+                            
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-th-large fa-2x mb-2"></i>
+                                        <h4 class="mb-0">@ViewBag.ApplicationsCount</h4>
+                                        <small>Приложений</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-download fa-2x mb-2"></i>
+                                        <h4 class="mb-0">@ViewBag.TotalDownloads</h4>
+                                        <small>Скачиваний</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-star fa-2x mb-2"></i>
+                                        <h4 class="mb-0">@ViewBag.AverageRating</h4>
+                                        <small>Средний рейтинг</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-comments fa-2x mb-2"></i>
+                                        <h4 class="mb-0">@ViewBag.TotalComments</h4>
+                                        <small>Комментариев</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="MyProfile" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Дополнительные настройки -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Дополнительные настройки
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Безопасность</h6>
+                            <p class="text-muted small">Управление паролем и безопасностью аккаунта</p>
+                            <button type="button" class="btn btn-outline-primary" disabled>
+                                <i class="fas fa-key me-1"></i>Изменить пароль
+                            </button>
+                            <small class="text-muted d-block mt-1">Функция в разработке</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Конфиденциальность</h6>
+                            <p class="text-muted small">Настройки приватности и видимости профиля</p>
+                            <button type="button" class="btn btn-outline-info" disabled>
+                                <i class="fas fa-shield-alt me-1"></i>Личные данные
+                            </button>
+                            <small class="text-muted d-block mt-1">Функция в разработке</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileImage = document.getElementById('profileImage');
+            const imagePreview = document.getElementById('imagePreview');
+
+            profileImage.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Проверка типа файла
+                    if (!file.type.startsWith('image/')) {
+                        alert('Пожалуйста, выберите изображение');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Проверка размера файла (максимум 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Размер файла не должен превышать 5MB');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `
+                            <div class="mt-3">
+                                <label class="form-label">Предпросмотр нового фото:</label>
+                                <div>
+                                    <img src="${e.target.result}" class="rounded-circle img-fluid" 
+                                         alt="Предпросмотр" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.innerHTML = '';
+                }
+            });
+        });
+    </script>
+}

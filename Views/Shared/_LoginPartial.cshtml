@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppGambit.Models.User> SignInManager
+@inject UserManager<AppGambit.Models.User> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item dropdown">
+        @{
+            var currentUser = await UserManager.GetUserAsync(User);
+        }
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            @if (!string.IsNullOrEmpty(currentUser?.ProfileImageUrl))
+            {
+                <img src="~/@currentUser.ProfileImageUrl" class="rounded-circle me-1"
+                     alt="Профиль" style="width: 24px; height: 24px; object-fit: cover;">
+            }
+            else
+            {
+                <i class="fas fa-user-circle me-1"></i>
+            }
+            @(currentUser?.DisplayName ?? currentUser?.Email ?? User.Identity?.Name)
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <li>
+                <a class="dropdown-item" asp-controller="Profile" asp-action="MyProfile">
+                    <i class="fas fa-user me-2"></i>Мой профиль
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-controller="Applications" asp-action="Create">
+                    <i class="fas fa-plus me-2"></i>Добавить приложение
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" asp-controller="Profile" asp-action="Edit">
+                    <i class="fas fa-cog me-2"></i>Настройки
+                </a>
+            </li>
+            <li>
+                <form class="form-inline" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home")">
+                    <button type="submit" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Account" asp-action="Register">
+            <i class="fas fa-user-plus me-1"></i>Регистрация
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Account" asp-action="Login">
+            <i class="fas fa-sign-in-alt me-1"></i>Вход
+        </a>
+    </li>
+}
+</ul>

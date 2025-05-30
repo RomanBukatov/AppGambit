@@ -1,0 +1,297 @@
+@model AppGambit.ViewModels.CreateApplicationViewModel
+@{
+    ViewData["Title"] = "Добавить приложение";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>Добавить новое приложение
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Основная информация -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Основная информация</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label">Название приложения *</label>
+                                <input asp-for="Name" class="form-control" placeholder="Введите название приложения" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Version" class="form-label">Версия *</label>
+                                <input asp-for="Version" class="form-control" placeholder="1.0.0" />
+                                <span asp-validation-for="Version" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label asp-for="Description" class="form-label">Краткое описание *</label>
+                                <textarea asp-for="Description" class="form-control" rows="3" 
+                                          placeholder="Краткое описание приложения (до 500 символов)"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                                <div class="form-text">Максимум 500 символов</div>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label asp-for="DetailedDescription" class="form-label">Подробное описание</label>
+                                <textarea asp-for="DetailedDescription" class="form-control" rows="6" 
+                                          placeholder="Подробное описание функций, особенностей и возможностей приложения"></textarea>
+                                <span asp-validation-for="DetailedDescription" class="text-danger"></span>
+                                <div class="form-text">Максимум 2000 символов</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label">Категория</label>
+                                <select asp-for="Category" class="form-select">
+                                    <option value="">Выберите категорию</option>
+                                    <option value="Игры">Игры</option>
+                                    <option value="Утилиты">Утилиты</option>
+                                    <option value="Образование">Образование</option>
+                                    <option value="Бизнес">Бизнес</option>
+                                    <option value="Графика">Графика</option>
+                                    <option value="Мультимедиа">Мультимедиа</option>
+                                    <option value="Разработка">Разработка</option>
+                                    <option value="Безопасность">Безопасность</option>
+                                    <option value="Интернет">Интернет</option>
+                                    <option value="Системные">Системные</option>
+                                    <option value="Другое">Другое</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TagsString" class="form-label">Теги</label>
+                                <input type="text" id="tags" class="form-control"
+                                       placeholder="Введите теги через запятую" />
+                                <div class="form-text">Например: игра, аркада, 2D</div>
+                                <div id="tagsContainer" class="mt-2"></div>
+                                <input type="hidden" asp-for="TagsString" id="tagsHidden" />
+                                <span asp-validation-for="TagsString" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Файлы -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Файлы</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="IconFile" class="form-label">Иконка приложения</label>
+                                <input asp-for="IconFile" type="file" id="iconFile" class="form-control"
+                                       accept="image/*" />
+                                <div class="form-text">Рекомендуемый размер: 128x128 пикселей. Форматы: JPG, PNG, GIF</div>
+                                <div id="iconPreview" class="mt-2"></div>
+                                <span asp-validation-for="IconFile" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="AppFile" class="form-label">Файл приложения</label>
+                                <input asp-for="AppFile" type="file" id="appFile" class="form-control"
+                                       accept=".exe,.msi,.zip,.rar,.7z,.apk" />
+                                <div class="form-text">Поддерживаемые форматы: EXE, MSI, ZIP, RAR, 7Z, APK (необязательно)</div>
+                                <div id="fileInfo" class="mt-2"></div>
+                                <span asp-validation-for="AppFile" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label asp-for="Screenshots" class="form-label">Скриншоты</label>
+                                <input asp-for="Screenshots" type="file" id="screenshots" class="form-control"
+                                       accept="image/*" multiple />
+                                <div class="form-text">Можно загрузить несколько изображений. Форматы: JPG, PNG, GIF</div>
+                                <div id="screenshotsPreview" class="mt-2 row g-2"></div>
+                                <span asp-validation-for="Screenshots" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Создать приложение
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tagsInput = document.getElementById('tags');
+            const tagsContainer = document.getElementById('tagsContainer');
+            const tagsHidden = document.getElementById('tagsHidden');
+            const iconFile = document.getElementById('iconFile');
+            const iconPreview = document.getElementById('iconPreview');
+            const appFile = document.getElementById('appFile');
+            const fileInfo = document.getElementById('fileInfo');
+            const screenshots = document.getElementById('screenshots');
+            const screenshotsPreview = document.getElementById('screenshotsPreview');
+            
+            let tags = [];
+
+            // Обработка тегов
+            tagsInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    addTag();
+                }
+            });
+
+            tagsInput.addEventListener('blur', addTag);
+
+            function addTag() {
+                const value = tagsInput.value.trim();
+                if (value && !tags.includes(value)) {
+                    tags.push(value);
+                    updateTagsDisplay();
+                    tagsInput.value = '';
+                }
+            }
+
+            function removeTag(tag) {
+                tags = tags.filter(t => t !== tag);
+                updateTagsDisplay();
+            }
+
+            function updateTagsDisplay() {
+                tagsContainer.innerHTML = tags.map(tag =>
+                    `<span class="tag tag-primary tag-removable">
+                        ${tag}
+                        <button type="button" class="tag-remove" onclick="removeTag('${tag}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>`
+                ).join('');
+                tagsHidden.value = tags.join(',');
+            }
+
+            // Глобальная функция для удаления тегов
+            window.removeTag = removeTag;
+
+            // Предпросмотр иконки
+            iconFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        iconPreview.innerHTML = `
+                            <img src="${e.target.result}" class="img-thumbnail" 
+                                 style="max-width: 100px; max-height: 100px;" alt="Предпросмотр иконки">
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    iconPreview.innerHTML = '';
+                }
+            });
+
+            // Информация о файле приложения
+            appFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                    fileInfo.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-file me-2"></i>
+                            <strong>${file.name}</strong><br>
+                            Размер: ${sizeMB} МБ
+                        </div>
+                    `;
+                } else {
+                    fileInfo.innerHTML = '';
+                }
+            });
+
+            // Предпросмотр скриншотов с возможностью перестановки
+            let screenshotFiles = [];
+            
+            screenshots.addEventListener('change', function(e) {
+                screenshotFiles = Array.from(e.target.files);
+                updateScreenshotsPreview();
+            });
+            
+            function updateScreenshotsPreview() {
+                screenshotsPreview.innerHTML = '';
+                
+                screenshotFiles.forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-md-3 col-sm-4 col-6 mb-2';
+                            col.innerHTML = `
+                                <div class="position-relative">
+                                    <img src="${e.target.result}" class="img-thumbnail w-100"
+                                         alt="Скриншот ${index + 1}" style="height: 100px; object-fit: cover;">
+                                    <div class="position-absolute top-0 end-0 p-1">
+                                        <div class="btn-group-vertical" role="group">
+                                            ${index > 0 ? `<button type="button" class="btn btn-sm btn-primary" onclick="moveScreenshot(${index}, ${index - 1})" title="Переместить влево">
+                                                <i class="fas fa-arrow-left"></i>
+                                            </button>` : ''}
+                                            ${index < screenshotFiles.length - 1 ? `<button type="button" class="btn btn-sm btn-primary" onclick="moveScreenshot(${index}, ${index + 1})" title="Переместить вправо">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </button>` : ''}
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeScreenshot(${index})" title="Удалить">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="position-absolute bottom-0 start-0 bg-dark text-white px-2 py-1 small">
+                                        ${index + 1}
+                                    </div>
+                                </div>
+                            `;
+                            screenshotsPreview.appendChild(col);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                // Обновляем input с файлами
+                updateFileInput();
+            }
+            
+            function moveScreenshot(fromIndex, toIndex) {
+                if (toIndex >= 0 && toIndex < screenshotFiles.length) {
+                    const temp = screenshotFiles[fromIndex];
+                    screenshotFiles[fromIndex] = screenshotFiles[toIndex];
+                    screenshotFiles[toIndex] = temp;
+                    updateScreenshotsPreview();
+                }
+            }
+            
+            function removeScreenshot(index) {
+                screenshotFiles.splice(index, 1);
+                updateScreenshotsPreview();
+            }
+            
+            function updateFileInput() {
+                const dt = new DataTransfer();
+                screenshotFiles.forEach(file => dt.items.add(file));
+                screenshots.files = dt.files;
+            }
+            
+            // Глобальные функции для кнопок
+            window.moveScreenshot = moveScreenshot;
+            window.removeScreenshot = removeScreenshot;
+        });
+    </script>
+}

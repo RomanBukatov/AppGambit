@@ -1,0 +1,235 @@
+@model AppGambit.Models.User
+@{
+    ViewData["Title"] = Model.DisplayName ?? Model.UserName;
+    var applications = ViewBag.Applications as List<AppGambit.Models.Application>;
+    var userIndex = ViewBag.UserIndex;
+    var isOwnProfile = ViewBag.IsOwnProfile;
+}
+
+<div class="container">
+    <div class="row">
+        <!-- Профиль пользователя -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <!-- Аватар -->
+                    <div class="mb-3">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                        {
+                            <img src="~/@Model.ProfileImageUrl" class="rounded-circle img-fluid" 
+                                 alt="@Model.DisplayName" style="width: 150px; height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center text-white" 
+                                 style="width: 150px; height: 150px; font-size: 3rem;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Информация о пользователе -->
+                    <h3 class="mb-1">@(Model.DisplayName ?? Model.UserName)</h3>
+                    <p class="text-muted mb-2">@Model.Email</p>
+                    <p class="text-muted small">
+                        <i class="fas fa-link me-1"></i>
+                        Профиль #@userIndex
+                    </p>
+                    <p class="text-muted small">
+                        <i class="fas fa-calendar me-1"></i>
+                        Зарегистрирован @Model.CreatedAt.ToString("dd MMMM yyyy")
+                    </p>
+
+                    <!-- Кнопки действий -->
+                    @if (isOwnProfile)
+                    {
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" class="btn btn-primary">
+                                <i class="fas fa-edit me-1"></i>Редактировать профиль
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Статистика</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-0">@ViewBag.TotalApplications</h4>
+                                <small class="text-muted">Приложений</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success mb-0">@ViewBag.TotalDownloads</h4>
+                            <small class="text-muted">Скачиваний</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h5 class="text-warning mb-0">
+                                    @if (ViewBag.AverageRating > 0)
+                                    {
+                                        @ViewBag.AverageRating
+                                        <div class="mt-1">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= ViewBag.AverageRating)
+                                                {
+                                                    <i class="fas fa-star text-warning small"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star text-muted small"></i>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </h5>
+                                <small class="text-muted">Средний рейтинг</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-info mb-0">@ViewBag.TotalComments</h5>
+                            <small class="text-muted">Комментариев</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Приложения пользователя -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">
+                    <i class="fas fa-th-large me-2"></i>
+                    @if (isOwnProfile)
+                    {
+                        <text>Мои приложения</text>
+                    }
+                    else
+                    {
+                        <text>Приложения пользователя @(Model.DisplayName ?? Model.UserName)</text>
+                    }
+                </h4>
+                @if (isOwnProfile)
+                {
+                    <a asp-controller="Applications" asp-action="Create" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Добавить приложение
+                    </a>
+                }
+            </div>
+
+            @if (applications != null && applications.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var app in applications)
+                    {
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm app-card">
+                                <div class="card-img-top-wrapper">
+                                    @if (!string.IsNullOrEmpty(app.IconUrl))
+                                    {
+                                        <img src="~/@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="card-img-placeholder d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                            <i class="fas fa-desktop fa-3x text-muted"></i>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(app.Category))
+                                    {
+                                        <div class="badge bg-primary position-absolute top-0 start-0 m-2">@app.Category</div>
+                                    }
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h6 class="card-title">@app.Name</h6>
+                                    <p class="card-text text-muted small flex-grow-1">@app.Description</p>
+                                    
+                                    <!-- Статистика приложения -->
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Рейтинг</small>
+                                            <strong class="text-warning">@((app.Ratings?.Any() == true ? app.AverageRating : 0.0).ToString("F1"))</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Скачиваний</small>
+                                            <strong class="text-success">@app.DownloadCount</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Комментариев</small>
+                                            <strong class="text-info">@app.Comments.Count</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Дата создания -->
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>@app.CreatedAt.ToString("dd.MM.yyyy")
+                                        </small>
+                                        <small class="text-muted">v@app.Version</small>
+                                    </div>
+                                    
+                                    <!-- Кнопки действий -->
+                                    <a asp-controller="Applications" asp-action="Details" asp-route-id="@app.Id" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>Подробнее
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">
+                        @if (isOwnProfile)
+                        {
+                            <text>У вас пока нет приложений</text>
+                        }
+                        else
+                        {
+                            <text>У пользователя пока нет приложений</text>
+                        }
+                    </h5>
+                    @if (isOwnProfile)
+                    {
+                        <p class="text-muted">Добавьте свое первое приложение через меню выше!</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .app-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .card-img-top-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+}

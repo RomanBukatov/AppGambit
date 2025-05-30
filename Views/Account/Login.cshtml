@@ -1,0 +1,74 @@
+@model AppGambit.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Вход";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center mb-0">
+                        <i class="fas fa-sign-in-alt me-2"></i>Вход
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Login" method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                        
+                        @if (!string.IsNullOrEmpty(Context.Request.Query["error"]))
+                        {
+                            <div class="alert alert-danger">
+                                <strong>Ошибка авторизации Google:</strong> @Context.Request.Query["error"]
+                            </div>
+                        }
+                        
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="Введите ваш email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" placeholder="Введите пароль" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label"></label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Войти
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <p>Нет аккаунта? <a asp-action="Register">Зарегистрироваться</a></p>
+                    </div>
+
+                    <hr>
+                    
+                    <div class="text-center">
+                        <p class="text-muted">Или войти через:</p>
+                        <form asp-controller="Account" asp-action="ExternalLogin" method="post" style="display: inline;">
+                            <input type="hidden" name="provider" value="Google" />
+                            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                            <button type="submit" class="btn btn-danger me-2">
+                                <i class="fab fa-google me-2"></i>Google
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
