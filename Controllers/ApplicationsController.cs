@@ -317,32 +317,65 @@ namespace AppGambit.Controllers
         // POST: Applications/AddComment
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddComment(int applicationId, string content)
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> AddComment([FromBody] AddCommentRequest request)
         {
-            if (string.IsNullOrWhiteSpace(content))
+            try
             {
-                return RedirectToAction(nameof(Details), new { id = applicationId });
+                if (string.IsNullOrWhiteSpace(request.Content))
+                {
+                    return BadRequest(new { success = false, message = "Комментарий не может быть пустым" });
+                }
+
+                var content = request.Content.Trim();
+                if (content.Length > 1000)
+                {
+                    return BadRequest(new { success = false, message = "Комментарий не может быть длиннее 1000 символов" });
+                }
+
+                var userId = _userManager.GetUserId(User);
+                var comment = new Comment
+                {
+                    ApplicationId = request.ApplicationId,
+                    UserId = userId!,
+                    Content = content,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.Comments.Add(comment);
+                await _context.SaveChangesAsync();
+
+                // Получаем данные пользователя для ответа
+                var user = await _userManager.GetUserAsync(User);
+                
+                _logger.LogInformation("Комментарий успешно добавлен пользователем {UserId} для приложения {ApplicationId}", userId, request.ApplicationId);
+                return Ok(new {
+                    success = true,
+                    message = "Комментарий успешно добавлен",
+                    comment = new {
+                        id = comment.Id,
+                        content = comment.Content,
+                        createdAt = comment.CreatedAt,
+                        user = new {
+                            displayName = user?.DisplayName ?? user?.UserName ?? "Пользователь",
+                            profileImageUrl = user?.ProfileImageUrl,
+                            id = userId
+                        }
+                    }
+                });
             }
-
-            var userId = _userManager.GetUserId(User);
-            var comment = new Comment
+            catch (Exception ex)
             {
-                ApplicationId = applicationId,
-                UserId = userId!,
-                Content = content.Trim(),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Details), new { id = applicationId });
+                _logger.LogError(ex, "Ошибка при добавлении комментария для приложения {ApplicationId}", request.ApplicationId);
+                return StatusCode(500, new { success = false, message = "Произошла ошибка при добавлении комментария" });
+            }
         }
 
         // POST: Applications/UpdateComment
         [HttpPost]
         [Authorize]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentRequest request)
         {
             try
@@ -377,6 +410,7 @@ namespace AppGambit.Controllers
         // POST: Applications/DeleteComment
         [HttpPost]
         [Authorize]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentRequest request)
         {
             try
@@ -397,12 +431,14 @@ namespace AppGambit.Controllers
 
                 _context.Comments.Remove(comment);
                 await _context.SaveChangesAsync();
-                return Ok();
+                
+                _logger.LogInformation("Комментарий {CommentId} успешно удален пользователем {UserId}", request.CommentId, currentUserId);
+                return Ok(new { success = true, message = "Комментарий успешно удален" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при удалении комментария {CommentId}", request.CommentId);
-                return StatusCode(500);
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера при удалении комментария" });
             }
         }
     }
@@ -410,6 +446,12 @@ namespace AppGambit.Controllers
     public class UpdateCommentRequest
     {
         public int CommentId { get; set; }
+        public string Content { get; set; } = string.Empty;
+    }
+
+    public class AddCommentRequest
+    {
+        public int ApplicationId { get; set; }
         public string Content { get; set; } = string.Empty;
     }
 

@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using AppGambit.Data;
 using AppGambit.Models;
 using AppGambit.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +30,14 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// Настройка куки аутентификации (сессии сохраняются 14 дней)
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+});
 
 // Настройка аутентификации через Google
 builder.Services.AddAuthentication()

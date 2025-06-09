@@ -5,6 +5,22 @@
 }
 
 <div class="container">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
     <div class="row">
         <!-- Основная информация -->
         <div class="col-lg-8">
@@ -124,15 +140,46 @@
                         <h5 class="mb-0"><i class="fas fa-images me-2"></i>Скриншоты</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row g-3">
-                            @foreach (var screenshot in Model.Screenshots)
+                        <div id="screenshotsCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner mb-3">
+                                @for (int i = 0; i < Model.Screenshots.Count; i++)
+                                {
+                                    var screenshot = Model.Screenshots[i];
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="~/@screenshot" class="d-block w-100 rounded shadow-sm"
+                                             alt="Скриншот @(i + 1)"
+                                             style="max-height: 500px; object-fit: contain; cursor: pointer;"
+                                             data-bs-toggle="modal" data-bs-target="#screenshotModal" data-bs-image="~/@screenshot" />
+                                    </div>
+                                }
+                            </div>
+                            
+                            <!-- Индикаторы/миниатюры -->
+                            @if (Model.Screenshots.Count > 1)
                             {
-                                <div class="col-md-6">
-                                    <img src="~/@screenshot" class="img-fluid rounded shadow-sm" alt="Скриншот" 
-                                         data-bs-toggle="modal" data-bs-target="#screenshotModal" 
-                                         data-bs-image="~/@screenshot" style="cursor: pointer;">
+                                <div class="carousel-thumbnails d-flex justify-content-center gap-2 mb-3">
+                                    @for (int i = 0; i < Model.Screenshots.Count; i++)
+                                    {
+                                        var screenshot = Model.Screenshots[i];
+                                        <div class="thumbnail-item @(i == 0 ? "active" : "")" 
+                                             data-bs-target="#screenshotsCarousel" 
+                                             data-bs-slide-to="@i">
+                                            <img src="~/@screenshot" class="img-thumbnail" 
+                                                 style="width: 80px; height: 60px; object-fit: cover; cursor: pointer;" 
+                                                 alt="Миниатюра @(i + 1)" />
+                                        </div>
+                                    }
                                 </div>
                             }
+                            
+                            <button class="carousel-control-prev" type="button" data-bs-target="#screenshotsCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Предыдущий</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#screenshotsCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Следующий</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -147,12 +194,15 @@
                     <!-- Форма добавления комментария -->
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <form asp-action="AddComment" method="post" class="mb-4">
+                        <form id="comment-form" onsubmit="addComment(event)" class="mb-4">
                             <input type="hidden" name="applicationId" value="@Model.Id" />
                             <div class="mb-3">
-                                <textarea name="content" class="form-control" rows="3" placeholder="Напишите ваш комментарий..." required></textarea>
+                                <textarea name="content" class="form-control" rows="3" placeholder="Напишите ваш комментарий..." required maxlength="1000" id="commentTextarea"></textarea>
+                                <div class="form-text text-end">
+                                    <span id="commentCharCount">0</span>/1000 символов
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="submitCommentBtn">
                                 <i class="fas fa-paper-plane me-1"></i>Отправить
                             </button>
                         </form>
@@ -164,52 +214,91 @@
                     {
                         @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
                         {
-                            <div class="comment mb-3 pb-3 border-bottom" id="comment-@comment.Id">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <strong>@comment.User.DisplayName</strong>
-                                        @if (comment.UserId == ViewBag.CurrentUserId)
+                            <div class="comment mb-3 p-3 rounded" id="comment-@comment.Id" style="transition: all 0.3s ease; border: 1px solid transparent;">
+                                <div class="d-flex">
+                                    <!-- Аватарка -->
+                                    <div class="flex-shrink-0 me-3">
+                                        @if (!string.IsNullOrEmpty(comment.User.ProfileImageUrl))
                                         {
-                                            <span class="badge bg-primary ms-2">Автор</span>
+                                            <img src="~/@comment.User.ProfileImageUrl" class="rounded-circle" alt="@comment.User.DisplayName" style="width: 40px; height: 40px; object-fit: cover;">
                                         }
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <small class="text-muted">@comment.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
-                                        @if (User.Identity?.IsAuthenticated == true && (comment.UserId == ViewBag.CurrentUserId || ViewBag.IsAdmin == true))
+                                        else
                                         {
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <button class="dropdown-item" onclick="editComment(@comment.Id, '@Html.Raw(comment.Content.Replace("'", "\\'"))')">
-                                                            <i class="fas fa-edit me-2"></i>Редактировать
-                                                        </button>
-                                                    </li>
-                                                    <li>
-                                                        <button class="dropdown-item text-danger" onclick="deleteComment(@comment.Id)">
-                                                            <i class="fas fa-trash me-2"></i>Удалить
-                                                        </button>
-                                                    </li>
-                                                </ul>
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; font-weight: bold;">
+                                                @comment.User.DisplayName.Substring(0, 1).ToUpper()
                                             </div>
                                         }
                                     </div>
-                                </div>
-                                <div class="comment-content">
-                                    <p class="mb-0">@comment.Content</p>
-                                </div>
-                                <div class="comment-edit-form" style="display: none;">
-                                    <form onsubmit="updateComment(event, @comment.Id)">
-                                        <div class="mb-2">
-                                            <textarea class="form-control" rows="3" required>@comment.Content</textarea>
+                                    
+                                    <!-- Содержимое комментария -->
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <strong>@comment.User.DisplayName</strong>
+                                                @if (comment.UserId == ViewBag.CurrentUserId)
+                                                {
+                                                    <span class="badge bg-primary ms-2">Автор</span>
+                                                }
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <small class="text-muted">@comment.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                                @if (User.Identity?.IsAuthenticated == true && (comment.UserId == ViewBag.CurrentUserId || ViewBag.IsAdmin == true))
+                                                {
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <button class="dropdown-item" onclick="editComment(@comment.Id, '@Html.Raw(comment.Content.Replace("'", "\\'"))')">
+                                                                    <i class="fas fa-edit me-2"></i>Редактировать
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="dropdown-item text-danger" onclick="deleteComment(@comment.Id)">
+                                                                    <i class="fas fa-trash me-2"></i>Удалить
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
-                                            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit(@comment.Id)">Отмена</button>
+                                        
+                                        <!-- Содержимое комментария с возможностью сворачивания -->
+                                        <div class="comment-content">
+                                            @{
+                                                var isLongComment = comment.Content.Length > 300;
+                                                var shortContent = isLongComment ? comment.Content.Substring(0, 300) + "..." : comment.Content;
+                                            }
+                                            
+                                            @if (isLongComment)
+                                            {
+                                                <p class="mb-0 comment-text-short">@shortContent</p>
+                                                <p class="mb-0 comment-text-full" style="display: none;">@comment.Content</p>
+                                                <button class="btn btn-link btn-sm p-0 mt-1 text-primary expand-comment-btn" onclick="toggleComment(@comment.Id)">
+                                                    <i class="fas fa-chevron-down me-1"></i>Показать полностью
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <p class="mb-0">@comment.Content</p>
+                                            }
                                         </div>
-                                    </form>
+                                        
+                                        <!-- Форма редактирования -->
+                                        <div class="comment-edit-form" style="display: none;">
+                                            <form onsubmit="updateComment(event, @comment.Id)">
+                                                <div class="mb-2">
+                                                    <textarea class="form-control" rows="3" required maxlength="1000">@comment.Content</textarea>
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                                                    <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit(@comment.Id)">Отмена</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -373,6 +462,42 @@
             });
         });
 
+        // Обработка миниатюр карусели
+        document.addEventListener('DOMContentLoaded', function() {
+            var thumbnailItems = document.querySelectorAll('.thumbnail-item');
+            if (thumbnailItems.length > 0) {
+                thumbnailItems.forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        // Удаляем класс active у всех миниатюр
+                        thumbnailItems.forEach(function(thumb) {
+                            thumb.classList.remove('active');
+                        });
+                        
+                        // Добавляем класс active текущей миниатюре
+                        this.classList.add('active');
+                    });
+                });
+                
+                // Обновляем активную миниатюру при смене слайда
+                var carousel = document.getElementById('screenshotsCarousel');
+                if (carousel) {
+                    carousel.addEventListener('slid.bs.carousel', function(event) {
+                        var activeIndex = event.to;
+                        
+                        // Удаляем класс active у всех миниатюр
+                        thumbnailItems.forEach(function(thumb) {
+                            thumb.classList.remove('active');
+                        });
+                        
+                        // Добавляем класс active соответствующей миниатюре
+                        if (thumbnailItems[activeIndex]) {
+                            thumbnailItems[activeIndex].classList.add('active');
+                        }
+                    });
+                }
+            }
+        });
+
         // Функции для работы с комментариями
         function editComment(commentId, currentContent) {
             const commentDiv = document.getElementById(`comment-${commentId}`);
@@ -410,8 +535,7 @@
                 const response = await fetch('@Url.Action("UpdateComment", "Applications")', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         commentId: commentId,
@@ -443,30 +567,57 @@
                 return;
             }
 
+            // Сохраняем текущую позицию скролла
+            const scrollPosition = window.pageYOffset;
+
             try {
                 const response = await fetch('@Url.Action("DeleteComment", "Applications")', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         commentId: commentId
                     })
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
                 if (response.ok) {
                     const commentDiv = document.getElementById(`comment-${commentId}`);
-                    commentDiv.remove();
-                    
-                    // Обновляем счетчик комментариев
-                    const commentsHeader = document.querySelector('.card-header h5');
-                    const currentCount = parseInt(commentsHeader.textContent.match(/\((\d+)\)/)[1]);
-                    commentsHeader.innerHTML = `<i class="fas fa-comments me-2"></i>Комментарии (${currentCount - 1})`;
-                    
-                    showNotification('Комментарий удален', 'success');
+                    if (commentDiv) {
+                        commentDiv.remove();
+                        
+                        // Обновляем счетчик комментариев
+                        const commentsHeader = document.querySelector('.card-header h5');
+                        if (commentsHeader && commentsHeader.textContent.includes('(')) {
+                            const match = commentsHeader.textContent.match(/\((\d+)\)/);
+                            if (match) {
+                                const currentCount = parseInt(match[1]);
+                                commentsHeader.innerHTML = `<i class="fas fa-comments me-2"></i>Комментарии (${currentCount - 1})`;
+                            }
+                        }
+                        
+                        showNotification('Комментарий удален', 'success');
+                        
+                        // Восстанавливаем позицию скролла
+                        setTimeout(() => {
+                            window.scrollTo(0, scrollPosition);
+                        }, 100);
+                    } else {
+                        console.error('Comment div not found:', `comment-${commentId}`);
+                        showNotification('Комментарий удален', 'success');
+                        
+                        // Восстанавливаем позицию скролла
+                        setTimeout(() => {
+                            window.scrollTo(0, scrollPosition);
+                        }, 100);
+                    }
                 } else {
-                    throw new Error('Ошибка при удалении комментария');
+                    const errorText = await response.text();
+                    console.error('Server error:', response.status, errorText);
+                    throw new Error(`Ошибка сервера: ${response.status}`);
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -475,21 +626,303 @@
         }
 
         function showNotification(message, type) {
+            // Создаем или находим контейнер для уведомлений
+            let notificationContainer = document.getElementById('notification-container');
+            if (!notificationContainer) {
+                notificationContainer = document.createElement('div');
+                notificationContainer.id = 'notification-container';
+                notificationContainer.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none;';
+                document.body.appendChild(notificationContainer);
+            }
+            
             const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+            notification.style.cssText = 'min-width: 300px; padding-bottom: 0; pointer-events: auto; margin: 0; transform: translateX(100%); transition: transform 0.3s ease-out;';
             notification.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div style="padding: 12px 40px 8px 16px; display: flex; align-items: center; text-align: center; min-height: 40px;">
+                    <span style="flex: 1;">${message}</span>
+                    <button type="button" class="btn-close" onclick="removeNotification(this)" style="position: absolute; top: 8px; right: 8px;"></button>
+                </div>
+                <div class="progress" style="height: 4px; border-radius: 0 0 6px 6px;">
+                    <div class="progress-bar bg-${type === 'success' ? 'success' : 'danger'}" role="progressbar" style="width: 100%; transition: width 10s linear;"></div>
+                </div>
             `;
             
-            document.body.appendChild(notification);
+            notificationContainer.appendChild(notification);
             
+            // Анимация появления
             setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Запускаем анимацию progress bar
+            setTimeout(() => {
+                const progressBar = notification.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = '0%';
                 }
-            }, 5000);
+            }, 100);
+            
+            // Удаляем уведомление через 10 секунд с анимацией
+            setTimeout(() => {
+                removeNotification(notification);
+            }, 10000);
+        }
+        
+        function removeNotification(element) {
+            const notification = element.closest ? element.closest('.alert') : element;
+            if (notification && notification.parentElement) {
+                notification.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                        
+                        // Удаляем контейнер, если он пустой
+                        const container = document.getElementById('notification-container');
+                        if (container && container.children.length === 0) {
+                            container.remove();
+                        }
+                    }
+                }, 500);
+            }
+        }
+
+        // Счетчик символов для комментариев
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentTextarea = document.getElementById('commentTextarea');
+            const charCount = document.getElementById('commentCharCount');
+            
+            if (commentTextarea && charCount) {
+                function updateCharCount() {
+                    const currentLength = commentTextarea.value.length;
+                    charCount.textContent = currentLength;
+                    
+                    if (currentLength > 950) {
+                        charCount.style.color = 'red';
+                    } else if (currentLength > 800) {
+                        charCount.style.color = 'orange';
+                    } else {
+                        charCount.style.color = '';
+                    }
+                }
+                
+                commentTextarea.addEventListener('input', updateCharCount);
+                updateCharCount(); // Инициализация
+            }
+        });
+
+        // Функция для создания HTML комментария
+        function createCommentHtml(content, displayName, date, userId, commentId, profileImageUrl = null) {
+            const isLongComment = content.length > 300;
+            const shortContent = isLongComment ? content.substring(0, 300) + "..." : content;
+            const currentUserId = '@ViewBag.CurrentUserId';
+            const isCurrentUser = userId === currentUserId;
+            
+            const avatarHtml = profileImageUrl ?
+                `<img src="~/${profileImageUrl}" class="rounded-circle" alt="${displayName}" style="width: 40px; height: 40px; object-fit: cover;">` :
+                `<div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; font-weight: bold;">
+                    ${displayName.substring(0, 1).toUpperCase()}
+                </div>`;
+            
+            return `
+                <div class="comment mb-3 p-3 rounded" id="comment-${commentId}" style="transition: all 0.3s ease; border: 1px solid transparent;">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0 me-3">
+                            ${avatarHtml}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <strong>${displayName}</strong>
+                                    ${isCurrentUser ? '<span class="badge bg-primary ms-2">Автор</span>' : ''}
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">${date}</small>
+                                    ${isCurrentUser ? `
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <button class="dropdown-item" onclick="editComment('${commentId}', '${content.replace(/'/g, "\\'")}')">
+                                                        <i class="fas fa-edit me-2"></i>Редактировать
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item text-danger" onclick="deleteComment('${commentId}')">
+                                                        <i class="fas fa-trash me-2"></i>Удалить
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <div class="comment-content">
+                                ${isLongComment ? `
+                                    <p class="mb-0 comment-text-short">${shortContent}</p>
+                                    <p class="mb-0 comment-text-full" style="display: none;">${content}</p>
+                                    <button class="btn btn-link btn-sm p-0 mt-1 text-primary expand-comment-btn" onclick="toggleComment('${commentId}')">
+                                        <i class="fas fa-chevron-down me-1"></i>Показать полностью
+                                    </button>
+                                ` : `
+                                    <p class="mb-0">${content}</p>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Функция для добавления комментария через AJAX
+        async function addComment(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const submitBtn = document.getElementById('submitCommentBtn');
+            const textarea = document.getElementById('commentTextarea');
+            const content = textarea.value.trim();
+            const applicationId = form.querySelector('input[name="applicationId"]').value;
+            
+            if (!content) {
+                showNotification('Комментарий не может быть пустым', 'error');
+                return;
+            }
+            
+            if (content.length > 1000) {
+                showNotification('Комментарий не может быть длиннее 1000 символов', 'error');
+                return;
+            }
+            
+            // Блокируем кнопку отправки
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Отправка...';
+            
+            try {
+                const response = await fetch('@Url.Action("AddComment", "Applications")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        applicationId: parseInt(applicationId),
+                        content: content
+                    })
+                });
+                
+                if (response.ok) {
+                    const responseData = await response.json();
+                    
+                    // Очищаем форму
+                    textarea.value = '';
+                    document.getElementById('commentCharCount').textContent = '0';
+                    
+                    // Показываем уведомление
+                    showNotification('Комментарий успешно добавлен', 'success');
+                    
+                    // Обновляем счетчик комментариев
+                    const commentsHeader = document.querySelector('.card-header h5');
+                    if (commentsHeader && commentsHeader.textContent.includes('(')) {
+                        const match = commentsHeader.textContent.match(/\((\d+)\)/);
+                        if (match) {
+                            const currentCount = parseInt(match[1]);
+                            commentsHeader.innerHTML = `<i class="fas fa-comments me-2"></i>Комментарии (${currentCount + 1})`;
+                        }
+                    }
+                    
+                    // Создаем новый элемент комментария используя данные из ответа сервера
+                    const commentData = responseData.comment;
+                    const createdAt = new Date(commentData.createdAt);
+                    const formattedDate = createdAt.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    const newCommentHtml = createCommentHtml(
+                        commentData.content,
+                        commentData.user.displayName,
+                        formattedDate,
+                        commentData.user.id,
+                        commentData.id,
+                        commentData.user.profileImageUrl
+                    );
+                    
+                    // Находим форму комментариев и добавляем новый комментарий сразу после неё
+                    const commentForm = document.getElementById('comment-form');
+                    if (commentForm) {
+                        commentForm.insertAdjacentHTML('afterend', newCommentHtml);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    showNotification(errorData.message || 'Ошибка при добавлении комментария', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка при добавлении комментария', 'error');
+            } finally {
+                // Разблокируем кнопку
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Отправить';
+            }
+        }
+
+        // Функция для сворачивания/разворачивания комментариев
+        function toggleComment(commentId) {
+            const commentDiv = document.getElementById(`comment-${commentId}`);
+            const shortText = commentDiv.querySelector('.comment-text-short');
+            const fullText = commentDiv.querySelector('.comment-text-full');
+            const expandBtn = commentDiv.querySelector('.expand-comment-btn');
+            
+            if (shortText.style.display === 'none') {
+                // Сворачиваем
+                shortText.style.display = 'block';
+                fullText.style.display = 'none';
+                expandBtn.innerHTML = '<i class="fas fa-chevron-down me-1"></i>Показать полностью';
+            } else {
+                // Разворачиваем
+                shortText.style.display = 'none';
+                fullText.style.display = 'block';
+                expandBtn.innerHTML = '<i class="fas fa-chevron-up me-1"></i>Свернуть';
+            }
         }
     </script>
+
+    <style>
+        .comment:hover {
+            border-color: #007bff !important;
+            box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.2);
+        }
+        
+        .expand-comment-btn {
+            text-decoration: none !important;
+            font-size: 0.875rem;
+        }
+        
+        .expand-comment-btn:hover {
+            text-decoration: underline !important;
+        }
+        
+        /* Стили для уведомлений */
+        #notification-container {
+            max-width: 400px;
+        }
+        
+        #notification-container .alert {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            will-change: transform, opacity;
+        }
+        
+        body {
+            overflow-x: hidden;
+        }
+    </style>
 }
