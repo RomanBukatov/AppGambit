@@ -4,12 +4,219 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AppGambit</title>
-    <link rel="stylesheet" href="~/Identity/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Критические стили для полей ввода - ДОЛЖНЫ БЫТЬ ПЕРВЫМИ -->
+    <style>
+        /* Максимальный приоритет для полей ввода */
+        * input[type="text"],
+        * input[type="email"],
+        * input[type="password"],
+        * input[type="search"],
+        * input[type="url"],
+        * input[type="tel"],
+        * input[type="number"],
+        * textarea,
+        * .form-control,
+        * .form-select {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #ced4da !important;
+        }
+        
+        * input[type="text"]:focus,
+        * input[type="email"]:focus,
+        * input[type="password"]:focus,
+        * input[type="search"]:focus,
+        * input[type="url"]:focus,
+        * input[type="tel"]:focus,
+        * input[type="number"]:focus,
+        * textarea:focus,
+        * .form-control:focus,
+        * .form-select:focus {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+    </style>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AppGambit.styles.css" asp-append-version="true" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Критические исправления для полей ввода -->
+    <link rel="stylesheet" href="~/css/input-fix.css" asp-append-version="true" />
+    
+    <!-- Критические исправления стилей -->
+    <style>
+        /* Исправление цветов текста */
+        body {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+        }
+        
+        /* Исправление навигации */
+        .navbar-dark {
+            background-color: #007bff !important;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        /* Исправление карточек */
+        .card {
+            background-color: #fff !important;
+            color: #212529 !important;
+        }
+        
+        /* Исправление hero секции */
+        .hero-section {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+            color: white !important;
+        }
+        
+        /* Исправление иконок приложений */
+        .app-card .card-img-top {
+            height: 200px !important;
+            object-fit: cover !important;
+            width: 100% !important;
+        }
+        
+        /* Исправление футера */
+        .bg-dark {
+            background-color: #343a40 !important;
+            color: #fff !important;
+        }
+        
+        footer.bg-dark,
+        footer.bg-dark *,
+        footer.bg-dark p,
+        footer.bg-dark h5,
+        footer.bg-dark a {
+            color: #fff !important;
+        }
+        
+        footer.bg-dark a:hover {
+            color: #ccc !important;
+        }
+        
+        .text-muted {
+            color: #adb5bd !important;
+        }
+        
+        /* Исправление полей ввода с максимальной специфичностью */
+        body .form-control,
+        body .form-select,
+        body input[type="text"],
+        body input[type="email"],
+        body input[type="password"],
+        body input[type="search"],
+        body input[type="url"],
+        body input[type="tel"],
+        body input[type="number"],
+        body textarea,
+        .container .form-control,
+        .container .form-select,
+        .container input[type="text"],
+        .container input[type="email"],
+        .container input[type="password"],
+        .container input[type="search"],
+        .container input[type="url"],
+        .container input[type="tel"],
+        .container input[type="number"],
+        .container textarea {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border: 1px solid #ced4da !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+        
+        body .form-control:focus,
+        body .form-select:focus,
+        body input[type="text"]:focus,
+        body input[type="email"]:focus,
+        body input[type="password"]:focus,
+        body input[type="search"]:focus,
+        body input[type="url"]:focus,
+        body input[type="tel"]:focus,
+        body input[type="number"]:focus,
+        body textarea:focus,
+        .container .form-control:focus,
+        .container .form-select:focus,
+        .container input[type="text"]:focus,
+        .container input[type="email"]:focus,
+        .container input[type="password"]:focus,
+        .container input[type="search"]:focus,
+        .container input[type="url"]:focus,
+        .container input[type="tel"]:focus,
+        .container input[type="number"]:focus,
+        .container textarea:focus {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+            outline: none !important;
+        }
+        
+        /* Исправление placeholder текста */
+        .form-control::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #6c757d !important;
+            opacity: 1 !important;
+        }
+        
+        /* Исправление лейблов */
+        .form-label,
+        label {
+            color: #212529 !important;
+        }
+        
+        /* Исправление кнопок */
+        .btn-primary {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            color: #fff !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3 !important;
+            border-color: #0056b3 !important;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: #fff !important;
+        }
+    </style>
+    <!-- Font Awesome с оптимизацией -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous"></noscript>
 </head>
 <body>
+    <!-- Прелоадер для улучшения UX -->
+    <div class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
@@ -36,12 +243,20 @@
                                 <i class="fas fa-users me-1"></i>Пользователи
                             </a>
                         </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-warning" asp-controller="Admin" asp-action="Index">
+                                    <i class="fas fa-cog me-1"></i>Админ панель
+                                </a>
+                            </li>
+                        }
                     </ul>
                     
                     <!-- Поиск -->
                     <form class="d-flex me-3" asp-controller="Applications" asp-action="Search" method="get">
-                        <div class="input-group">
-                            <input class="form-control" type="search" name="search" placeholder="🔍 Найти приложения, пользователей..." value="@ViewBag.CurrentSearch">
+                        <div class="input-group search-input-group">
+                            <input class="form-control search-input" type="search" name="search" placeholder="🔍 Поиск..." value="@ViewBag.CurrentSearch">
                             <button class="btn btn-outline-light" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -76,9 +291,11 @@
         </div>
     </footer>
 
-    <script src="~/Identity/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

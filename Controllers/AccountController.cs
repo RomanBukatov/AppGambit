@@ -9,11 +9,13 @@ namespace AppGambit.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -55,6 +57,10 @@ namespace AppGambit.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            var googleClientId = _configuration["Authentication:Google:ClientId"];
+            var googleClientSecret = _configuration["Authentication:Google:ClientSecret"];
+            ViewBag.GoogleOAuthEnabled = !string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret);
+            
             return View();
         }
 

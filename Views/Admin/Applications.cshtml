@@ -1,0 +1,265 @@
+@model List<AdminApplicationViewModel>
+@{
+    ViewData["Title"] = "Управление приложениями";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    Управление приложениями
+                </h1>
+                <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Назад к панели
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Поиск -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" name="search" value="@ViewBag.CurrentSearch" 
+                                   placeholder="Поиск по названию, описанию, автору...">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Найти
+                                </button>
+                                <a href="@Url.Action("Applications", "Admin")" class="btn btn-outline-secondary">
+                                    Сбросить
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список приложений -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        Приложения 
+                        @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                        {
+                            <small class="text-muted">(поиск: "@ViewBag.CurrentSearch")</small>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Название</th>
+                                        <th>Описание</th>
+                                        <th>Автор</th>
+                                        <th>Дата создания</th>
+                                        <th>Скачивания</th>
+                                        <th>Комментарии</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var app in Model)
+                                    {
+                                        <tr>
+                                            <td>@app.Id</td>
+                                            <td>
+                                                <strong>@app.Name</strong>
+                                            </td>
+                                            <td>
+                                                @if (app.Description.Length > 50)
+                                                {
+                                                    <span title="@app.Description">@(app.Description.Substring(0, 50))...</span>
+                                                }
+                                                else
+                                                {
+                                                    @app.Description
+                                                }
+                                            </td>
+                                            <td>@app.UserDisplayName</td>
+                                            <td>@app.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge bg-info">@app.DownloadCount</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@app.CommentsCount</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("Details", "Applications", new { id = app.Id })" 
+                                                       class="btn btn-sm btn-outline-primary" title="Просмотр">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="confirmDelete(@app.Id, '@app.Name')" title="Удалить">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Пагинация -->
+                        @if (ViewBag.TotalPages > 1)
+                        {
+                            <nav aria-label="Навигация по страницам">
+                                <ul class="pagination justify-content-center">
+                                    @if (ViewBag.CurrentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Applications", new { search = ViewBag.CurrentSearch, page = ViewBag.CurrentPage - 1 })">
+                                                Предыдущая
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                                    {
+                                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Applications", new { search = ViewBag.CurrentSearch, page = i })">
+                                                @i
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Applications", new { search = ViewBag.CurrentSearch, page = ViewBag.CurrentPage + 1 })">
+                                                Следующая
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-mobile-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Приложения не найдены</h5>
+                            @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                            {
+                                <p class="text-muted">Попробуйте изменить критерии поиска</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить приложение <strong id="appName"></strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Это действие нельзя отменить. Будут удалены все связанные комментарии и оценки.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(appId, appName) {
+            document.getElementById('appName').textContent = appName;
+            document.getElementById('deleteForm').action = '@Url.Action("DeleteApplication", "Admin")/' + appId;
+            
+            // Добавляем скрытое поле с ID
+            const existingInput = document.querySelector('#deleteForm input[name="id"]');
+            if (existingInput) {
+                existingInput.remove();
+            }
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'id';
+            input.value = appId;
+            document.getElementById('deleteForm').appendChild(input);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        // Показываем уведомления
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                showNotification('@TempData["SuccessMessage"]', 'success');
+            });
+            </text>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                showNotification('@TempData["ErrorMessage"]', 'error');
+            });
+            </text>
+        }
+
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                <i class="fas ${icon} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+    </script>
+}

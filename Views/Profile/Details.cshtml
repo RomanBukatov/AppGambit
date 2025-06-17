@@ -6,7 +6,7 @@
     var isOwnProfile = ViewBag.IsOwnProfile;
 }
 
-<div class="container">
+<div class="container mt-4">
     <div class="row">
         <!-- Профиль пользователя -->
         <div class="col-lg-4">
@@ -183,7 +183,7 @@
                                     </div>
                                     
                                     <!-- Кнопки действий -->
-                                    <a asp-controller="Applications" asp-action="Details" asp-route-id="@app.Id" 
+                                    <a href="/app/@app.Name.Replace(" ", "-").ToLower()"
                                        class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye me-1"></i>Подробнее
                                     </a>

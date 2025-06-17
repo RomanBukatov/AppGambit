@@ -109,7 +109,7 @@
                                         <i class="fas fa-download me-1"></i>@app.DownloadCount
                                     </small>
                                 </div>
-                                <a asp-controller="Applications" asp-action="Details" asp-route-id="@app.Id" class="btn btn-primary mt-2">
+                                <a href="/app/@app.Name.Replace(" ", "-").ToLower()" class="btn btn-primary mt-2">
                                     Подробнее
                                 </a>
                             </div>
@@ -155,13 +155,13 @@
                                 <p class="card-text text-muted small flex-grow-1">@app.Description</p>
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
                                     <small class="text-muted">
-                                        Автор: <a href="/u/@app.User.DisplayName" class="text-decoration-none text-muted">@app.User.DisplayName</a>
+                                        Автор: <a href="/@app.User.DisplayName" class="text-decoration-none text-muted">@app.User.DisplayName</a>
                                     </small>
                                     <small class="text-muted">
                                         @app.CreatedAt.ToString("dd.MM.yyyy")
                                     </small>
                                 </div>
-                                <a asp-controller="Applications" asp-action="Details" asp-route-id="@app.Id" class="btn btn-primary mt-2">
+                                <a href="/app/@app.Name.Replace(" ", "-").ToLower()" class="btn btn-primary mt-2">
                                     Подробнее
                                 </a>
                             </div>
@@ -225,5 +225,54 @@
             position: relative;
             overflow: hidden;
         }
+        
+        .lazy-load {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .lazy-load.loaded {
+            opacity: 1;
+        }
     </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ленивая загрузка изображений
+            const lazyImages = document.querySelectorAll('.lazy-load');
+            
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.getAttribute('data-src');
+                        
+                        if (src) {
+                            img.src = src;
+                            img.classList.add('loaded');
+                            img.removeAttribute('data-src');
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px',
+                threshold: 0.01
+            });
+            
+            lazyImages.forEach(img => {
+                imageObserver.observe(img);
+            });
+            
+            // Предзагрузка критических ресурсов
+            const criticalImages = document.querySelectorAll('img[src*="icon"]');
+            criticalImages.forEach(img => {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.as = 'image';
+                link.href = img.src;
+                document.head.appendChild(link);
+            });
+        });
+    </script>
 }

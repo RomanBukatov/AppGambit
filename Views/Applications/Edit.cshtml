@@ -1,6 +1,6 @@
-@model AppGambit.ViewModels.CreateApplicationViewModel
+@model AppGambit.ViewModels.EditApplicationViewModel
 @{
-    ViewData["Title"] = "Добавить приложение";
+    ViewData["Title"] = "Редактировать приложение";
 }
 
 <div class="container mt-4">
@@ -9,11 +9,12 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="mb-0">
-                        <i class="fas fa-plus me-2"></i>Добавить новое приложение
+                        <i class="fas fa-edit me-2"></i>Редактировать приложение
                     </h3>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <!-- Основная информация -->
@@ -88,6 +89,14 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label asp-for="IconFile" class="form-label">Иконка приложения</label>
+                                @if (!string.IsNullOrEmpty(Model.CurrentIconUrl))
+                                {
+                                    <div class="mb-2">
+                                        <img src="~/@Model.CurrentIconUrl" class="img-thumbnail" 
+                                             style="max-width: 100px; max-height: 100px;" alt="Текущая иконка">
+                                        <div class="form-text">Текущая иконка</div>
+                                    </div>
+                                }
                                 <input asp-for="IconFile" type="file" id="iconFile" class="form-control"
                                        accept="image/*,.ico" />
                                 <div class="form-text">Рекомендуемый размер: 128x128 пикселей. Форматы: JPG, PNG, GIF, ICO</div>
@@ -97,6 +106,15 @@
                             
                             <div class="col-md-6 mb-3">
                                 <label asp-for="AppFile" class="form-label">Файл приложения</label>
+                                @if (!string.IsNullOrEmpty(Model.CurrentDownloadUrl))
+                                {
+                                    <div class="mb-2">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-file me-2"></i>
+                                            Текущий файл загружен
+                                        </div>
+                                    </div>
+                                }
                                 <input asp-for="AppFile" type="file" id="appFile" class="form-control"
                                        accept=".exe,.msi,.zip,.rar,.7z,.apk" />
                                 <div class="form-text">Поддерживаемые форматы: EXE, MSI, ZIP, RAR, 7Z, APK (необязательно)</div>
@@ -105,22 +123,48 @@
                             </div>
                             
                             <div class="col-12 mb-3">
-                                <label asp-for="Screenshots" class="form-label">Скриншоты</label>
+                                <label class="form-label">Текущие скриншоты</label>
+                                @if (Model.CurrentScreenshots != null && Model.CurrentScreenshots.Any())
+                                {
+                                    <div id="currentScreenshots" class="row g-2 mb-3">
+                                        @for (int i = 0; i < Model.CurrentScreenshots.Count; i++)
+                                        {
+                                            <div class="col-md-3 col-sm-4 col-6">
+                                                <div class="position-relative">
+                                                    <img src="~/@Model.CurrentScreenshots[i]" class="img-thumbnail w-100"
+                                                         alt="Скриншот @(i + 1)" style="height: 100px; object-fit: cover;">
+                                                    <div class="position-absolute top-0 end-0 p-1">
+                                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                                onclick="markScreenshotForDeletion('@Model.CurrentScreenshots[i]', this)" 
+                                                                title="Удалить">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                
+                                <label asp-for="Screenshots" class="form-label">Добавить новые скриншоты</label>
                                 <input asp-for="Screenshots" type="file" id="screenshots" class="form-control"
                                        accept="image/*" multiple />
-                                <div class="form-text">Можно загрузить несколько изображений. Форматы: JPG, PNG, GIF</div>
+                                <div class="form-text">Можно загрузить несколько изображений. Форматы: JPG, PNG, GIF, ICO</div>
                                 <div id="screenshotsPreview" class="mt-2 row g-2"></div>
                                 <span asp-validation-for="Screenshots" class="text-danger"></span>
+                                
+                                <!-- Скрытые поля для удаления скриншотов -->
+                                <div id="screenshotsToDeleteContainer"></div>
                             </div>
                         </div>
 
                         <!-- Кнопки -->
                         <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>Отмена
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i>Создать приложение
+                                <i class="fas fa-save me-1"></i>Сохранить изменения
                             </button>
                         </div>
                     </form>
@@ -146,6 +190,14 @@
             const screenshotsPreview = document.getElementById('screenshotsPreview');
             
             let tags = [];
+            let screenshotsToDelete = [];
+
+            // Инициализация существующих тегов
+            const existingTags = '@Html.Raw(Model.TagsString ?? "")';
+            if (existingTags) {
+                tags = existingTags.split(',').map(t => t.trim()).filter(t => t);
+                updateTagsDisplay();
+            }
 
             // Обработка тегов
             tagsInput.addEventListener('keypress', function(e) {
@@ -220,7 +272,7 @@
                 }
             });
 
-            // Предпросмотр скриншотов с возможностью перестановки
+            // Предпросмотр новых скриншотов
             let screenshotFiles = [];
             
             screenshots.addEventListener('change', function(e) {
@@ -240,22 +292,14 @@
                             col.innerHTML = `
                                 <div class="position-relative">
                                     <img src="${e.target.result}" class="img-thumbnail w-100"
-                                         alt="Скриншот ${index + 1}" style="height: 100px; object-fit: cover;">
+                                         alt="Новый скриншот ${index + 1}" style="height: 100px; object-fit: cover;">
                                     <div class="position-absolute top-0 end-0 p-1">
-                                        <div class="btn-group-vertical" role="group">
-                                            ${index > 0 ? `<button type="button" class="btn btn-sm btn-primary" onclick="moveScreenshot(${index}, ${index - 1})" title="Переместить влево">
-                                                <i class="fas fa-arrow-left"></i>
-                                            </button>` : ''}
-                                            ${index < screenshotFiles.length - 1 ? `<button type="button" class="btn btn-sm btn-primary" onclick="moveScreenshot(${index}, ${index + 1})" title="Переместить вправо">
-                                                <i class="fas fa-arrow-right"></i>
-                                            </button>` : ''}
-                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeScreenshot(${index})" title="Удалить">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeNewScreenshot(${index})" title="Удалить">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
-                                    <div class="position-absolute bottom-0 start-0 bg-dark text-white px-2 py-1 small">
-                                        ${index + 1}
+                                    <div class="position-absolute bottom-0 start-0 bg-success text-white px-2 py-1 small">
+                                        Новый
                                     </div>
                                 </div>
                             `;
@@ -265,20 +309,10 @@
                     }
                 });
                 
-                // Обновляем input с файлами
                 updateFileInput();
             }
             
-            function moveScreenshot(fromIndex, toIndex) {
-                if (toIndex >= 0 && toIndex < screenshotFiles.length) {
-                    const temp = screenshotFiles[fromIndex];
-                    screenshotFiles[fromIndex] = screenshotFiles[toIndex];
-                    screenshotFiles[toIndex] = temp;
-                    updateScreenshotsPreview();
-                }
-            }
-            
-            function removeScreenshot(index) {
+            function removeNewScreenshot(index) {
                 screenshotFiles.splice(index, 1);
                 updateScreenshotsPreview();
             }
@@ -288,10 +322,44 @@
                 screenshotFiles.forEach(file => dt.items.add(file));
                 screenshots.files = dt.files;
             }
+
+            // Функция для пометки скриншота на удаление
+            window.markScreenshotForDeletion = function(screenshotUrl, button) {
+                const container = button.closest('.col-md-3, .col-sm-4, .col-6');
+                container.style.opacity = '0.5';
+                button.innerHTML = '<i class="fas fa-undo"></i>';
+                button.title = 'Отменить удаление';
+                button.onclick = function() { unmarkScreenshotForDeletion(screenshotUrl, button, container); };
+                
+                screenshotsToDelete.push(screenshotUrl);
+                updateScreenshotsToDeleteInputs();
+            };
+
+            // Функция для отмены удаления скриншота
+            window.unmarkScreenshotForDeletion = function(screenshotUrl, button, container) {
+                container.style.opacity = '1';
+                button.innerHTML = '<i class="fas fa-times"></i>';
+                button.title = 'Удалить';
+                button.onclick = function() { markScreenshotForDeletion(screenshotUrl, button); };
+                
+                screenshotsToDelete = screenshotsToDelete.filter(url => url !== screenshotUrl);
+                updateScreenshotsToDeleteInputs();
+            };
+
+            function updateScreenshotsToDeleteInputs() {
+                const container = document.getElementById('screenshotsToDeleteContainer');
+                container.innerHTML = '';
+                screenshotsToDelete.forEach((url, index) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `ScreenshotsToDelete[${index}]`;
+                    input.value = url;
+                    container.appendChild(input);
+                });
+            }
             
-            // Глобальные функции для кнопок
-            window.moveScreenshot = moveScreenshot;
-            window.removeScreenshot = removeScreenshot;
+            // Глобальные функции
+            window.removeNewScreenshot = removeNewScreenshot;
         });
     </script>
 }

@@ -36,6 +36,7 @@ namespace AppGambit.Controllers
             }
 
             var user = await _userManager.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.DisplayName == displayName);
 
             if (user == null)
@@ -43,25 +44,12 @@ namespace AppGambit.Controllers
                 return NotFound();
             }
 
-            return RedirectToAction("Details", new { id = user.Id });
-        }
-
-        // GET: Profile/Details/5 (по ID пользователя)
-        public async Task<IActionResult> Details(int id)
-        {
-            // Поиск пользователя по индексу (можно использовать хеш от ID)
-            var users = await _userManager.Users.ToListAsync();
-            if (id <= 0 || id > users.Count)
-            {
-                return NotFound();
-            }
-
-            var user = users[id - 1]; // Индекс начинается с 1
-            
+            // Показываем профиль напрямую, без редиректа
             var userApplications = await _context.Applications
                 .Include(a => a.Ratings)
                 .Where(a => a.UserId == user.Id)
                 .OrderByDescending(a => a.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
 
             // Статистика профиля
@@ -72,10 +60,78 @@ namespace AppGambit.Controllers
                 : 0;
             var totalComments = await _context.Comments
                 .Where(c => c.UserId == user.Id)
+                .AsNoTracking()
                 .CountAsync();
 
             ViewBag.Applications = userApplications;
-            ViewBag.UserIndex = id;
+            ViewBag.UserIndex = 0;
+            ViewBag.IsOwnProfile = User.Identity?.IsAuthenticated == true &&
+                                  _userManager.GetUserId(User) == user.Id;
+            
+            // Статистика
+            ViewBag.TotalApplications = totalApplications;
+            ViewBag.TotalDownloads = totalDownloads;
+            ViewBag.AverageRating = Math.Round(averageRating, 1);
+            ViewBag.TotalComments = totalComments;
+
+            return View("Details", user);
+        }
+
+        // GET: Profile/Details/5 (по ID пользователя) или Profile/Details/{displayName}
+        public async Task<IActionResult> Details(string id)
+        {
+            User? user = null;
+            
+            // Проверяем, является ли id GUID (ID пользователя)
+            if (Guid.TryParse(id, out Guid userId))
+            {
+                // Поиск пользователя по ID
+                user = await _userManager.FindByIdAsync(id);
+            }
+            // Проверяем, является ли id числом (старый формат)
+            else if (int.TryParse(id, out int numericId))
+            {
+                // Поиск пользователя по индексу (старый способ для совместимости)
+                var users = await _userManager.Users.AsNoTracking().ToListAsync();
+                if (numericId <= 0 || numericId > users.Count)
+                {
+                    return NotFound();
+                }
+                user = users[numericId - 1]; // Индекс начинается с 1
+            }
+            else
+            {
+                // Поиск пользователя по displayName
+                user = await _userManager.Users
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.DisplayName == id);
+            }
+            
+            if (user == null)
+            {
+                return NotFound();
+            }
+            
+            var userApplications = await _context.Applications
+                .Include(a => a.Ratings)
+                .Where(a => a.UserId == user.Id)
+                .OrderByDescending(a => a.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Статистика профиля
+            var totalApplications = userApplications.Count;
+            var totalDownloads = userApplications.Sum(a => a.DownloadCount);
+            var averageRating = userApplications.Any() && userApplications.SelectMany(a => a.Ratings).Any()
+                ? userApplications.SelectMany(a => a.Ratings).Average(r => r.Value)
+                : 0;
+            var totalComments = await _context.Comments
+                .Where(c => c.UserId == user.Id)
+                .AsNoTracking()
+                .CountAsync();
+
+            ViewBag.Applications = userApplications;
+            ViewBag.UserIndex = int.TryParse(id, out int parsedId) ? parsedId : 0;
             ViewBag.IsOwnProfile = User.Identity?.IsAuthenticated == true &&
                                   _userManager.GetUserId(User) == user.Id;
             
@@ -154,11 +210,8 @@ namespace AppGambit.Controllers
                 var updateResult = await _userManager.UpdateAsync(user);
                 if (updateResult.Succeeded)
                 {
-                    // Получение индекса пользователя для редиректа
-                    var users = await _userManager.Users.ToListAsync();
-                    var userIndex = users.FindIndex(u => u.Id == user.Id) + 1;
-                    
-                    return RedirectToAction(nameof(Details), new { id = userIndex });
+                    // Перенаправляем на профиль по displayName
+                    return RedirectToAction(nameof(Details), new { id = user.DisplayName });
                 }
 
                 foreach (var error in updateResult.Errors)
@@ -184,10 +237,11 @@ namespace AppGambit.Controllers
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                usersQuery = usersQuery.Where(u => 
-                    u.DisplayName!.Contains(query) || 
-                    u.UserName!.Contains(query) ||
-                    u.Email!.Contains(query));
+                query = query.Trim();
+                usersQuery = usersQuery.Where(u =>
+                    (u.DisplayName != null && EF.Functions.Like(u.DisplayName, $"%{query}%")) ||
+                    (u.UserName != null && EF.Functions.Like(u.UserName, $"%{query}%")) ||
+                    (u.Email != null && EF.Functions.Like(u.Email, $"%{query}%")));
             }
 
             var totalUsers = await usersQuery.CountAsync();
@@ -197,13 +251,32 @@ namespace AppGambit.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            // Создание списка с индексами
+            // Создание списка с индексами и статистикой
             var allUsers = await _userManager.Users.ToListAsync();
-            var usersWithIndexes = users.Select(user => new
+            var usersWithIndexes = new List<dynamic>();
+            
+            foreach (var user in users)
             {
-                User = user,
-                Index = allUsers.FindIndex(u => u.Id == user.Id) + 1
-            }).ToList();
+                // Получаем статистику для каждого пользователя
+                var userApps = await _context.Applications
+                    .Include(a => a.Ratings)
+                    .Where(a => a.UserId == user.Id)
+                    .ToListAsync();
+                
+                var totalDownloads = userApps.Sum(a => a.DownloadCount);
+                var averageRating = userApps.Any() && userApps.SelectMany(a => a.Ratings).Any()
+                    ? userApps.SelectMany(a => a.Ratings).Average(r => r.Value)
+                    : 0;
+
+                usersWithIndexes.Add(new
+                {
+                    User = user,
+                    Index = allUsers.FindIndex(u => u.Id == user.Id) + 1,
+                    ApplicationsCount = userApps.Count,
+                    TotalDownloads = totalDownloads,
+                    AverageRating = Math.Round(averageRating, 1)
+                });
+            }
 
             ViewBag.UsersWithIndexes = usersWithIndexes;
             ViewBag.CurrentQuery = query;
@@ -223,11 +296,8 @@ namespace AppGambit.Controllers
                 return NotFound();
             }
 
-            // Получение индекса текущего пользователя
-            var users = await _userManager.Users.ToListAsync();
-            var userIndex = users.FindIndex(u => u.Id == user.Id) + 1;
-
-            return RedirectToAction(nameof(Details), new { id = userIndex });
+            // Перенаправляем на профиль по displayName
+            return RedirectToAction(nameof(Details), new { id = user.DisplayName });
         }
     }
 }

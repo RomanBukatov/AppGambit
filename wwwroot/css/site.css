@@ -1,12 +1,22 @@
+/* Критические стили для первоначальной загрузки */
 html {
   font-size: 14px;
   height: 100%;
+  position: relative;
+  min-height: 100%;
 }
 
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  margin-bottom: 60px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  /* Оптимизация рендеринга */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @media (min-width: 768px) {
@@ -15,19 +25,10 @@ body {
   }
 }
 
+/* Оптимизированные фокусы */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
+  outline: none;
 }
 
 /* Типография */
@@ -69,29 +70,35 @@ p {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Карточки приложений */
+/* Карточки приложений - оптимизированные анимации */
 .app-card {
   border: none;
   border-radius: 16px;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
+  /* Оптимизация для GPU */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .app-card:hover {
-  transform: translateY(-8px);
+  transform: translate3d(0, -8px, 0);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 .app-card .card-img-top {
-  transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.3s ease;
   height: 200px;
   object-fit: cover;
+  /* Оптимизация для GPU */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .app-card:hover .card-img-top {
-  transform: scale(1.05);
+  transform: scale3d(1.05, 1.05, 1);
 }
 
 .app-card .card-body {
@@ -114,31 +121,35 @@ p {
   overflow: hidden;
 }
 
-/* Карточки пользователей */
+/* Карточки пользователей - оптимизированные */
 .user-card {
   border: none;
   border-radius: 12px;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .user-card:hover {
-  transform: translateY(-5px);
+  transform: translate3d(0, -5px, 0);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Карточки категорий */
+/* Карточки категорий - оптимизированные */
 .category-card {
   border: none;
   border-radius: 12px;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-decoration: none;
   color: inherit;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .category-card:hover {
-  transform: translateY(-3px);
+  transform: translate3d(0, -3px, 0);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   text-decoration: none;
   color: inherit;
@@ -198,6 +209,7 @@ p {
   background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
   border: none;
   box-shadow: 0 4px 10px rgba(40, 167, 69, 0.25);
+
 }
 
 .btn-success:hover {
@@ -492,20 +504,115 @@ p {
 }
 
 /* Поиск в навигации */
-.navbar .input-group .form-control {
-  min-width: 250px;
+.search-input-group {
+  min-width: 280px;
+}
+
+.search-input {
+  min-width: 220px;
+  font-size: 0.9rem;
+}
+
+.search-input::placeholder {
+  font-size: 0.85rem;
+  color: #6c757d;
 }
 
 @media (max-width: 992px) {
-  .navbar .input-group .form-control {
-    min-width: 200px;
+  .search-input-group {
+    min-width: 240px;
+  }
+  
+  .search-input {
+    min-width: 180px;
+    font-size: 0.85rem;
+  }
+  
+  .search-input::placeholder {
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 768px) {
-  .navbar .input-group .form-control {
-    min-width: 150px;
+  .search-input-group {
+    min-width: 200px;
   }
+  
+  .search-input {
+    min-width: 140px;
+    font-size: 0.8rem;
+  }
+  
+  .search-input::placeholder {
+    content: "🔍";
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .search-input-group {
+    min-width: 160px;
+  }
+  
+  .search-input {
+    min-width: 100px;
+    font-size: 0.75rem;
+  }
+  
+  .search-input::placeholder {
+    content: "🔍";
+    font-size: 0.7rem;
+  }
+}
+
+/* Дополнительные стили для улучшения поиска */
+.search-results-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-highlight {
+  background-color: #fff3cd;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Улучшенная анимация для карточек поиска */
+.search-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e9ecef;
+}
+
+.search-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+/* Стили для пустого состояния поиска */
+.search-empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.search-empty-state .fa-4x {
+  opacity: 0.3;
+  margin-bottom: 1.5rem;
+}
+
+.search-empty-state h3 {
+  color: #6c757d;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.search-empty-state p {
+  color: #adb5bd;
+  font-size: 1.1rem;
 }
 
 /* Футер */
@@ -634,4 +741,111 @@ footer {
 
 .border-radius-xl {
   border-radius: 16px;
+}
+/* Оптимизация загрузки изображений */
+img {
+  /* Ленивая загрузка изображений */
+  loading: lazy;
+  /* Оптимизация декодирования */
+  decoding: async;
+}
+
+/* Плейсхолдер для изображений во время загрузки */
+.img-placeholder {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+/* Оптимизация для критических изображений */
+.critical-img {
+  loading: eager;
+}
+
+/* Прелоадер для страниц */
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.page-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+  .app-card:hover,
+  .user-card:hover,
+  .category-card:hover {
+    transform: none;
+  }
+  
+  /* Отключаем анимации на мобильных для экономии батареи */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Prefetch для критических ресурсов */
+.prefetch-hint {
+  display: none;
+}
+/* Оптимизации производительности - ленивая загрузка */
+.lazy-load {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.lazy-load.loaded {
+  opacity: 1;
+}
+
+/* Оптимизация анимаций */
+.app-card {
+  transition: transform 0.2s ease-in-out;
+  will-change: transform;
+}
+
+.app-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Предотвращение layout shift */
+.card-img-top-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+  .app-card:hover {
+    transform: none;
+  }
 }

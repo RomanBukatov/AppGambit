@@ -4,8 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <EnableStaticWebAssets>true</EnableStaticWebAssets>
+    <EnableStaticWebAssets>false</EnableStaticWebAssets>
     <GenerateStaticWebAssetsManifest>false</GenerateStaticWebAssetsManifest>
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+    <GenerateStaticWebAssetsPropsFile>false</GenerateStaticWebAssetsPropsFile>
+    <EnableStaticWebAssetsCompression>false</EnableStaticWebAssetsCompression>
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
 
   <ItemGroup>

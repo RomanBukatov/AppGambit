@@ -1,25 +1,29 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<AppGambit.Models.User> SignInManager
 @inject UserManager<AppGambit.Models.User> UserManager
+@inject AppGambit.Services.IUserCacheService UserCacheService
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item dropdown">
         @{
-            var currentUser = await UserManager.GetUserAsync(User);
+            var userId = UserManager.GetUserId(User);
+            var currentUser = await UserCacheService.GetCurrentUserAsync(userId);
+            var displayName = currentUser?.DisplayName ?? currentUser?.Email?.Split('@')[0] ?? User.Identity?.Name ?? "Пользователь";
+            var profileImageUrl = currentUser?.ProfileImageUrl;
         }
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            @if (!string.IsNullOrEmpty(currentUser?.ProfileImageUrl))
+            @if (!string.IsNullOrEmpty(profileImageUrl))
             {
-                <img src="~/@currentUser.ProfileImageUrl" class="rounded-circle me-1"
+                <img src="~/@profileImageUrl" class="rounded-circle me-1"
                      alt="Профиль" style="width: 24px; height: 24px; object-fit: cover;">
             }
             else
             {
                 <i class="fas fa-user-circle me-1"></i>
             }
-            @(currentUser?.DisplayName ?? currentUser?.Email ?? User.Identity?.Name)
+            @displayName
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <li>

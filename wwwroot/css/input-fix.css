@@ -1,0 +1,59 @@
+/* Критические исправления для полей ввода */
+/* Максимальный приоритет */
+
+html body input[type="text"],
+html body input[type="email"], 
+html body input[type="password"],
+html body input[type="search"],
+html body input[type="url"],
+html body input[type="tel"],
+html body input[type="number"],
+html body textarea,
+html body .form-control,
+html body .form-select,
+html body select {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #ced4da !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+}
+
+html body input[type="text"]:focus,
+html body input[type="email"]:focus, 
+html body input[type="password"]:focus,
+html body input[type="search"]:focus,
+html body input[type="url"]:focus,
+html body input[type="tel"]:focus,
+html body input[type="number"]:focus,
+html body textarea:focus,
+html body .form-control:focus,
+html body .form-select:focus,
+html body select:focus {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    outline: none !important;
+}
+
+/* Исправление placeholder */
+html body input::placeholder,
+html body textarea::placeholder {
+    color: #6c757d !important;
+    opacity: 1 !important;
+}
+
+/* Исправление автозаполнения */
+html body input:-webkit-autofill,
+html body input:-webkit-autofill:hover,
+html body input:-webkit-autofill:focus,
+html body input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+    -webkit-text-fill-color: #000000 !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+}

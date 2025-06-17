@@ -51,18 +51,21 @@
                         <p>Нет аккаунта? <a asp-action="Register">Зарегистрироваться</a></p>
                     </div>
 
-                    <hr>
-                    
-                    <div class="text-center">
-                        <p class="text-muted">Или войти через:</p>
-                        <form asp-controller="Account" asp-action="ExternalLogin" method="post" style="display: inline;">
-                            <input type="hidden" name="provider" value="Google" />
-                            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-                            <button type="submit" class="btn btn-danger me-2">
-                                <i class="fab fa-google me-2"></i>Google
-                            </button>
-                        </form>
-                    </div>
+                    @if (ViewBag.GoogleOAuthEnabled == true)
+                    {
+                        <hr>
+                        
+                        <div class="text-center">
+                            <p class="text-muted">Или войти через:</p>
+                            <form asp-controller="Account" asp-action="ExternalLogin" method="post" style="display: inline;">
+                                <input type="hidden" name="provider" value="Google" />
+                                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                                <button type="submit" class="btn btn-danger me-2">
+                                    <i class="fab fa-google me-2"></i>Google
+                                </button>
+                            </form>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

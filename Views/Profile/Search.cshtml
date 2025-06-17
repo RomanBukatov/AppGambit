@@ -3,7 +3,7 @@
     var usersWithIndexes = ViewBag.UsersWithIndexes as List<dynamic>;
 }
 
-<div class="container">
+<div class="container mt-4">
     <div class="row">
         <div class="col-12">
             <h1 class="h2 mb-4">
@@ -31,9 +31,9 @@
             <!-- Результаты поиска -->
             @if (!string.IsNullOrEmpty(ViewBag.CurrentQuery as string))
             {
-                <div class="alert alert-info">
+                <div class="search-results-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    Результаты поиска для: <strong>"@ViewBag.CurrentQuery"</strong>
+                    Результаты поиска для: <strong class="search-highlight">"@ViewBag.CurrentQuery"</strong>
                     <a asp-action="Search" class="btn btn-sm btn-outline-primary ms-2">
                         <i class="fas fa-times me-1"></i>Сбросить
                     </a>
@@ -48,6 +48,9 @@
                     {
                         var user = item.User as AppGambit.Models.User;
                         var index = item.Index;
+                        var applicationsCount = item.ApplicationsCount;
+                        var totalDownloads = item.TotalDownloads;
+                        var averageRating = item.AverageRating;
                         
                         <div class="col-lg-4 col-md-6">
                             <div class="card h-100 shadow-sm user-card">
@@ -56,12 +59,12 @@
                                     <div class="mb-3">
                                         @if (!string.IsNullOrEmpty(user.ProfileImageUrl))
                                         {
-                                            <img src="~/@user.ProfileImageUrl" class="rounded-circle img-fluid" 
+                                            <img src="~/@user.ProfileImageUrl" class="rounded-circle img-fluid"
                                                  alt="@user.DisplayName" style="width: 80px; height: 80px; object-fit: cover;">
                                         }
                                         else
                                         {
-                                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center text-white" 
+                                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center text-white"
                                                  style="width: 80px; height: 80px; font-size: 2rem;">
                                                 <i class="fas fa-user"></i>
                                             </div>
@@ -79,18 +82,18 @@
                                     <div class="row text-center mb-3">
                                         <div class="col-4">
                                             <div class="border-end">
-                                                <h6 class="text-primary mb-0">@ViewBag.UserStats?[user.Id]?.ApplicationsCount ?? 0</h6>
+                                                <h6 class="text-primary mb-0">@applicationsCount</h6>
                                                 <small class="text-muted">Приложений</small>
                                             </div>
                                         </div>
                                         <div class="col-4">
                                             <div class="border-end">
-                                                <h6 class="text-success mb-0">@ViewBag.UserStats?[user.Id]?.TotalDownloads ?? 0</h6>
+                                                <h6 class="text-success mb-0">@totalDownloads</h6>
                                                 <small class="text-muted">Скачиваний</small>
                                             </div>
                                         </div>
                                         <div class="col-4">
-                                            <h6 class="text-warning mb-0">@ViewBag.UserStats?[user.Id]?.AverageRating?.ToString("F1") ?? "0.0"</h6>
+                                            <h6 class="text-warning mb-0">@averageRating</h6>
                                             <small class="text-muted">Рейтинг</small>
                                         </div>
                                     </div>
@@ -102,7 +105,7 @@
                                     </p>
 
                                     <!-- Кнопка просмотра профиля -->
-                                    <a asp-action="Details" asp-route-id="@index" class="btn btn-primary">
+                                    <a asp-action="Details" asp-route-id="@user.DisplayName" class="btn btn-primary">
                                         <i class="fas fa-eye me-1"></i>Посмотреть профиль
                                     </a>
                                 </div>

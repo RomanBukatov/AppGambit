@@ -8,7 +8,7 @@ namespace AppGambit.Services
     {
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<ImageService> _logger;
-        private readonly string[] _allowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+        private readonly string[] _allowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".ico" };
 
         public ImageService(IWebHostEnvironment environment, ILogger<ImageService> logger)
         {
@@ -29,30 +29,49 @@ namespace AppGambit.Services
                 var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", folder);
                 Directory.CreateDirectory(uploadsFolder);
 
-                var fileName = $"{Guid.NewGuid()}.webp";
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var imageStream = image.OpenReadStream())
-                using (var imageSharp = await Image.LoadAsync(imageStream))
+                var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+                
+                // Для ICO файлов сохраняем в оригинальном формате
+                if (extension == ".ico")
                 {
-                    // Изменение размера если необходимо
-                    if (imageSharp.Width > maxWidth || imageSharp.Height > maxHeight)
+                    var fileName = $"{Guid.NewGuid()}.ico";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        imageSharp.Mutate(x => x.Resize(new ResizeOptions
+                        await image.CopyToAsync(fileStream);
+                    }
+                    
+                    return Path.Combine("uploads", folder, fileName).Replace("\\", "/");
+                }
+                else
+                {
+                    // Для остальных форматов конвертируем в WebP
+                    var fileName = $"{Guid.NewGuid()}.webp";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var imageStream = image.OpenReadStream())
+                    using (var imageSharp = await Image.LoadAsync(imageStream))
+                    {
+                        // Изменение размера если необходимо
+                        if (imageSharp.Width > maxWidth || imageSharp.Height > maxHeight)
                         {
-                            Size = new Size(maxWidth, maxHeight),
-                            Mode = ResizeMode.Max
-                        }));
+                            imageSharp.Mutate(x => x.Resize(new ResizeOptions
+                            {
+                                Size = new Size(maxWidth, maxHeight),
+                                Mode = ResizeMode.Max
+                            }));
+                        }
+
+                        // Сохранение в формате WebP
+                        await imageSharp.SaveAsync(filePath, new WebpEncoder
+                        {
+                            Quality = 85
+                        });
                     }
 
-                    // Сохранение в формате WebP
-                    await imageSharp.SaveAsync(filePath, new WebpEncoder
-                    {
-                        Quality = 85
-                    });
+                    return Path.Combine("uploads", folder, fileName).Replace("\\", "/");
                 }
-
-                return Path.Combine("uploads", folder, fileName).Replace("\\", "/");
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ using AppGambit.Models;
 using AppGambit.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AppGambit.Controllers
 {
@@ -10,23 +11,26 @@ namespace AppGambit.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IMemoryCache cache)
         {
             _logger = logger;
             _context = context;
+            _cache = cache;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                // Получаем реальные данные из БД
-                var totalApps = await _context.Applications.CountAsync();
-                var totalUsers = await _context.Users.CountAsync();
+                // Простые оптимизированные запросы с AsNoTracking
+                var totalApps = await _context.Applications.AsNoTracking().CountAsync();
+                var totalUsers = await _context.Users.AsNoTracking().CountAsync();
 
-                // Популярные приложения (по количеству скачиваний)
+                // Популярные приложения
                 var popularApps = await _context.Applications
+                    .AsNoTracking()
                     .Include(a => a.User)
                     .Include(a => a.Ratings)
                     .OrderByDescending(a => a.DownloadCount)
@@ -35,13 +39,15 @@ namespace AppGambit.Controllers
 
                 // Новые приложения
                 var newApps = await _context.Applications
+                    .AsNoTracking()
                     .Include(a => a.User)
                     .OrderByDescending(a => a.CreatedAt)
                     .Take(8)
                     .ToListAsync();
 
-                // Категории с количеством приложений
+                // Категории
                 var categories = await _context.Applications
+                    .AsNoTracking()
                     .Where(a => !string.IsNullOrEmpty(a.Category))
                     .GroupBy(a => a.Category)
                     .Select(g => new { Category = g.Key, Count = g.Count() })

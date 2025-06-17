@@ -30,6 +30,14 @@ namespace AppGambit.Data
                 entity.Property(e => e.Version).IsRequired();
                 entity.Property(e => e.DownloadUrl);
                 
+                // Индексы для улучшения производительности
+                entity.HasIndex(e => e.Name);
+                entity.HasIndex(e => e.Category);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => new { e.Name, e.Category });
+                entity.HasIndex(e => new { e.CreatedAt, e.Category });
+                
                 // Конвертация списков в JSON
                 entity.Property(e => e.Screenshots)
                     .HasConversion(
@@ -53,6 +61,11 @@ namespace AppGambit.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
+
+                // Индексы для улучшения производительности
+                entity.HasIndex(e => e.ApplicationId);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => new { e.ApplicationId, e.CreatedAt });
 
                 entity.HasOne(e => e.Application)
                     .WithMany(a => a.Comments)
