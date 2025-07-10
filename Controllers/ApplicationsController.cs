@@ -556,7 +556,7 @@ namespace AppGambit.Controllers
                 }
 
                 var currentUserId = _userManager.GetUserId(User);
-                if (comment.UserId != currentUserId && !User.IsInRole("Admin"))
+                if (comment.UserId != currentUserId)
                 {
                     return Forbid();
                 }
@@ -591,7 +591,7 @@ namespace AppGambit.Controllers
                 }
 
                 var currentUserId = _userManager.GetUserId(User);
-                if (comment.UserId != currentUserId && !User.IsInRole("Admin"))
+                if (comment.UserId != currentUserId)
                 {
                     return Forbid();
                 }

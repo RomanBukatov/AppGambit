@@ -249,11 +249,14 @@
                                                             <i class="fas fa-ellipsis-v"></i>
                                                         </button>
                                                         <ul class="dropdown-menu">
-                                                            <li>
-                                                                <button class="dropdown-item" onclick="editComment(@comment.Id, '@Html.Raw(comment.Content.Replace("'", "\\'"))')">
-                                                                    <i class="fas fa-edit me-2"></i>Редактировать
-                                                                </button>
-                                                            </li>
+                                                            @if (comment.UserId == ViewBag.CurrentUserId)
+                                                            {
+                                                                <li>
+                                                                    <button class="dropdown-item" onclick="editComment(@comment.Id, '@Html.Raw(comment.Content.Replace("'", "\\'"))')">
+                                                                        <i class="fas fa-edit me-2"></i>Редактировать
+                                                                    </button>
+                                                                </li>
+                                                            }
                                                             <li>
                                                                 <button class="dropdown-item text-danger" onclick="deleteComment(@comment.Id)">
                                                                     <i class="fas fa-trash me-2"></i>Удалить
