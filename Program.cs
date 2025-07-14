@@ -164,31 +164,26 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "application",
-    pattern: "app/{id:int}",
+    pattern: "Applications/{id:int}",
     defaults: new { controller = "Applications", action = "Details" });
 
 app.MapControllerRoute(
     name: "applicationByName",
-    pattern: "app/{name}",
+    pattern: "Applications/{name}",
     defaults: new { controller = "Applications", action = "DetailsByName" });
 
+// Короткий маршрут для поиска пользователей
 app.MapControllerRoute(
-    name: "profileByDisplayName",
-    pattern: "u/{displayName}",
-    defaults: new { controller = "Profile", action = "ByDisplayName" });
-
-app.MapControllerRoute(
-    name: "profileByDisplayNameDirect",
-    pattern: "Profile/{displayName}",
-    defaults: new { controller = "Profile", action = "Details" },
-    constraints: new { displayName = @"^(?!Edit|Search|MyProfile).*$" });
+    name: "search",
+    pattern: "Search",
+    defaults: new { controller = "Profile", action = "Search" });
 
 // Короткий маршрут для профилей пользователей - должен быть последним перед default
 app.MapControllerRoute(
     name: "userProfileShort",
     pattern: "{displayName}",
     defaults: new { controller = "Profile", action = "ByDisplayName" },
-    constraints: new { displayName = @"^(?!Home|Applications|Profile|Account|Cache|Admin|api|css|js|lib|favicon\.ico|sw\.js).*$" });
+    constraints: new { displayName = @"^(?!Home|Applications|Profile|Account|Cache|Admin|Search|api|css|js|lib|favicon\.ico|sw\.js).*$" });
 
 app.MapControllerRoute(
     name: "default",

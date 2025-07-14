@@ -84,7 +84,7 @@ p {
 }
 
 .app-card:hover {
-  transform: translate3d(0, -8px, 0);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
@@ -98,7 +98,7 @@ p {
 }
 
 .app-card:hover .card-img-top {
-  transform: scale3d(1.05, 1.05, 1);
+  /* Убираем эффект увеличения изображения */
 }
 
 .app-card .card-body {
@@ -132,7 +132,7 @@ p {
 }
 
 .user-card:hover {
-  transform: translate3d(0, -5px, 0);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -149,7 +149,7 @@ p {
 }
 
 .category-card:hover {
-  transform: translate3d(0, -3px, 0);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   text-decoration: none;
   color: inherit;
@@ -201,7 +201,7 @@ p {
 
 .btn-primary:hover {
   background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-  transform: translateY(-2px);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 6px 15px rgba(0, 123, 255, 0.35);
 }
 
@@ -214,7 +214,7 @@ p {
 
 .btn-success:hover {
   background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
-  transform: translateY(-2px);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 6px 15px rgba(40, 167, 69, 0.35);
 }
 
@@ -278,7 +278,7 @@ p {
   background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
   color: white;
   text-decoration: none;
-  transform: translateY(-1px);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
@@ -469,7 +469,7 @@ p {
 
 .thumbnail-item:hover {
   opacity: 0.9;
-  transform: translateY(-2px);
+  /* Убираем эффект подпрыгивания */
 }
 
 /* Пагинация */
@@ -484,7 +484,7 @@ p {
 .pagination .page-link:hover {
   background-color: #e9ecef;
   border-color: #adb5bd;
-  transform: translateY(-1px);
+  /* Убираем эффект подпрыгивания */
 }
 
 .pagination .page-item.active .page-link {
@@ -588,7 +588,7 @@ p {
 }
 
 .search-card:hover {
-  transform: translateY(-4px);
+  /* Убираем эффект подпрыгивания */
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   border-color: #007bff;
 }
@@ -834,7 +834,7 @@ img {
 }
 
 .app-card:hover {
-  transform: translateY(-5px);
+  /* Убираем эффект подпрыгивания */
 }
 
 /* Предотвращение layout shift */

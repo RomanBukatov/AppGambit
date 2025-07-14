@@ -96,7 +96,7 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="@Url.Action("ByDisplayName", "Profile", new { displayName = user.DisplayName })" 
+                                                    <a href="/@user.DisplayName"
                                                        class="btn btn-sm btn-outline-primary" title="Просмотр профиля">
                                                         <i class="fas fa-user"></i>
                                                     </a>
@@ -238,7 +238,7 @@
             
             // Обновляем ссылку на профиль
             const profileLink = document.getElementById('viewProfileLink');
-            profileLink.href = '@Url.Action("ByDisplayName", "Profile", new { displayName = "__DISPLAY_NAME__" })'.replace('__DISPLAY_NAME__', encodeURIComponent(displayName));
+            profileLink.href = '/' + encodeURIComponent(displayName);
             
             const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
             modal.show();

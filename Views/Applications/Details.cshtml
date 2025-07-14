@@ -218,23 +218,25 @@
                                 <div class="d-flex">
                                     <!-- Аватарка -->
                                     <div class="flex-shrink-0 me-3">
-                                        @if (!string.IsNullOrEmpty(comment.User.ProfileImageUrl))
-                                        {
-                                            <img src="~/@comment.User.ProfileImageUrl" class="rounded-circle" alt="@comment.User.DisplayName" style="width: 40px; height: 40px; object-fit: cover;">
-                                        }
-                                        else
-                                        {
-                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; font-weight: bold;">
-                                                @comment.User.DisplayName.Substring(0, 1).ToUpper()
-                                            </div>
-                                        }
+                                        <a href="/@comment.User.DisplayName" style="text-decoration: none;">
+                                            @if (!string.IsNullOrEmpty(comment.User.ProfileImageUrl))
+                                            {
+                                                <img src="~/@comment.User.ProfileImageUrl" class="rounded-circle" alt="@comment.User.DisplayName" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;">
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; font-weight: bold; cursor: pointer;">
+                                                    @comment.User.DisplayName.Substring(0, 1).ToUpper()
+                                                </div>
+                                            }
+                                        </a>
                                     </div>
                                     
                                     <!-- Содержимое комментария -->
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div class="d-flex align-items-center">
-                                                <strong>@comment.User.DisplayName</strong>
+                                                <strong><a href="/@comment.User.DisplayName" style="text-decoration: none; color: inherit;">@comment.User.DisplayName</a></strong>
                                                 @if (comment.UserId == ViewBag.CurrentUserId)
                                                 {
                                                     <span class="badge bg-primary ms-2">Автор</span>
@@ -823,10 +825,10 @@
             const isCurrentUser = userId === currentUserId;
             
             const avatarHtml = profileImageUrl ?
-                `<img src="/${profileImageUrl}" class="rounded-circle" alt="${displayName}" style="width: 40px; height: 40px; object-fit: cover;">` :
-                `<div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; font-weight: bold;">
+                `<a href="/${displayName}" style="text-decoration: none;"><img src="/${profileImageUrl}" class="rounded-circle" alt="${displayName}" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;"></a>` :
+                `<a href="/${displayName}" style="text-decoration: none;"><div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; font-weight: bold; cursor: pointer;">
                     ${displayName.substring(0, 1).toUpperCase()}
-                </div>`;
+                </div></a>`;
             
             return `
                 <div class="comment mb-3 p-3 rounded" id="comment-${commentId}" style="transition: all 0.3s ease; border: 1px solid transparent;">
@@ -837,7 +839,7 @@
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center">
-                                    <strong>${displayName}</strong>
+                                    <strong><a href="/${displayName}" style="text-decoration: none; color: inherit;">${displayName}</a></strong>
                                     ${isCurrentUser ? '<span class="badge bg-primary ms-2">Автор</span>' : ''}
                                 </div>
                                 <div class="d-flex align-items-center gap-2">

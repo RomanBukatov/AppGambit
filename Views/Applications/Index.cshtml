@@ -82,11 +82,14 @@
                         <div class="card-img-top-wrapper">
                             @if (!string.IsNullOrEmpty(app.IconUrl))
                             {
-                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23f8f9fa'/%3E%3C/svg%3E"
-                                     data-src="~/@app.IconUrl"
-                                     class="card-img-top lazy-load"
+                                <img src="~/@app.IconUrl"
+                                     class="card-img-top"
                                      alt="@app.Name"
-                                     style="height: 200px; object-fit: cover;">
+                                     style="height: 200px; object-fit: cover;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="card-img-placeholder d-none align-items-center justify-content-center bg-light" style="height: 200px;">
+                                    <i class="fas fa-desktop fa-4x text-muted"></i>
+                                </div>
                             }
                             else
                             {
@@ -227,7 +230,7 @@
         }
         
         .app-card:hover {
-            transform: translateY(-5px);
+            /* Убираем эффект подпрыгивания */
         }
         
         .card-img-top-wrapper {
@@ -235,55 +238,8 @@
             overflow: hidden;
         }
         
-        .lazy-load {
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .lazy-load.loaded {
-            opacity: 1;
-        }
+        /* Убираем стили для ленивой загрузки */
     </style>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ленивая загрузка изображений
-            const lazyImages = document.querySelectorAll('.lazy-load');
-            
-            if ('IntersectionObserver' in window) {
-                const imageObserver = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const img = entry.target;
-                            const src = img.getAttribute('data-src');
-                            
-                            if (src) {
-                                img.src = src;
-                                img.classList.add('loaded');
-                                img.removeAttribute('data-src');
-                                observer.unobserve(img);
-                            }
-                        }
-                    });
-                }, {
-                    rootMargin: '50px 0px',
-                    threshold: 0.01
-                });
-                
-                lazyImages.forEach(img => {
-                    imageObserver.observe(img);
-                });
-            } else {
-                // Fallback для старых браузеров
-                lazyImages.forEach(img => {
-                    const src = img.getAttribute('data-src');
-                    if (src) {
-                        img.src = src;
-                        img.classList.add('loaded');
-                        img.removeAttribute('data-src');
-                    }
-                });
-            }
-        });
-    </script>
+    <!-- Убираем скрипт ленивой загрузки -->
 }

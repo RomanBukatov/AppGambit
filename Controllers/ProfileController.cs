@@ -211,7 +211,7 @@ namespace AppGambit.Controllers
                 if (updateResult.Succeeded)
                 {
                     // Перенаправляем на профиль по displayName
-                    return RedirectToAction(nameof(Details), new { id = user.DisplayName });
+                    return RedirectToAction(nameof(ByDisplayName), new { displayName = user.DisplayName });
                 }
 
                 foreach (var error in updateResult.Errors)
@@ -297,7 +297,7 @@ namespace AppGambit.Controllers
             }
 
             // Перенаправляем на профиль по displayName
-            return RedirectToAction(nameof(Details), new { id = user.DisplayName });
+            return RedirectToAction(nameof(ByDisplayName), new { displayName = user.DisplayName });
         }
     }
 }
