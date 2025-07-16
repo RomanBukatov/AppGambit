@@ -92,28 +92,44 @@ namespace AppGambit.Controllers
                 // Оптимизированный запрос с минимальными включениями
                 var query = _context.Applications.AsNoTracking();
 
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    search = search.Trim();
-                    query = query.Where(a =>
-                        a.Name.Contains(search) ||
-                        a.Description.Contains(search) ||
-                        (a.DetailedDescription != null && a.DetailedDescription.Contains(search)) ||
-                        (a.Category != null && a.Category.Contains(search)));
-                }
-
+                // Фильтруем по категории на уровне базы данных
                 if (!string.IsNullOrEmpty(category))
                 {
                     query = query.Where(a => a.Category == category);
                 }
 
-                var totalItems = await query.CountAsync();
+                // Получаем все приложения (с учетом категории, если указана)
+                var allApplications = await query.ToListAsync();
                 
-                // Получаем только необходимые данные одним запросом
-                var applications = await query
+                // Если есть поиск, фильтруем по тексту ИЛИ тегам в памяти
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    search = search.Trim();
+                    allApplications = allApplications.Where(a =>
+                        // Поиск по тексту
+                        a.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                        a.Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                        (a.DetailedDescription != null && a.DetailedDescription.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                        (a.Category != null && a.Category.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                        // Поиск по тегам
+                        (a.Tags != null && a.Tags.Any(t => t.Contains(search, StringComparison.OrdinalIgnoreCase)))
+                    ).ToList();
+                }
+                
+                var totalItems = allApplications.Count;
+                
+                // Применяем сортировку и пагинацию
+                var paginatedApplicationIds = allApplications
                     .OrderByDescending(a => a.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
+                    .Select(a => a.Id)
+                    .ToList();
+                
+                // Получаем только необходимые данные одним запросом для отфильтрованных приложений
+                var applications = await _context.Applications
+                    .AsNoTracking()
+                    .Where(a => paginatedApplicationIds.Contains(a.Id))
                     .Join(_context.Users, a => a.UserId, u => u.Id, (a, u) => new { App = a, User = u })
                     .Select(x => new ApplicationListItemViewModel
                     {
@@ -133,6 +149,11 @@ namespace AppGambit.Controllers
                         DislikesCount = 0
                     })
                     .ToListAsync();
+                
+                // Сортируем результаты в соответствии с порядком ID из paginatedApplicationIds
+                applications = applications
+                    .OrderBy(a => paginatedApplicationIds.IndexOf(a.Id))
+                    .ToList();
 
                 // Получаем рейтинги отдельно для найденных приложений
                 if (applications.Any())
@@ -676,7 +697,7 @@ namespace AppGambit.Controllers
             }
 
             var currentUserId = _userManager.GetUserId(User);
-            if (application.UserId != currentUserId && !User.IsInRole("Admin"))
+            if (application.UserId != currentUserId)
             {
                 return Forbid();
             }
@@ -717,7 +738,7 @@ namespace AppGambit.Controllers
             }
 
             var currentUserId = _userManager.GetUserId(User);
-            if (application.UserId != currentUserId && !User.IsInRole("Admin"))
+            if (application.UserId != currentUserId)
             {
                 return Forbid();
             }

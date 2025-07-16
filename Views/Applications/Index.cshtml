@@ -112,7 +112,7 @@
                                 <div class="mb-2">
                                     @foreach (var tag in app.Tags.Take(3))
                                     {
-                                        <span class="badge bg-light text-dark me-1">#@tag</span>
+                                        <a href="@Url.Action("Index", "Applications", new { search = tag })" class="badge bg-light text-dark me-1 text-decoration-none">#@tag</a>
                                     }
                                     @if (app.Tags.Count > 3)
                                     {

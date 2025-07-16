@@ -336,8 +336,8 @@
                 </div>
             </div>
 
-            <!-- Редактирование (только для автора или админа) -->
-            @if (User.Identity?.IsAuthenticated == true && (ViewBag.CurrentUserId == Model.UserId || ViewBag.IsAdmin == true))
+            <!-- Редактирование (только для автора) -->
+            @if (User.Identity?.IsAuthenticated == true && ViewBag.CurrentUserId == Model.UserId)
             {
                 <div class="card mb-4">
                     <div class="card-body text-center">

@@ -169,6 +169,13 @@ app.MapControllerRoute(
     pattern: "Applications/{id:int}",
     defaults: new { controller = "Applications", action = "Details" });
 
+// Маршруты для стандартных действий должны быть перед маршрутом с именем
+app.MapControllerRoute(
+    name: "applicationActions",
+    pattern: "Applications/{action}",
+    defaults: new { controller = "Applications" },
+    constraints: new { action = @"^(Create|Index|Search)$" });
+
 app.MapControllerRoute(
     name: "applicationByName",
     pattern: "Applications/{name}",
