@@ -30,7 +30,7 @@
                         <div class="col-md-3 text-center">
                             @if (!string.IsNullOrEmpty(Model.IconUrl))
                             {
-                                <img src="~/@Model.IconUrl" class="img-fluid rounded mb-3" alt="@Model.Name" style="max-height: 150px;">
+                                <img src="@Model.IconUrl" class="img-fluid rounded mb-3" alt="@Model.Name" style="max-height: 150px;">
                             }
                             else
                             {
@@ -62,7 +62,7 @@
                                     }
                                 </div>
                                 <div class="col-sm-6">
-                                    <strong>Скачиваний:</strong> @Model.DownloadCount
+                                    <strong>Скачиваний:</strong> <span id="download-count">@Model.DownloadCount</span>
                                 </div>
                             </div>
 
@@ -146,10 +146,10 @@
                                 {
                                     var screenshot = Model.Screenshots[i];
                                     <div class="carousel-item @(i == 0 ? "active" : "")">
-                                        <img src="~/@screenshot" class="d-block w-100 rounded shadow-sm"
+                                        <img src="@screenshot" class="d-block w-100 rounded shadow-sm"
                                              alt="Скриншот @(i + 1)"
                                              style="max-height: 500px; object-fit: contain; cursor: pointer;"
-                                             data-bs-toggle="modal" data-bs-target="#screenshotModal" data-bs-image="/@screenshot" />
+                                             data-bs-toggle="modal" data-bs-target="#screenshotModal" data-bs-image="@screenshot" />
                                     </div>
                                 }
                             </div>
@@ -164,8 +164,8 @@
                                         <div class="thumbnail-item @(i == 0 ? "active" : "")" 
                                              data-bs-target="#screenshotsCarousel" 
                                              data-bs-slide-to="@i">
-                                            <img src="~/@screenshot" class="img-thumbnail" 
-                                                 style="width: 80px; height: 60px; object-fit: cover; cursor: pointer;" 
+                                            <img src="@screenshot" class="img-thumbnail"
+                                                 style="width: 80px; height: 60px; object-fit: cover; cursor: pointer;"
                                                  alt="Миниатюра @(i + 1)" />
                                         </div>
                                     }
@@ -221,7 +221,7 @@
                                         <a href="/@comment.User.DisplayName" style="text-decoration: none;">
                                             @if (!string.IsNullOrEmpty(comment.User.ProfileImageUrl))
                                             {
-                                                <img src="~/@comment.User.ProfileImageUrl" class="rounded-circle" alt="@comment.User.DisplayName" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;">
+                                                <img src="@comment.User.ProfileImageUrl" class="rounded-circle" alt="@comment.User.DisplayName" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;">
                                             }
                                             else
                                             {
@@ -325,12 +325,11 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <h5 class="card-title">Скачать приложение</h5>
-                    <form asp-action="Download" method="post" class="d-grid">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <button type="submit" class="btn btn-success btn-lg">
+                    <div class="d-grid">
+                        <a asp-action="Download" asp-route-id="@Model.Id" class="btn btn-success btn-lg" id="download-btn" data-author="@Model.User.DisplayName">
                             <i class="fas fa-download me-2"></i>Скачать
-                        </button>
-                    </form>
+                        </a>
+                    </div>
                     <small class="text-muted mt-2 d-block">
                         Размер: @(Model.FileSize / 1024 / 1024) МБ
                     </small>
@@ -418,7 +417,7 @@
                     </div>
                     <div class="info-item">
                         <strong>Всего скачиваний:</strong><br>
-                        <small class="text-muted">@Model.DownloadCount</small>
+                        <small class="text-muted" id="total-downloads">@Model.DownloadCount</small>
                     </div>
                 </div>
             </div>
@@ -566,6 +565,46 @@
                         }
                     });
                 }
+            }
+        });
+
+        // Обработка клика по кнопке скачивания
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadBtn = document.getElementById('download-btn');
+            const downloadCountElement = document.getElementById('download-count');
+            const totalDownloadsElement = document.getElementById('total-downloads');
+            
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function() {
+                    const authorName = this.getAttribute('data-author');
+                    
+                    // Увеличиваем счётчики на странице сразу после клика
+                    setTimeout(function() {
+                        // Обновляем основной счётчик
+                        if (downloadCountElement) {
+                            const currentCount = parseInt(downloadCountElement.textContent) || 0;
+                            downloadCountElement.textContent = currentCount + 1;
+                        }
+                        
+                        // Обновляем счётчик внизу страницы
+                        if (totalDownloadsElement) {
+                            const totalCount = parseInt(totalDownloadsElement.textContent) || 0;
+                            totalDownloadsElement.textContent = totalCount + 1;
+                        }
+                        
+                        // Проверяем, находимся ли мы на странице профиля автора
+                        // и обновляем статистику профиля, если да
+                        const currentPath = window.location.pathname;
+                        if (authorName && currentPath === '/' + authorName) {
+                            // Мы на странице профиля автора, обновляем статистику скачиваний
+                            const profileDownloadsElement = document.getElementById('profile-total-downloads');
+                            if (profileDownloadsElement) {
+                                const profileDownloads = parseInt(profileDownloadsElement.textContent) || 0;
+                                profileDownloadsElement.textContent = profileDownloads + 1;
+                            }
+                        }
+                    }, 1000); // Небольшая задержка, чтобы убедиться, что запрос отправлен
+                });
             }
         });
 

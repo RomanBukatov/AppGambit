@@ -121,6 +121,8 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 // Регистрация пользовательских сервисов
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IDatabaseImageService, DatabaseImageService>();
+builder.Services.AddScoped<ImageMigrationService>();
 builder.Services.AddScoped<IUserCacheService, UserCacheService>();
 
 // Настройка загрузки файлов
@@ -193,6 +195,10 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     AppGambit.Data.SeedData.InitializeAsync(scope.ServiceProvider).Wait();
+    
+    // Миграция существующих изображений в базу данных (отключена для тестирования)
+    // var migrationService = scope.ServiceProvider.GetRequiredService<ImageMigrationService>();
+    // migrationService.MigrateAllImagesAsync().Wait();
 }
 
 app.Run();

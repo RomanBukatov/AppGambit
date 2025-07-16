@@ -13,17 +13,20 @@ namespace AppGambit.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly IImageService _imageService;
+        private readonly IDatabaseImageService _databaseImageService;
         private readonly ILogger<ProfileController> _logger;
 
         public ProfileController(
             ApplicationDbContext context,
             UserManager<User> userManager,
             IImageService imageService,
+            IDatabaseImageService databaseImageService,
             ILogger<ProfileController> logger)
         {
             _context = context;
             _userManager = userManager;
             _imageService = imageService;
+            _databaseImageService = databaseImageService;
             _logger = logger;
         }
 
@@ -192,17 +195,24 @@ namespace AppGambit.Controllers
                 }
 
                 // Обновление изображения профиля
-                if (profileImage != null && _imageService.IsValidImageType(profileImage))
+                if (profileImage != null && _databaseImageService.IsValidImageType(profileImage))
                 {
-                    // Удаление старого изображения
-                    if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                    // Удаление старого изображения из БД
+                    if (user.ProfileImageId.HasValue)
                     {
-                        var oldImagePath = user.ProfileImageUrl;
-                        // Асинхронное удаление в фоне
-                        _ = Task.Run(async () => await _imageService.ConvertToWebPAsync(oldImagePath));
+                        await _databaseImageService.DeleteImageAsync(user.ProfileImageId.Value);
                     }
 
-                    user.ProfileImageUrl = await _imageService.SaveImageAsync(profileImage, "profiles", 200, 200);
+                    // Сохранение нового изображения в БД
+                    var profileImageData = await _databaseImageService.SaveImageAsync(
+                        profileImage,
+                        ImageType.UserProfile,
+                        userId: user.Id,
+                        maxWidth: 200,
+                        maxHeight: 200);
+                    
+                    user.ProfileImageId = profileImageData.Id;
+                    user.ProfileImageUrl = $"/Image/Profile/{user.Id}";
                 }
 
                 user.UpdatedAt = DateTime.UtcNow;

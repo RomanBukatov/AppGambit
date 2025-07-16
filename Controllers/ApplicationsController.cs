@@ -16,6 +16,7 @@ namespace AppGambit.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IFileService _fileService;
         private readonly IImageService _imageService;
+        private readonly IDatabaseImageService _databaseImageService;
         private readonly ILogger<ApplicationsController> _logger;
         private readonly IMemoryCache _cache;
         private readonly IWebHostEnvironment _environment;
@@ -25,6 +26,7 @@ namespace AppGambit.Controllers
             UserManager<User> userManager,
             IFileService fileService,
             IImageService imageService,
+            IDatabaseImageService databaseImageService,
             ILogger<ApplicationsController> logger,
             IMemoryCache cache,
             IWebHostEnvironment environment)
@@ -33,6 +35,7 @@ namespace AppGambit.Controllers
             _userManager = userManager;
             _fileService = fileService;
             _imageService = imageService;
+            _databaseImageService = databaseImageService;
             _logger = logger;
             _cache = cache;
             _environment = environment;
@@ -181,7 +184,6 @@ namespace AppGambit.Controllers
         }
 
         // GET: Applications/DetailsByName/{name}
-        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "name" })]
         public async Task<IActionResult> DetailsByName(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -367,11 +369,25 @@ namespace AppGambit.Controllers
 
                 _logger.LogInformation("Создание приложения для пользователя {UserId}: {AppName}", userId, application.Name);
 
-                // Сохранение иконки
-                if (model.IconFile != null && _imageService.IsValidImageType(model.IconFile))
+                // Сначала сохраняем приложение, чтобы получить ID
+                _logger.LogInformation("Добавление приложения в контекст БД: {AppName}", application.Name);
+                _context.Applications.Add(application);
+                await _context.SaveChangesAsync();
+
+                // Теперь сохраняем иконку в БД с ID приложения
+                if (model.IconFile != null && _databaseImageService.IsValidImageType(model.IconFile))
                 {
-                    _logger.LogInformation("Сохранение иконки для приложения {AppName}", application.Name);
-                    application.IconUrl = await _imageService.SaveImageAsync(model.IconFile, "icons", 128, 128);
+                    _logger.LogInformation("Сохранение иконки для приложения {AppName} в БД", application.Name);
+                    var iconImage = await _databaseImageService.SaveImageAsync(
+                        model.IconFile,
+                        ImageType.ApplicationIcon,
+                        application.Id,
+                        maxWidth: 128,
+                        maxHeight: 128);
+                    application.IconImageId = iconImage.Id;
+                    
+                    // Сохраняем также старый URL для совместимости
+                    application.IconUrl = $"/Image/{iconImage.Id}";
                 }
 
                 // Сохранение файла приложения - делаем необязательным
@@ -391,26 +407,29 @@ namespace AppGambit.Controllers
                     }
                 }
 
-                // Сохранение скриншотов
+                // Сохранение скриншотов в БД
                 if (model.Screenshots != null && model.Screenshots.Any())
                 {
                     var screenshotUrls = new List<string>();
+                    
                     foreach (var screenshot in model.Screenshots.Where(s => s.Length > 0))
                     {
-                        if (_imageService.IsValidImageType(screenshot))
+                        if (_databaseImageService.IsValidImageType(screenshot))
                         {
-                            _logger.LogInformation("Сохранение скриншота для приложения {AppName}", application.Name);
-                            var url = await _imageService.SaveImageAsync(screenshot, "screenshots");
-                            screenshotUrls.Add(url);
+                            _logger.LogInformation("Сохранение скриншота для приложения {AppName} в БД", application.Name);
+                            var screenshotImage = await _databaseImageService.SaveImageAsync(
+                                screenshot,
+                                ImageType.ApplicationScreenshot,
+                                application.Id);
+                            
+                            screenshotUrls.Add($"/Image/{screenshotImage.Id}");
                         }
                     }
+                    
                     application.Screenshots = screenshotUrls;
                 }
 
-                _logger.LogInformation("Добавление приложения в контекст БД: {AppName}", application.Name);
-                _context.Applications.Add(application);
-                
-                _logger.LogInformation("Сохранение изменений в БД для приложения: {AppName}", application.Name);
+                _logger.LogInformation("Сохранение окончательных изменений в БД для приложения: {AppName}", application.Name);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Приложение успешно создано с ID: {AppId}", application.Id);
@@ -425,11 +444,13 @@ namespace AppGambit.Controllers
             return View(model);
         }
 
-        // POST: Applications/Download
-        [HttpPost]
+        // GET: Applications/Download
+        [HttpGet]
         public async Task<IActionResult> Download(int id)
         {
-            var application = await _context.Applications.FindAsync(id);
+            var application = await _context.Applications
+                .FirstOrDefaultAsync(a => a.Id == id);
+            
             if (application == null)
             {
                 return NotFound();
@@ -437,15 +458,42 @@ namespace AppGambit.Controllers
 
             // Увеличиваем счетчик скачиваний
             application.DownloadCount++;
+            
+            // Явно помечаем сущность как изменённую
+            _context.Entry(application).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            
+            // Очищаем все связанные кэши для этого приложения
+            _cache.Remove($"application_details_{id}");
+            _cache.Remove($"application_by_name_{application.Name.ToLower()}");
+            _cache.Remove($"application_by_name_{application.Name.ToLower().Replace(" ", "-")}");
+            _cache.Remove($"application_comments_{id}");
+            
+            // Также очищаем кэш списка приложений
+            _cache.Remove("applications_index");
+            
+            // Очищаем кэш профиля пользователя
+            if (application.UserId != null)
+            {
+                _cache.Remove($"user_profile_{application.UserId}");
+            }
 
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", application.DownloadUrl);
+            // Проверяем наличие URL для скачивания
+            if (string.IsNullOrEmpty(application.DownloadUrl))
+            {
+                return NotFound("Файл для скачивания не указан");
+            }
+
+            // Убираем начальный слеш, если он есть
+            var downloadUrl = application.DownloadUrl.TrimStart('/');
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", downloadUrl);
+            
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound("Файл не найден");
             }
 
-            var fileName = Path.GetFileName(application.DownloadUrl);
+            var fileName = Path.GetFileName(downloadUrl);
             return PhysicalFile(filePath, "application/octet-stream", fileName);
         }
 
@@ -706,19 +754,24 @@ namespace AppGambit.Controllers
                 }
 
                 // Обновление иконки
-                if (model.IconFile != null && _imageService.IsValidImageType(model.IconFile))
+                if (model.IconFile != null && _databaseImageService.IsValidImageType(model.IconFile))
                 {
-                    // Удаляем старую иконку
-                    if (!string.IsNullOrEmpty(application.IconUrl))
+                    // Удаляем старую иконку из БД
+                    if (application.IconImageId.HasValue)
                     {
-                        var oldIconPath = Path.Combine(_environment.WebRootPath, application.IconUrl);
-                        if (System.IO.File.Exists(oldIconPath))
-                        {
-                            System.IO.File.Delete(oldIconPath);
-                        }
+                        await _databaseImageService.DeleteImageAsync(application.IconImageId.Value);
                     }
 
-                    application.IconUrl = await _imageService.SaveImageAsync(model.IconFile, "icons", 128, 128);
+                    // Сохраняем новую иконку в БД
+                    var iconImage = await _databaseImageService.SaveImageAsync(
+                        model.IconFile,
+                        ImageType.ApplicationIcon,
+                        application.Id,
+                        maxWidth: 128,
+                        maxHeight: 128);
+                    
+                    application.IconImageId = iconImage.Id;
+                    application.IconUrl = $"/Image/{iconImage.Id}";
                 }
 
                 // Обновление файла приложения
@@ -757,10 +810,15 @@ namespace AppGambit.Controllers
                     foreach (var screenshotToDelete in model.ScreenshotsToDelete)
                     {
                         application.Screenshots.Remove(screenshotToDelete);
-                        var screenshotPath = Path.Combine(_environment.WebRootPath, screenshotToDelete);
-                        if (System.IO.File.Exists(screenshotPath))
+                        
+                        // Извлекаем ID изображения из URL и удаляем из БД
+                        if (screenshotToDelete.StartsWith("/Image/"))
                         {
-                            System.IO.File.Delete(screenshotPath);
+                            var imageIdStr = screenshotToDelete.Replace("/Image/", "");
+                            if (int.TryParse(imageIdStr, out int imageId))
+                            {
+                                await _databaseImageService.DeleteImageAsync(imageId);
+                            }
                         }
                     }
                 }
@@ -770,10 +828,14 @@ namespace AppGambit.Controllers
                 {
                     foreach (var screenshot in model.Screenshots.Where(s => s.Length > 0))
                     {
-                        if (_imageService.IsValidImageType(screenshot))
+                        if (_databaseImageService.IsValidImageType(screenshot))
                         {
-                            var url = await _imageService.SaveImageAsync(screenshot, "screenshots");
-                            application.Screenshots.Add(url);
+                            var screenshotImage = await _databaseImageService.SaveImageAsync(
+                                screenshot,
+                                ImageType.ApplicationScreenshot,
+                                application.Id);
+                            
+                            application.Screenshots.Add($"/Image/{screenshotImage.Id}");
                         }
                     }
                 }

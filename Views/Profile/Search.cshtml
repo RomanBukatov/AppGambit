@@ -59,7 +59,7 @@
                                     <div class="mb-3">
                                         @if (!string.IsNullOrEmpty(user.ProfileImageUrl))
                                         {
-                                            <img src="~/@user.ProfileImageUrl" class="rounded-circle img-fluid"
+                                            <img src="@user.ProfileImageUrl" class="rounded-circle img-fluid"
                                                  alt="@user.DisplayName" style="width: 80px; height: 80px; object-fit: cover;">
                                         }
                                         else

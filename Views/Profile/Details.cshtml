@@ -16,7 +16,7 @@
                     <div class="mb-3">
                         @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
                         {
-                            <img src="~/@Model.ProfileImageUrl" class="rounded-circle img-fluid" 
+                            <img src="@Model.ProfileImageUrl" class="rounded-circle img-fluid"
                                  alt="@Model.DisplayName" style="width: 150px; height: 150px; object-fit: cover;">
                         }
                         else
@@ -66,7 +66,7 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <h4 class="text-success mb-0">@ViewBag.TotalDownloads</h4>
+                            <h4 class="text-success mb-0" id="profile-total-downloads">@ViewBag.TotalDownloads</h4>
                             <small class="text-muted">Скачиваний</small>
                         </div>
                     </div>
@@ -141,7 +141,7 @@
                                 <div class="card-img-top-wrapper">
                                     @if (!string.IsNullOrEmpty(app.IconUrl))
                                     {
-                                        <img src="~/@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;">
+                                        <img src="@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;">
                                     }
                                     else
                                     {

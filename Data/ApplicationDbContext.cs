@@ -15,6 +15,7 @@ namespace AppGambit.Data
         public DbSet<Models.Application> Applications { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Rating> Ratings { get; set; }
+        public DbSet<ImageData> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -53,6 +54,18 @@ namespace AppGambit.Data
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.Applications)
                     .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Связь с иконкой
+                entity.HasOne(e => e.IconImage)
+                    .WithOne()
+                    .HasForeignKey<Models.Application>(e => e.IconImageId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                // Связь со скриншотами
+                entity.HasMany(e => e.ScreenshotImages)
+                    .WithOne(i => i.Application)
+                    .HasForeignKey(i => i.ApplicationId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -104,6 +117,30 @@ namespace AppGambit.Data
                 entity.Property(e => e.DisplayName).HasMaxLength(100);
                 entity.Property(e => e.CreatedAt).IsRequired();
                 entity.Property(e => e.UpdatedAt).IsRequired();
+
+                // Связь с изображением профиля
+                entity.HasOne(e => e.ProfileImage)
+                    .WithOne(i => i.User)
+                    .HasForeignKey<User>(e => e.ProfileImageId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Конфигурация для ImageData
+            builder.Entity<ImageData>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Data).IsRequired();
+                entity.Property(e => e.Size).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.Type).IsRequired();
+
+                // Индексы для улучшения производительности
+                entity.HasIndex(e => e.ApplicationId);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.Type);
+                entity.HasIndex(e => e.CreatedAt);
             });
         }
     }

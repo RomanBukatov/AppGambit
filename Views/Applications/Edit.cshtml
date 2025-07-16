@@ -92,7 +92,7 @@
                                 @if (!string.IsNullOrEmpty(Model.CurrentIconUrl))
                                 {
                                     <div class="mb-2">
-                                        <img src="~/@Model.CurrentIconUrl" class="img-thumbnail" 
+                                        <img src="@Model.CurrentIconUrl" class="img-thumbnail"
                                              style="max-width: 100px; max-height: 100px;" alt="Текущая иконка">
                                         <div class="form-text">Текущая иконка</div>
                                     </div>
@@ -131,7 +131,7 @@
                                         {
                                             <div class="col-md-3 col-sm-4 col-6">
                                                 <div class="position-relative">
-                                                    <img src="~/@Model.CurrentScreenshots[i]" class="img-thumbnail w-100"
+                                                    <img src="@Model.CurrentScreenshots[i]" class="img-thumbnail w-100"
                                                          alt="Скриншот @(i + 1)" style="height: 100px; object-fit: cover;">
                                                     <div class="position-absolute top-0 end-0 p-1">
                                                         <button type="button" class="btn btn-sm btn-danger" 

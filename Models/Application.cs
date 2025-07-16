@@ -22,7 +22,14 @@ namespace AppGambit.Models
         
         public string? IconUrl { get; set; }
         
+        // Новые поля для хранения изображений в БД
+        public int? IconImageId { get; set; }
+        public virtual ImageData? IconImage { get; set; }
+        
         public List<string> Screenshots { get; set; } = new List<string>();
+        
+        // Связь со скриншотами в БД
+        public virtual ICollection<ImageData> ScreenshotImages { get; set; } = new List<ImageData>();
         
         public string DownloadUrl { get; set; } = string.Empty;
         

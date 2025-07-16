@@ -78,7 +78,7 @@
                             <div class="card-img-top-wrapper">
                                 @if (!string.IsNullOrEmpty(app.IconUrl))
                                 {
-                                    <img src="~/@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;"
+                                    <img src="@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                     <div class="card-img-placeholder d-none align-items-center justify-content-center bg-light" style="height: 150px;">
                                         <i class="fas fa-desktop fa-3x text-muted"></i>
@@ -144,7 +144,7 @@
                             <div class="card-img-top-wrapper">
                                 @if (!string.IsNullOrEmpty(app.IconUrl))
                                 {
-                                    <img src="~/@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;"
+                                    <img src="@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                     <div class="card-img-placeholder d-none align-items-center justify-content-center bg-light" style="height: 150px;">
                                         <i class="fas fa-desktop fa-3x text-muted"></i>

@@ -6,6 +6,10 @@ namespace AppGambit.Models
     {
         public string? DisplayName { get; set; }
         public string? ProfileImageUrl { get; set; }
+        
+        // Новое поле для хранения изображения профиля в БД
+        public int? ProfileImageId { get; set; }
+        public virtual ImageData? ProfileImage { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         
