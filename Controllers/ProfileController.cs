@@ -157,6 +157,21 @@ namespace AppGambit.Controllers
                 return NotFound();
             }
 
+            // Получаем статистику для отображения на странице редактирования
+            var userApplications = await _context.Applications
+                .Include(a => a.Ratings)
+                .Where(a => a.UserId == user.Id)
+                .ToListAsync();
+
+            ViewBag.ApplicationsCount = userApplications.Count;
+            ViewBag.TotalDownloads = userApplications.Sum(a => a.DownloadCount);
+            ViewBag.AverageRating = userApplications.Any() && userApplications.SelectMany(a => a.Ratings).Any()
+                ? Math.Round(userApplications.SelectMany(a => a.Ratings).Average(r => r.Value), 1)
+                : 0;
+            ViewBag.TotalComments = await _context.Comments
+                .Where(c => c.UserId == user.Id)
+                .CountAsync();
+
             return View(user);
         }
 
@@ -164,7 +179,7 @@ namespace AppGambit.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Edit(User model, IFormFile? profileImage)
+        public async Task<IActionResult> Edit(User model, IFormFile? profileImage, string? croppedImageData)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -195,8 +210,60 @@ namespace AppGambit.Controllers
                 }
 
                 // Обновление изображения профиля
-                if (profileImage != null && _databaseImageService.IsValidImageType(profileImage))
+                // Приоритет: обрезанное изображение > оригинальное изображение
+                if (!string.IsNullOrEmpty(croppedImageData))
                 {
+                    // Обработка обрезанного изображения из base64
+                    try
+                    {
+                        // Удаляем префикс data:image/jpeg;base64, если он есть
+                        var base64Data = croppedImageData;
+                        if (base64Data.Contains(","))
+                        {
+                            base64Data = base64Data.Split(',')[1];
+                        }
+
+                        var imageBytes = Convert.FromBase64String(base64Data);
+                        
+                        // Создаем MemoryStream из байтов
+                        using (var stream = new MemoryStream(imageBytes))
+                        {
+                            // Создаем IFormFile из потока
+                            var fileName = $"profile_{user.Id}_{DateTime.UtcNow.Ticks}.jpg";
+                            var formFile = new FormFile(stream, 0, stream.Length, "profileImage", fileName)
+                            {
+                                Headers = new HeaderDictionary(),
+                                ContentType = "image/jpeg"
+                            };
+
+                            // Удаление старого изображения из БД
+                            if (user.ProfileImageId.HasValue)
+                            {
+                                await _databaseImageService.DeleteImageAsync(user.ProfileImageId.Value);
+                            }
+
+                            // Сохранение нового изображения в БД
+                            var profileImageData = await _databaseImageService.SaveImageAsync(
+                                formFile,
+                                ImageType.UserProfile,
+                                userId: user.Id,
+                                maxWidth: 400,
+                                maxHeight: 400);
+                            
+                            user.ProfileImageId = profileImageData.Id;
+                            user.ProfileImageUrl = $"/Image/Profile/{user.Id}";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при обработке обрезанного изображения");
+                        ModelState.AddModelError("", "Ошибка при обработке изображения");
+                        return View(model);
+                    }
+                }
+                else if (profileImage != null && _databaseImageService.IsValidImageType(profileImage))
+                {
+                    // Обработка обычного изображения без обрезки
                     // Удаление старого изображения из БД
                     if (user.ProfileImageId.HasValue)
                     {
@@ -208,8 +275,8 @@ namespace AppGambit.Controllers
                         profileImage,
                         ImageType.UserProfile,
                         userId: user.Id,
-                        maxWidth: 200,
-                        maxHeight: 200);
+                        maxWidth: 400,
+                        maxHeight: 400);
                     
                     user.ProfileImageId = profileImageData.Id;
                     user.ProfileImageUrl = $"/Image/Profile/{user.Id}";
@@ -220,6 +287,7 @@ namespace AppGambit.Controllers
                 var updateResult = await _userManager.UpdateAsync(user);
                 if (updateResult.Succeeded)
                 {
+                    TempData["SuccessMessage"] = "Профиль успешно обновлен!";
                     // Перенаправляем на профиль по displayName
                     return RedirectToAction(nameof(ByDisplayName), new { displayName = user.DisplayName });
                 }
@@ -234,6 +302,21 @@ namespace AppGambit.Controllers
                 _logger.LogError(ex, "Ошибка при обновлении профиля пользователя {UserId}", user.Id);
                 ModelState.AddModelError("", "Произошла ошибка при обновлении профиля");
             }
+
+            // Восстанавливаем статистику для отображения на странице в случае ошибки
+            var userApplications = await _context.Applications
+                .Include(a => a.Ratings)
+                .Where(a => a.UserId == user.Id)
+                .ToListAsync();
+
+            ViewBag.ApplicationsCount = userApplications.Count;
+            ViewBag.TotalDownloads = userApplications.Sum(a => a.DownloadCount);
+            ViewBag.AverageRating = userApplications.Any() && userApplications.SelectMany(a => a.Ratings).Any()
+                ? Math.Round(userApplications.SelectMany(a => a.Ratings).Average(r => r.Value), 1)
+                : 0;
+            ViewBag.TotalComments = await _context.Comments
+                .Where(c => c.UserId == user.Id)
+                .CountAsync();
 
             return View(model);
         }

@@ -39,8 +39,9 @@
                                 
                                 <div class="mb-3">
                                     <label for="profileImage" class="form-label">Новое фото профиля</label>
-                                    <input type="file" id="profileImage" name="profileImage" class="form-control" 
+                                    <input type="file" id="profileImage" name="profileImage" class="form-control"
                                            accept="image/*" />
+                                    <input type="hidden" id="croppedImageData" name="croppedImageData" />
                                     <div class="form-text">Рекомендуемый размер: 200x200 пикселей</div>
                                 </div>
                                 
@@ -175,13 +176,81 @@
     </div>
 </div>
 
+<!-- Модальное окно для обрезки изображения -->
+<div class="modal fade cropper-modal" id="cropperModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-crop-alt me-2"></i>Обрезать изображение профиля
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-0">
+                    <div class="col-md-8">
+                        <div class="image-cropper-container">
+                            <img id="cropperImage" style="max-width: 100%; display: block;">
+                        </div>
+                        <div class="crop-info">
+                            <span id="cropInfo">Используйте мышь для выбора области</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="cropper-preview-container">
+                            <h6 class="mb-3">Предпросмотр</h6>
+                            <div class="cropper-preview" id="cropperPreview"></div>
+                            <p class="text-muted small mb-3">Так будет выглядеть ваше фото профиля</p>
+                            
+                            <div class="cropper-controls">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="rotateCropper(-90)" title="Повернуть влево">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="rotateCropper(90)" title="Повернуть вправо">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="flipCropper('horizontal')" title="Отразить по горизонтали">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="flipCropper('vertical')" title="Отразить по вертикали">
+                                    <i class="fas fa-arrows-alt-v"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetCropper()" title="Сбросить">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Отмена
+                </button>
+                <button type="button" class="btn btn-primary" onclick="applyCrop()">
+                    <i class="fas fa-check me-1"></i>Применить обрезку
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     
+    <!-- Подключаем Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    
     <script>
+        let cropper = null;
+        let currentFile = null;
+        
         document.addEventListener('DOMContentLoaded', function() {
             const profileImage = document.getElementById('profileImage');
             const imagePreview = document.getElementById('imagePreview');
+            const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
+            const cropperImage = document.getElementById('cropperImage');
 
             profileImage.addEventListener('change', function(e) {
                 const file = e.target.files[0];
@@ -200,23 +269,140 @@
                         return;
                     }
 
+                    currentFile = file;
                     const reader = new FileReader();
+                    
                     reader.onload = function(e) {
-                        imagePreview.innerHTML = `
-                            <div class="mt-3">
-                                <label class="form-label">Предпросмотр нового фото:</label>
-                                <div>
-                                    <img src="${e.target.result}" class="rounded-circle img-fluid" 
-                                         alt="Предпросмотр" style="width: 150px; height: 150px; object-fit: cover;">
-                                </div>
-                            </div>
-                        `;
+                        // Показываем модальное окно с обрезкой
+                        cropperImage.src = e.target.result;
+                        cropperModal.show();
+                        
+                        // Инициализируем Cropper после показа модального окна
+                        setTimeout(() => {
+                            initCropper();
+                        }, 300);
                     };
+                    
                     reader.readAsDataURL(file);
-                } else {
+                }
+            });
+            
+            // Очистка Cropper при закрытии модального окна
+            document.getElementById('cropperModal').addEventListener('hidden.bs.modal', function() {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                // Очищаем выбор файла если пользователь отменил обрезку
+                if (!document.getElementById('croppedImageData').value) {
+                    profileImage.value = '';
                     imagePreview.innerHTML = '';
                 }
             });
         });
+        
+        function initCropper() {
+            const image = document.getElementById('cropperImage');
+            const preview = document.getElementById('cropperPreview');
+            
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            cropper = new Cropper(image, {
+                aspectRatio: 1, // Квадратная обрезка для фото профиля
+                viewMode: 2,
+                dragMode: 'move',
+                autoCropArea: 0.8,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+                preview: preview,
+                crop: function(event) {
+                    const data = event.detail;
+                    const cropInfo = document.getElementById('cropInfo');
+                    cropInfo.textContent = `Размер: ${Math.round(data.width)} × ${Math.round(data.height)} px`;
+                }
+            });
+        }
+        
+        function rotateCropper(degrees) {
+            if (cropper) {
+                cropper.rotate(degrees);
+            }
+        }
+        
+        function flipCropper(direction) {
+            if (cropper) {
+                if (direction === 'horizontal') {
+                    cropper.scaleX(-cropper.getData().scaleX || -1);
+                } else {
+                    cropper.scaleY(-cropper.getData().scaleY || -1);
+                }
+            }
+        }
+        
+        function resetCropper() {
+            if (cropper) {
+                cropper.reset();
+            }
+        }
+        
+        function applyCrop() {
+            if (cropper) {
+                // Получаем обрезанное изображение
+                const canvas = cropper.getCroppedCanvas({
+                    width: 400,
+                    height: 400,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high'
+                });
+                
+                // Конвертируем в blob
+                canvas.toBlob(function(blob) {
+                    // Конвертируем в base64 для отправки на сервер
+                    const reader = new FileReader();
+                    reader.onloadend = function() {
+                        const base64data = reader.result;
+                        
+                        // Сохраняем обрезанное изображение
+                        document.getElementById('croppedImageData').value = base64data;
+                        
+                        // Показываем предпросмотр
+                        const imagePreview = document.getElementById('imagePreview');
+                        imagePreview.innerHTML = `
+                            <div class="mt-3">
+                                <label class="form-label">Выбранное фото:</label>
+                                <div>
+                                    <img src="${base64data}" class="rounded-circle img-fluid"
+                                         alt="Предпросмотр" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="editCrop()">
+                                    <i class="fas fa-edit me-1"></i>Изменить обрезку
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Закрываем модальное окно
+                        bootstrap.Modal.getInstance(document.getElementById('cropperModal')).hide();
+                    };
+                    reader.readAsDataURL(blob);
+                }, 'image/jpeg', 0.9);
+            }
+        }
+        
+        function editCrop() {
+            // Повторно открываем модальное окно для редактирования
+            const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
+            cropperModal.show();
+            
+            setTimeout(() => {
+                initCropper();
+            }, 300);
+        }
     </script>
 }

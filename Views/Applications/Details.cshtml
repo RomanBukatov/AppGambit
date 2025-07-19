@@ -427,14 +427,34 @@
 
 <!-- Модальное окно для скриншотов -->
 <div class="modal fade" id="screenshotModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-fullscreen-custom">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Скриншот</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
-            <div class="modal-body text-center">
-                <img id="modalImage" src="" class="img-fluid" alt="Скриншот">
+            <div class="modal-body">
+                @if (Model.Screenshots != null && Model.Screenshots.Count > 1)
+                {
+                    <button class="screenshot-nav prev" onclick="navigateScreenshot(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="screenshot-nav next" onclick="navigateScreenshot(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <div class="screenshot-indicator">
+                        @for (int i = 0; i < Model.Screenshots.Count; i++)
+                        {
+                            <span class="dot @(i == 0 ? "active" : "")" data-index="@i" onclick="goToScreenshot(@i)"></span>
+                        }
+                    </div>
+                }
+                
+                <div class="screenshot-info">
+                    <span id="screenshotCounter">1 / @(Model.Screenshots?.Count ?? 1)</span>
+                </div>
+                
+                <img id="modalImage" src="" alt="Скриншот" onclick="toggleZoom(event)">
             </div>
         </div>
     </div>
@@ -464,38 +484,13 @@
         .rating-input input:checked ~ label {
             color: #ffc107;
         }
-
-        /* Стили для модального окна скриншотов */
-        #screenshotModal .modal-title {
-            color: #212529;
-            font-weight: 600;
-        }
-        
-        #screenshotModal .modal-body {
-            background-color: #f8f9fa;
-            padding: 2rem;
-        }
-        
-        #screenshotModal .modal-content {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        #screenshotModal .modal-header {
-            background-color: #fff;
-            border-bottom: 1px solid #dee2e6;
-            padding: 1rem 1.5rem;
-        }
-        
-        #modalImage {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
     </style>
     
     <script>
+        // Глобальные переменные для управления скриншотами
+        let currentScreenshotIndex = 0;
+        const screenshots = @Html.Raw(Json.Serialize(Model.Screenshots ?? new List<string>()));
+        
         // Обработка модального окна для скриншотов
         document.addEventListener('DOMContentLoaded', function() {
             const screenshotModal = document.getElementById('screenshotModal');
@@ -505,32 +500,140 @@
                 const button = event.relatedTarget;
                 const imageSrc = button.getAttribute('data-bs-image');
                 
-                modalImage.src = imageSrc;
-                modalImage.alt = button.alt || 'Скриншот';
+                // Находим индекс текущего скриншота
+                currentScreenshotIndex = screenshots.indexOf(imageSrc);
+                if (currentScreenshotIndex === -1) currentScreenshotIndex = 0;
                 
-                // Добавляем обработку ошибок загрузки изображения
-                modalImage.onerror = function() {
-                    console.error('Ошибка загрузки изображения:', imageSrc);
-                    this.alt = 'Ошибка загрузки изображения';
-                    this.style.display = 'none';
-                    
-                    // Показываем сообщение об ошибке
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'alert alert-danger text-center';
-                    errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Не удалось загрузить изображение';
-                    this.parentNode.appendChild(errorMsg);
-                };
+                // Загружаем изображение
+                loadScreenshot(currentScreenshotIndex);
                 
-                modalImage.onload = function() {
-                    console.log('Изображение успешно загружено:', imageSrc);
-                    this.style.display = 'block';
-                    
-                    // Удаляем сообщения об ошибках, если они есть
-                    const errorMsgs = this.parentNode.querySelectorAll('.alert-danger');
-                    errorMsgs.forEach(msg => msg.remove());
-                };
+                // Сбрасываем зум при открытии
+                modalImage.classList.remove('zoomed');
+                modalImage.style.transform = '';
+            });
+            
+            // Закрытие модального окна по Escape
+            screenshotModal.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    const modal = bootstrap.Modal.getInstance(screenshotModal);
+                    modal.hide();
+                }
+            });
+            
+            // Навигация с клавиатуры
+            document.addEventListener('keydown', function(event) {
+                if (screenshotModal.classList.contains('show')) {
+                    if (event.key === 'ArrowLeft') {
+                        navigateScreenshot(-1);
+                    } else if (event.key === 'ArrowRight') {
+                        navigateScreenshot(1);
+                    }
+                }
             });
         });
+        
+        // Функция загрузки скриншота
+        function loadScreenshot(index) {
+            const modalImage = document.getElementById('modalImage');
+            const counter = document.getElementById('screenshotCounter');
+            const dots = document.querySelectorAll('.screenshot-indicator .dot');
+            
+            if (screenshots.length === 0) return;
+            
+            // Обновляем изображение
+            modalImage.src = screenshots[index];
+            modalImage.alt = `Скриншот ${index + 1}`;
+            
+            // Обновляем счетчик
+            if (counter) {
+                counter.textContent = `${index + 1} / ${screenshots.length}`;
+            }
+            
+            // Обновляем индикаторы
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            // Обработка ошибок загрузки
+            modalImage.onerror = function() {
+                console.error('Ошибка загрузки изображения:', screenshots[index]);
+                this.alt = 'Ошибка загрузки изображения';
+                this.style.display = 'none';
+                
+                // Показываем сообщение об ошибке
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-danger text-center position-absolute';
+                errorMsg.style.cssText = 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
+                errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Не удалось загрузить изображение';
+                this.parentNode.appendChild(errorMsg);
+            };
+            
+            modalImage.onload = function() {
+                this.style.display = 'block';
+                
+                // Удаляем сообщения об ошибках
+                const errorMsgs = this.parentNode.querySelectorAll('.alert-danger');
+                errorMsgs.forEach(msg => msg.remove());
+            };
+        }
+        
+        // Навигация между скриншотами
+        function navigateScreenshot(direction) {
+            currentScreenshotIndex += direction;
+            
+            // Циклическая навигация
+            if (currentScreenshotIndex < 0) {
+                currentScreenshotIndex = screenshots.length - 1;
+            } else if (currentScreenshotIndex >= screenshots.length) {
+                currentScreenshotIndex = 0;
+            }
+            
+            loadScreenshot(currentScreenshotIndex);
+            
+            // Сбрасываем зум при переключении
+            const modalImage = document.getElementById('modalImage');
+            modalImage.classList.remove('zoomed');
+            modalImage.style.transform = '';
+        }
+        
+        // Переход к конкретному скриншоту
+        function goToScreenshot(index) {
+            currentScreenshotIndex = index;
+            loadScreenshot(currentScreenshotIndex);
+            
+            // Сбрасываем зум
+            const modalImage = document.getElementById('modalImage');
+            modalImage.classList.remove('zoomed');
+            modalImage.style.transform = '';
+        }
+        
+        // Функция зума изображения
+        function toggleZoom(event) {
+            const img = event.target;
+            const modalBody = img.parentElement;
+            
+            if (img.classList.contains('zoomed')) {
+                // Убираем зум
+                img.classList.remove('zoomed');
+                img.style.transform = '';
+                modalBody.style.overflow = 'hidden';
+            } else {
+                // Применяем зум
+                img.classList.add('zoomed');
+                
+                // Вычисляем позицию клика относительно изображения
+                const rect = img.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                // Масштабируем изображение
+                img.style.transform = 'scale(2)';
+                img.style.transformOrigin = `${x}px ${y}px`;
+                
+                // Разрешаем прокрутку
+                modalBody.style.overflow = 'auto';
+            }
+        }
 
         // Обработка миниатюр карусели
         document.addEventListener('DOMContentLoaded', function() {

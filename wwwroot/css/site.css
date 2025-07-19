@@ -70,6 +70,62 @@ p {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
+/* Стили для аватарки в навигации */
+.navbar-profile-img {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.navbar-profile-img:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.navbar-profile-icon {
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+}
+
+.navbar-profile-icon:hover {
+  color: white;
+  transform: scale(1.05);
+}
+
+.navbar-username {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Адаптация высоты навбара под увеличенную аватарку */
+.navbar {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+/* Выравнивание элементов в dropdown */
+#navbarDropdown {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .navbar-profile-img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .navbar-profile-icon {
+    font-size: 32px !important;
+  }
+  
+  .navbar-username {
+    max-width: 100px;
+  }
+}
+
 /* Карточки приложений - оптимизированные анимации */
 .app-card {
   border: none;
@@ -229,6 +285,37 @@ p {
   margin-right: 2px;
 }
 
+/* Цвета для звезд рейтинга */
+.rating .fa-star.text-warning,
+.rating .fas.fa-star.text-warning {
+  color: #ffc107 !important;
+}
+
+.rating .fa-star.text-muted,
+.rating .far.fa-star.text-muted {
+  color: #6c757d !important;
+}
+
+/* Цвета для лайков и дизлайков */
+.likes-dislikes .text-success,
+.likes-dislikes .fa-thumbs-up {
+  color: #28a745 !important;
+}
+
+.likes-dislikes .text-danger,
+.likes-dislikes .fa-thumbs-down {
+  color: #dc3545 !important;
+}
+
+/* Дополнительные стили для иконок в карточках */
+.app-card .rating .fa-star.text-warning {
+  color: #ffc107 !important;
+}
+
+.app-card .rating .fa-star.text-muted {
+  color: #dee2e6 !important;
+}
+
 .rating-input {
   display: flex;
   flex-direction: row-reverse;
@@ -250,7 +337,430 @@ p {
 .rating-input label:hover,
 .rating-input label:hover ~ label,
 .rating-input input:checked ~ label {
-  color: #ffc107;
+  color: #ffc107 !important;
+}
+
+/* Убедимся, что звезды в форме оценки тоже имеют правильный цвет */
+.rating-input .star .fa-star {
+  color: inherit;
+}
+
+/* Стили для кнопок лайк/дизлайк в форме оценки */
+.btn-check:checked + .btn-outline-success {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.btn-check:checked + .btn-outline-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-outline-success:hover {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+/* Иконки в кнопках */
+.btn-outline-success .fa-thumbs-up,
+.btn-outline-danger .fa-thumbs-down {
+  margin-right: 0.25rem;
+}
+
+/* Глобальные стили для иконок Font Awesome чтобы избежать черного цвета */
+.fas, .far, .fab {
+  color: inherit;
+}
+
+/* Специфичные цвета для иконок */
+.text-warning .fa-star,
+.fa-star.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-muted .fa-star,
+.fa-star.text-muted {
+  color: #6c757d !important;
+}
+
+.text-success .fa-thumbs-up,
+.fa-thumbs-up.text-success {
+  color: #28a745 !important;
+}
+
+.text-danger .fa-thumbs-down,
+.fa-thumbs-down.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Убедимся что иконки в статистике имеют правильные цвета */
+.app-card .text-muted .fas {
+  color: #6c757d !important;
+}
+
+/* Полноэкранный просмотр скриншотов */
+.modal-fullscreen-custom {
+  max-width: 100%;
+  margin: 0;
+  height: 100%;
+}
+
+.modal-fullscreen-custom .modal-content {
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+}
+
+.modal-fullscreen-custom .modal-header {
+  background-color: transparent;
+  border-bottom: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1050;
+  padding: 1rem;
+}
+
+.modal-fullscreen-custom .modal-header .btn-close {
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 0.8;
+  border-radius: 50%;
+  padding: 0.75rem;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.modal-fullscreen-custom .modal-header .btn-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
+.modal-fullscreen-custom .modal-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  height: 100%;
+  position: relative;
+}
+
+.modal-fullscreen-custom .modal-body img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.modal-fullscreen-custom .modal-body img.zoomed {
+  cursor: zoom-out;
+  max-width: none;
+  max-height: none;
+}
+
+/* Навигация между скриншотами */
+.screenshot-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1040;
+}
+
+.screenshot-nav:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.screenshot-nav.prev {
+  left: 1rem;
+}
+
+.screenshot-nav.next {
+  right: 1rem;
+}
+
+/* Индикатор текущего скриншота */
+.screenshot-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 1040;
+}
+
+.screenshot-indicator .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.screenshot-indicator .dot.active {
+  background-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.2);
+}
+
+/* Информация о скриншоте */
+.screenshot-info {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Анимация появления модального окна */
+.modal-fullscreen-custom.fade .modal-dialog {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fullscreen-custom .modal-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .screenshot-nav {
+    font-size: 1.5rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .modal-fullscreen-custom .modal-body {
+    padding: 1rem;
+  }
+  
+  .screenshot-info {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* Стили для обрезки изображения профиля */
+.image-cropper-container {
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+}
+
+.cropper-modal .modal-dialog {
+  max-width: 90%;
+  width: 800px;
+}
+
+/* ВАЖНО: Убираем прозрачность с модального окна */
+#cropperModal .modal-content,
+.cropper-modal .modal-content {
+  background-color: white !important;
+  opacity: 1 !important;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+#cropperModal .modal-header,
+.cropper-modal .modal-header {
+  background-color: white !important;
+  opacity: 1 !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#cropperModal .modal-body,
+.cropper-modal .modal-body {
+  padding: 0;
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+#cropperModal .modal-footer,
+.cropper-modal .modal-footer {
+  background-color: white !important;
+  opacity: 1 !important;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Убедимся, что строка с изображением не прозрачная */
+#cropperModal .row,
+.cropper-modal .row {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+/* Левая часть с изображением */
+#cropperModal .col-md-8,
+.cropper-modal .col-md-8 {
+  background-color: #f8f9fa !important;
+  opacity: 1 !important;
+}
+
+/* Правая часть с предпросмотром */
+#cropperModal .col-md-4,
+.cropper-modal .col-md-4 {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+.cropper-preview-container {
+  text-align: center;
+  padding: 1rem;
+  background-color: white !important;
+  border-left: 1px solid #dee2e6;
+  opacity: 1 !important;
+}
+
+.cropper-preview {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cropper-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.cropper-controls .btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.cropper-controls .btn i {
+  font-size: 1rem;
+}
+
+/* Стили для Cropper.js */
+.cropper-container {
+  background-color: #e9ecef;
+}
+
+.cropper-view-box {
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  outline: 2px solid #007bff;
+}
+
+.cropper-face {
+  background-color: transparent !important;
+}
+
+.cropper-dashed {
+  border-color: #007bff;
+  opacity: 0.7;
+}
+
+.cropper-center {
+  display: none;
+}
+
+.cropper-bg {
+  background-image: none;
+  background-color: #333;
+}
+
+/* Фон модального окна */
+.modal-backdrop {
+  background-color: #000 !important;
+  opacity: 0.5 !important;
+}
+
+/* Дополнительная защита от прозрачности */
+#cropperModal,
+#cropperModal * {
+  opacity: 1 !important;
+}
+
+/* Исключение для backdrop */
+#cropperModal.modal {
+  background-color: transparent;
+}
+
+/* Информация о размере */
+.crop-info {
+  text-align: center;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.875rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Дополнительные стили для лучшей видимости */
+.cropper-modal .btn-close {
+  background-color: white;
+  opacity: 0.8;
+}
+
+.cropper-modal .btn-close:hover {
+  opacity: 1;
+}
+
+.cropper-modal .modal-title {
+  color: #212529;
+  font-weight: 600;
+}
+
+/* Адаптивность для обрезки */
+@media (max-width: 768px) {
+  .cropper-modal .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .cropper-preview-container {
+    border-left: none;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  .cropper-controls {
+    padding: 0 1rem;
+  }
 }
 
 /* Бейджи */

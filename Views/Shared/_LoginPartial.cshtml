@@ -13,17 +13,17 @@
             var displayName = currentUser?.DisplayName ?? currentUser?.Email?.Split('@')[0] ?? User.Identity?.Name ?? "Пользователь";
             var profileImageUrl = currentUser?.ProfileImageUrl;
         }
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             @if (!string.IsNullOrEmpty(profileImageUrl))
             {
-                <img src="@profileImageUrl" class="rounded-circle me-1"
-                     alt="Профиль" style="width: 24px; height: 24px; object-fit: cover;">
+                <img src="@profileImageUrl" class="rounded-circle me-2 navbar-profile-img"
+                     alt="Профиль" style="width: 36px; height: 36px; object-fit: cover;">
             }
             else
             {
-                <i class="fas fa-user-circle me-1"></i>
+                <i class="fas fa-user-circle me-2 navbar-profile-icon" style="font-size: 36px;"></i>
             }
-            @displayName
+            <span class="navbar-username">@displayName</span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <li>
