@@ -64,6 +64,14 @@ p {
 .navbar-nav .nav-link {
   font-weight: 500;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-nav .nav-link i {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+  vertical-align: middle;
 }
 
 .navbar-nav .nav-link:hover {
@@ -512,6 +520,40 @@ p {
   z-index: 1040;
 }
 
+.screenshot-indicator .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.screenshot-indicator .dot.active {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Мобильная адаптация для полноэкранного просмотра */
+@media (max-width: 768px) {
+  .modal-fullscreen-custom .modal-body {
+    padding: 0.5rem;
+  }
+  
+  .screenshot-nav {
+    font-size: 1.5rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .screenshot-nav.prev {
+    left: 0;
+  }
+  
+  .screenshot-nav.next {
+    right: 0;
+  }
+}
+
+/* Точки индикатора скриншотов */
 .screenshot-indicator .dot {
   width: 10px;
   height: 10px;
@@ -1426,5 +1468,1084 @@ img {
 @media (max-width: 768px) {
   .app-card:hover {
     transform: none;
+  }
+}
+
+/* ========================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   ======================================== */
+
+/* Базовые мобильные стили */
+@media (max-width: 991px) {
+  /* Навигация */
+  .navbar-nav {
+    padding-top: 1rem;
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Поисковая форма в навигации */
+  .search-input-group {
+    margin: 1rem 0;
+    width: 100%;
+  }
+  
+  /* Hero секция */
+  .hero-section {
+    padding: 3rem 0 !important;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem !important;
+  }
+  
+  .hero-section .lead {
+    font-size: 1.1rem;
+  }
+  
+  /* Кнопки в hero секции */
+  .hero-section .btn-lg {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+  
+  /* Статистика */
+  .stats-grid {
+    margin-top: 2rem;
+  }
+  
+  .stat-card h3 {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Планшеты */
+@media (max-width: 768px) {
+  /* Контейнер */
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  /* Заголовки */
+  h1, .h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2, .h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3, .h3 {
+    font-size: 1.25rem;
+  }
+  
+  /* Карточки приложений */
+  .app-card {
+    margin-bottom: 1rem;
+  }
+  
+  .app-card .card-img-top {
+    height: 150px !important;
+  }
+  
+  .app-card .card-body {
+    padding: 1rem;
+  }
+  
+  .app-card .card-title {
+    font-size: 1.1rem;
+  }
+  
+  /* Формы поиска и фильтров */
+  .card-body form .col-md-6,
+  .card-body form .col-md-4,
+  .card-body form .col-md-2 {
+    margin-bottom: 1rem;
+  }
+  
+  /* Кнопки */
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Футер */
+  footer .col-md-6 {
+    text-align: center !important;
+    margin-bottom: 1rem;
+  }
+  
+  footer .social-links {
+    justify-content: center;
+    display: flex;
+    margin-top: 1rem;
+  }
+}
+
+/* Мобильные телефоны */
+@media (max-width: 576px) {
+  /* Навбар */
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+  
+  .navbar-toggler {
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
+  }
+  
+  /* Hero секция */
+  .hero-section {
+    text-align: center;
+  }
+  
+  .hero-section .d-flex {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-section .btn {
+    width: 100%;
+    max-width: 250px;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Карточки на главной */
+  .col-lg-3.col-md-4.col-sm-6 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  /* Категории */
+  .category-card .card-body {
+    padding: 0.75rem;
+  }
+  
+  .category-card h6 {
+    font-size: 0.85rem;
+  }
+  
+  .category-card small {
+    font-size: 0.7rem;
+  }
+  
+  /* Рейтинг */
+  .rating {
+    font-size: 0.85rem;
+  }
+  
+  .rating .fa-star {
+    font-size: 0.75rem;
+  }
+  
+  /* Модальные окна */
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  .modal-content {
+    border-radius: 0.5rem;
+  }
+  
+  /* Таблицы - горизонтальная прокрутка */
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Формы */
+  .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Предотвращает зум на iOS */
+  }
+  
+  /* Алерты */
+  .alert {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Пагинация */
+  .pagination {
+    font-size: 0.85rem;
+  }
+  
+  .page-link {
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 375px) {
+  /* Еще более компактные стили */
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Улучшения для тач-устройств */
+@media (hover: none) and (pointer: coarse) {
+  /* Увеличиваем области нажатия */
+  .btn,
+  .nav-link,
+  .dropdown-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Убираем hover эффекты */
+  .app-card:hover,
+  .category-card:hover,
+  .user-card:hover {
+    transform: none;
+  }
+  
+  /* Улучшаем скролл */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Фиксы для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  /* Фикс для 100vh на iOS */
+  .hero-section,
+  .modal-fullscreen-custom {
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Предотвращаем зум при фокусе на input */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Адаптивные изображения */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Адаптивные видео */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+}
+
+.video-container iframe,
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Улучшенная доступность для мобильных */
+@media (max-width: 768px) {
+  /* Увеличиваем контрастность */
+  .text-muted {
+    color: #495057 !important;
+  }
+  
+  /* Улучшаем читаемость */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Больше пространства между элементами */
+  .mb-2 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .mb-3 {
+    margin-bottom: 1.5rem !important;
+  }
+}
+
+/* Оптимизация производительности для мобильных */
+@media (max-width: 768px) {
+  /* Отключаем сложные анимации */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.3s !important;
+    animation-delay: 0s !important;
+  }
+  
+  /* Упрощаем тени */
+  .shadow-sm {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  }
+  
+  .shadow {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+  }
+  
+  /* Оптимизируем градиенты */
+  .btn-primary,
+  .btn-success,
+  .hero-section {
+    background-image: none !important;
+  }
+}
+
+/* Адаптация для скриншотов в формах */
+@media (max-width: 576px) {
+  .screenshot-preview {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .screenshot-item {
+    margin-bottom: 0.5rem;
+  }
+  
+  .screenshot-item .btn-xs {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Фикс для модальных окон на мобильных */
+@media (max-width: 576px) {
+  .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .modal.fade .modal-dialog {
+    transform: translate(0, 100%);
+  }
+  
+  .modal.show .modal-dialog {
+    transform: translate(0, 0);
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+
+/* ========================================
+   УЛУЧШЕННАЯ МОБИЛЬНАЯ НАВИГАЦИЯ
+   ======================================== */
+
+/* Нижняя навигационная панель для мобильных устройств */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #007bff;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: none;
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Показываем только на мобильных устройствах */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: block;
+  }
+}
+
+/* Скрываем на больших экранах */
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+.mobile-bottom-nav-list {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-bottom-nav-item {
+  flex: 1;
+  text-align: center;
+}
+
+.mobile-bottom-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.mobile-bottom-nav-link:hover,
+.mobile-bottom-nav-link.active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.mobile-bottom-nav-link i {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+  color: inherit !important;
+}
+
+.mobile-bottom-nav-link span {
+  color: inherit !important;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.mobile-bottom-nav-link:hover span,
+.mobile-bottom-nav-link.active span {
+  color: #ffffff !important;
+}
+
+/* Показываем нижнюю навигацию только на мобильных устройствах */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: block;
+  }
+  
+  /* Добавляем отступ снизу для контента */
+  body {
+    padding-bottom: 80px;
+  }
+  
+  /* Скрываем десктопную навигацию на очень маленьких экранах */
+  @media (max-width: 576px) {
+    /* Убираем стандартные стили Bootstrap для collapse */
+    .navbar-collapse {
+      position: fixed !important;
+      top: 0 !important;
+      left: -100% !important;
+      width: 80% !important;
+      max-width: 300px !important;
+      height: 100vh !important;
+      background: #fff !important;
+      transition: left 0.3s ease !important;
+      z-index: 1050 !important;
+      overflow-y: auto !important;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+      display: block !important;
+    }
+    
+    .navbar-collapse.show {
+      left: 0 !important;
+    }
+    
+    /* Оверлей для закрытия меню */
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1040;
+      display: none;
+    }
+    
+    .mobile-menu-overlay.show {
+      display: block;
+    }
+    
+    /* Стили для бокового меню */
+    .navbar-nav {
+      padding: 1rem;
+    }
+    
+    .navbar-nav .nav-link {
+      padding: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      color: #212529 !important;
+      display: flex;
+      align-items: center;
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .navbar-nav .nav-link:hover {
+      background-color: #f8f9fa;
+      color: #007bff !important;
+    }
+    
+    .navbar-nav .nav-link i {
+      font-size: 1.25rem;
+      margin-right: 1rem;
+      color: #007bff;
+      display: inline-block;
+    }
+    
+    /* Поиск в боковом меню */
+    .mobile-search-form {
+      padding: 0 0 1rem 0 !important;
+      border-bottom: 1px solid #e9ecef !important;
+      margin-bottom: 1rem !important;
+    }
+    
+    .mobile-search-form .form-control {
+      background-color: #f8f9fa !important;
+      border: 1px solid #dee2e6 !important;
+      color: #212529 !important;
+      border-radius: 0.375rem 0 0 0.375rem !important;
+    }
+    
+    .mobile-search-form .form-control:focus {
+      background-color: #ffffff !important;
+      border-color: #86b7fe !important;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+      color: #212529 !important;
+    }
+    
+    .mobile-search-form .form-control::placeholder {
+      color: #6c757d !important;
+      opacity: 1 !important;
+    }
+    
+    .mobile-search-form .btn-primary {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+      border: none !important;
+      border-radius: 0 0.375rem 0.375rem 0 !important;
+      color: #ffffff !important;
+    }
+    
+    .mobile-search-form .btn-primary:hover {
+      background: linear-gradient(135deg, #0056b3 0%, #004085 100%) !important;
+      box-shadow: 0 2px 4px rgba(0, 123, 255, 0.25) !important;
+    }
+    
+    /* Заголовок бокового меню */
+    .mobile-menu-header {
+      padding: 1rem;
+      background: #007bff;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .mobile-menu-header h5 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .mobile-menu-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      transition: opacity 0.3s ease;
+    }
+    
+    .mobile-menu-close:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+/* Анимация для мобильного меню */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Улучшенная верхняя панель для мобильных */
+@media (max-width: 576px) {
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+  
+  .navbar-toggler {
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Скрываем поиск в верхней панели на мобильных */
+@media (max-width: 768px) {
+  .navbar .search-input-group {
+    display: none;
+  }
+  
+  /* КРИТИЧЕСКИЕ СТИЛИ ДЛЯ МОБИЛЬНОЙ НАВИГАЦИИ - МАКСИМАЛЬНАЯ СПЕЦИФИЧНОСТЬ */
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link {
+    color: #ffffff !important;
+    background-color: transparent !important;
+  }
+  
+  /* КРИТИЧЕСКИЕ СТИЛИ ДЛЯ ВЫПАДАЮЩЕГО МОБИЛЬНОГО МЕНЮ */
+  body .navbar-collapse.show,
+  html body .navbar-collapse.show {
+    background-color: #ffffff !important;
+  }
+  
+  body .navbar-collapse.show .navbar-nav .nav-link,
+  html body .navbar-collapse.show .navbar-nav .nav-link,
+  body .navbar-collapse.show .dropdown-toggle,
+  html body .navbar-collapse.show .dropdown-toggle {
+    color: #212529 !important;
+    background-color: transparent !important;
+  }
+  
+  body .navbar-collapse.show .navbar-nav .nav-link:hover,
+  html body .navbar-collapse.show .navbar-nav .nav-link:hover,
+  body .navbar-collapse.show .dropdown-toggle:hover,
+  html body .navbar-collapse.show .dropdown-toggle:hover {
+    color: #007bff !important;
+    background-color: rgba(0,123,255,0.1) !important;
+  }
+  
+  body .navbar-collapse.show .navbar-nav .nav-link i,
+  html body .navbar-collapse.show .navbar-nav .nav-link i,
+  body .navbar-collapse.show .dropdown-toggle i,
+  html body .navbar-collapse.show .dropdown-toggle i,
+  body .navbar-collapse.show .fa,
+  html body .navbar-collapse.show .fa,
+  body .navbar-collapse.show .fas,
+  html body .navbar-collapse.show .fas,
+  body .navbar-collapse.show .far,
+  html body .navbar-collapse.show .far {
+    color: #007bff !important;
+  }
+  
+  /* Специально для админ-панели */
+  body .navbar-collapse.show .navbar-nav a[asp-controller="Admin"],
+  html body .navbar-collapse.show .navbar-nav a[asp-controller="Admin"],
+  body .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"],
+  html body .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"] {
+    color: #212529 !important;
+    background-color: transparent !important;
+  }
+  
+  body .navbar-collapse.show .navbar-nav a[asp-controller="Admin"]:hover,
+  html body .navbar-collapse.show .navbar-nav a[asp-controller="Admin"]:hover,
+  body .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"]:hover,
+  html body .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"]:hover {
+    color: #007bff !important;
+    background-color: rgba(0,123,255,0.1) !important;
+  }
+  
+  /* Специально для профиля пользователя */
+  body .navbar-collapse.show .dropdown-toggle .navbar-username,
+  html body .navbar-collapse.show .dropdown-toggle .navbar-username,
+  body .navbar-collapse.show .dropdown-toggle .user-name,
+  html body .navbar-collapse.show .dropdown-toggle .user-name,
+  body .navbar-collapse.show .dropdown-toggle span,
+  html body .navbar-collapse.show .dropdown-toggle span {
+    color: #212529 !important;
+  }
+  
+  body .navbar-collapse.show .dropdown-toggle .navbar-profile-icon,
+  html body .navbar-collapse.show .dropdown-toggle .navbar-profile-icon {
+    color: #007bff !important;
+  }
+  
+  /* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ ПЕРЕОПРЕДЕЛЕНИЯ ИНЛАЙН СТИЛЕЙ */
+  .navbar-collapse.show .mobile-profile-dropdown,
+  body .navbar-collapse.show .mobile-profile-dropdown,
+  html body .navbar-collapse.show .mobile-profile-dropdown {
+    color: #212529 !important;
+    background-color: transparent !important;
+  }
+  
+  .navbar-collapse.show .mobile-profile-username,
+  body .navbar-collapse.show .mobile-profile-username,
+  html body .navbar-collapse.show .mobile-profile-username {
+    color: #212529 !important;
+  }
+  
+  .navbar-collapse.show .mobile-profile-icon,
+  body .navbar-collapse.show .mobile-profile-icon,
+  html body .navbar-collapse.show .mobile-profile-icon {
+    color: #007bff !important;
+  }
+  
+  /* Переопределяем все инлайн стили для мобильного меню */
+  .navbar-collapse.show .mobile-profile-dropdown[style],
+  body .navbar-collapse.show .mobile-profile-dropdown[style],
+  html body .navbar-collapse.show .mobile-profile-dropdown[style] {
+    color: #212529 !important;
+  }
+  
+  .navbar-collapse.show .mobile-profile-username[style],
+  body .navbar-collapse.show .mobile-profile-username[style],
+  html body .navbar-collapse.show .mobile-profile-username[style] {
+    color: #212529 !important;
+  }
+  
+  .navbar-collapse.show .mobile-profile-icon[style],
+  body .navbar-collapse.show .mobile-profile-icon[style],
+  html body .navbar-collapse.show .mobile-profile-icon[style] {
+    color: #007bff !important;
+  }
+  
+  /* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ АДМИН-ПАНЕЛИ */
+  .navbar-collapse.show .mobile-admin-link,
+  body .navbar-collapse.show .mobile-admin-link,
+  html body .navbar-collapse.show .mobile-admin-link {
+    color: #212529 !important;
+    background-color: transparent !important;
+  }
+  
+  .navbar-collapse.show .mobile-admin-link:hover,
+  body .navbar-collapse.show .mobile-admin-link:hover,
+  html body .navbar-collapse.show .mobile-admin-link:hover {
+    color: #007bff !important;
+    background-color: rgba(0,123,255,0.1) !important;
+  }
+  
+  .navbar-collapse.show .mobile-admin-icon,
+  body .navbar-collapse.show .mobile-admin-icon,
+  html body .navbar-collapse.show .mobile-admin-icon {
+    color: #007bff !important;
+  }
+  
+  /* Переопределяем инлайн стили для админ-панели */
+  .navbar-collapse.show .mobile-admin-link[style],
+  body .navbar-collapse.show .mobile-admin-link[style],
+  html body .navbar-collapse.show .mobile-admin-link[style] {
+    color: #212529 !important;
+  }
+  
+  .navbar-collapse.show .mobile-admin-icon[style],
+  body .navbar-collapse.show .mobile-admin-icon[style],
+  html body .navbar-collapse.show .mobile-admin-icon[style] {
+    color: #007bff !important;
+  }
+  
+  /* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ ОБЫЧНЫХ ПУНКТОВ НАВИГАЦИИ */
+  .navbar-collapse.show .mobile-nav-link,
+  body .navbar-collapse.show .mobile-nav-link,
+  html body .navbar-collapse.show .mobile-nav-link {
+    color: #212529 !important;
+    background-color: transparent !important;
+  }
+  
+  .navbar-collapse.show .mobile-nav-link:hover,
+  body .navbar-collapse.show .mobile-nav-link:hover,
+  html body .navbar-collapse.show .mobile-nav-link:hover {
+    color: #007bff !important;
+    background-color: rgba(0,123,255,0.1) !important;
+  }
+  
+  .navbar-collapse.show .mobile-nav-icon,
+  body .navbar-collapse.show .mobile-nav-icon,
+  html body .navbar-collapse.show .mobile-nav-icon {
+    color: #007bff !important;
+  }
+  
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link span {
+    color: #ffffff !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    margin-top: 0.25rem !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link i {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  /* ========================================
+     МОБИЛЬНОЕ МОДАЛЬНОЕ ОКНО ПРОФИЛЯ
+     ======================================== */
+  
+  .mobile-profile-modal {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transition: bottom 0.3s ease;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+  
+  .mobile-profile-modal.show {
+    bottom: 0;
+  }
+  
+  .mobile-profile-modal-content {
+    padding: 0;
+  }
+  
+  .mobile-profile-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+  }
+  
+  .mobile-profile-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+  }
+  
+  .mobile-profile-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    transition: color 0.3s ease;
+  }
+  
+  .mobile-profile-close:hover {
+    color: #212529;
+  }
+  
+  .mobile-profile-body {
+    padding: 1.5rem 0;
+    overflow-y: auto;
+    max-height: calc(80vh - 60px);
+  }
+  
+  .mobile-profile-info {
+    text-align: center;
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .mobile-profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    border: 3px solid #007bff;
+  }
+  
+  .mobile-profile-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 50%;
+    border: 3px solid #007bff;
+  }
+  
+  .mobile-profile-avatar-placeholder i {
+    font-size: 3rem;
+    color: #6c757d;
+  }
+  
+  .mobile-profile-name {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #212529;
+  }
+  
+  .mobile-profile-menu {
+    padding: 0.5rem 0;
+  }
+  
+  .mobile-profile-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: #212529;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .mobile-profile-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+  }
+  
+  .mobile-profile-menu-item i:first-child {
+    font-size: 1.25rem;
+    width: 30px;
+    color: #007bff;
+    margin-right: 1rem;
+  }
+  
+  .mobile-profile-menu-item span {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  .mobile-profile-menu-item i:last-child {
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+  
+  .mobile-profile-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 0.5rem 0;
+  }
+  
+  .mobile-profile-logout-form {
+    margin: 0;
+  }
+  
+  .mobile-profile-logout {
+    color: #dc3545;
+  }
+  
+  .mobile-profile-logout i:first-child {
+    color: #dc3545;
+  }
+  
+  /* Оверлей для модального окна профиля */
+  .mobile-profile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .mobile-profile-overlay.show {
+    display: block;
+    opacity: 1;
+  }
+  
+  /* Скрываем модальное окно на больших экранах */
+  @media (min-width: 769px) {
+    .mobile-profile-modal,
+    .mobile-profile-overlay {
+      display: none !important;
+    }
+  }
+  
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link:hover,
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link.active {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+  }
+  
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link:hover span,
+  body .mobile-bottom-nav .mobile-bottom-nav-list .mobile-bottom-nav-item .mobile-bottom-nav-link.active span {
+    color: #ffffff !important;
+  }
+  
+  /* Принудительное отображение нижней навигации */
+  .mobile-bottom-nav {
+    display: block !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    z-index: 9999 !important;
+    padding: 0.5rem 0 !important;
+  }
+}
+
+/* Восстанавливаем нормальное отображение навигации на больших экранах */
+@media (min-width: 577px) {
+  .navbar-collapse {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    left: auto !important;
+    max-width: none !important;
+  }
+  
+  .mobile-menu-header,
+  .mobile-search-form,
+  .mobile-menu-overlay {
+    display: none !important;
   }
 }

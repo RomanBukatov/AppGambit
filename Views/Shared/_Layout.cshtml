@@ -72,6 +72,158 @@
             color: rgba(255,255,255,.9) !important;
         }
         
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link:focus {
+            color: #fff !important;
+        }
+        
+        /* Исправление стилей для авторизованных пользователей */
+        .navbar-dark .navbar-nav .dropdown-toggle {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        .navbar-dark .navbar-nav .dropdown-toggle:hover,
+        .navbar-dark .navbar-nav .dropdown-toggle:focus {
+            color: #fff !important;
+        }
+        
+        .navbar-dark .navbar-nav .navbar-username {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        .navbar-dark .navbar-nav .navbar-profile-icon {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        /* Специфичные стили для dropdown */
+        .navbar-dark .navbar-nav .dropdown > a {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        .navbar-dark .navbar-nav .dropdown > a span {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        /* Убираем желтый цвет с админ панели */
+        .navbar-dark .navbar-nav .nav-link.text-warning {
+            color: rgba(255,255,255,.9) !important;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link.text-warning:hover {
+            color: #fff !important;
+        }
+        
+        /* Исправление иконок в навигации */
+        .navbar-dark .navbar-nav .nav-link i {
+            color: rgba(255,255,255,.9) !important;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+            width: 1.2rem;
+            text-align: center;
+        }
+        
+        /* Специальные стили для иконок профиля */
+        .navbar-profile-icon {
+            margin-right: 0.5rem !important;
+            font-size: 2rem !important;
+        }
+        
+        .navbar-profile-img {
+            margin-right: 0.5rem !important;
+        }
+        
+        /* Стили для выпадающего меню пользователя */
+        .navbar-dark .dropdown-menu {
+            background-color: #fff !important;
+            border: 1px solid rgba(0,0,0,.15) !important;
+        }
+        
+        .navbar-dark .dropdown-item {
+            color: #212529 !important;
+        }
+        
+        .navbar-dark .dropdown-item:hover {
+            background-color: #f8f9fa !important;
+            color: #16181b !important;
+        }
+        
+        .navbar-dark .dropdown-item i {
+            color: #6c757d !important;
+        }
+        
+        /* Исправление выравнивания навигации на десктопе */
+        @@media (min-width: 992px) {
+            .navbar-nav {
+                align-items: center;
+            }
+            
+            .navbar-nav .nav-item {
+                display: flex;
+                align-items: center;
+            }
+            
+            .navbar-nav .nav-link {
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+                padding: 0.5rem 1rem;
+            }
+            
+            .navbar-nav .dropdown-toggle {
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+            }
+            
+            .navbar-username {
+                margin-left: 0.5rem;
+                font-weight: 500;
+            }
+            
+            .navbar-profile-img,
+            .navbar-profile-icon {
+                flex-shrink: 0;
+            }
+            
+            /* Правильное размещение поиска и пользователя */
+            .navbar-collapse {
+                justify-content: space-between;
+            }
+            
+            .search-input-group {
+                max-width: 200px;
+                min-width: 150px;
+                flex-shrink: 1;
+            }
+            
+            /* Исправление для контейнера навигации */
+            .navbar .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            .navbar-collapse {
+                display: flex !important;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            /* Больше места для имени пользователя */
+            .navbar-username {
+                min-width: 100px;
+                max-width: 200px;
+                overflow: visible;
+                text-overflow: clip;
+                flex-shrink: 0;
+            }
+            
+            /* Уменьшаем отступы для экономии места */
+            .navbar-nav .nav-link {
+                padding: 0.5rem 0.75rem;
+            }
+        }
+        
         /* Исправление карточек */
         .card {
             background-color: #fff !important;
@@ -206,6 +358,321 @@
             border-color: #dc3545 !important;
             color: #fff !important;
         }
+        
+        /* Мобильная навигация */
+        @@media (max-width: 991px) {
+            .navbar-collapse {
+                background-color: #007bff;
+                margin-top: 1rem;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            
+            .navbar-nav {
+                margin-bottom: 1rem;
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 0.75rem 1rem;
+                border-radius: 0.25rem;
+                transition: background-color 0.2s;
+            }
+            
+            .navbar-nav .nav-link:hover {
+                background-color: rgba(255,255,255,0.1);
+            }
+            
+            .search-input-group {
+                width: 100%;
+            }
+        }
+        
+        /* Улучшенный прелоадер */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease-out;
+        }
+        
+        .page-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Мобильные улучшения для футера */
+        @@media (max-width: 768px) {
+            footer {
+                text-align: center;
+            }
+            
+            footer .row > div {
+                margin-bottom: 1.5rem;
+            }
+            
+            footer .social-links {
+                justify-content: center;
+            }
+        }
+        
+        /* КРИТИЧЕСКИЕ СТИЛИ ДЛЯ МОБИЛЬНОЙ НАВИГАЦИИ */
+        /* Скрываем мобильную навигацию на больших экранах */
+        @@media (min-width: 769px) {
+            .mobile-bottom-nav {
+                display: none !important;
+            }
+            
+            .mobile-profile-overlay,
+            .mobile-profile-modal {
+                display: none !important;
+            }
+        }
+        
+        @@media (max-width: 768px) {
+            /* Показываем нижнюю навигацию только на мобильных */
+            .mobile-bottom-nav {
+                display: block !important;
+                background-color: #007bff !important;
+            }
+            
+            .mobile-bottom-nav .mobile-bottom-nav-link,
+            .mobile-bottom-nav .mobile-bottom-nav-link * {
+                color: #ffffff !important;
+            }
+            
+            .mobile-bottom-nav .mobile-bottom-nav-link span {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                color: #ffffff !important;
+            }
+            
+            /* Исправляем цвета текста в развернутом мобильном меню */
+            .navbar-collapse {
+                background-color: #ffffff !important;
+                border-radius: 0.5rem !important;
+                margin-top: 1rem !important;
+                padding: 1rem !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+            }
+            
+            .navbar-collapse .navbar-nav .nav-link {
+                color: #212529 !important;
+                padding: 0.75rem 1rem !important;
+                border-radius: 0.25rem !important;
+                transition: background-color 0.2s !important;
+            }
+            
+            .navbar-collapse .navbar-nav .nav-link:hover {
+                background-color: rgba(0,123,255,0.1) !important;
+                color: #007bff !important;
+            }
+            
+            .navbar-collapse .navbar-nav .nav-link i {
+                color: #007bff !important;
+                margin-right: 0.5rem !important;
+                font-size: 1rem !important;
+                width: 1.2rem !important;
+                text-align: center !important;
+            }
+            
+            /* Специально для админ панели - принудительно темный текст */
+            .navbar-collapse .navbar-nav .nav-link[asp-controller="Admin"] {
+                color: #212529 !important;
+                background-color: transparent !important;
+            }
+            
+            .navbar-collapse .navbar-nav .nav-link[asp-controller="Admin"]:hover {
+                background-color: rgba(0,123,255,0.1) !important;
+                color: #007bff !important;
+            }
+            
+            .navbar-collapse .navbar-nav .nav-link[asp-controller="Admin"] i {
+                color: #007bff !important;
+            }
+            
+            /* Специально для профиля - принудительно темный текст */
+            .navbar-collapse .dropdown-toggle {
+                color: #212529 !important;
+                background-color: transparent !important;
+                padding: 0.75rem 1rem !important;
+                border-radius: 0.25rem !important;
+                transition: background-color 0.2s !important;
+            }
+            
+            .navbar-collapse .dropdown-toggle:hover {
+                background-color: rgba(0,123,255,0.1) !important;
+                color: #007bff !important;
+            }
+            
+            .navbar-collapse .dropdown-toggle .user-name {
+                color: #212529 !important;
+            }
+            
+            .navbar-collapse .dropdown-toggle::after {
+                border-top-color: #212529 !important;
+            }
+            
+            /* Все элементы в мобильном меню */
+            .navbar-collapse * {
+                color: #212529 !important;
+            }
+            
+            .navbar-collapse .fa, .navbar-collapse i {
+                color: #007bff !important;
+            }
+            
+            /* Красивый заголовок мобильного меню */
+            .mobile-menu-header {
+                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+                color: #ffffff !important;
+                padding: 1rem 1.5rem !important;
+                margin: -1rem -1rem 1rem -1rem !important;
+                border-radius: 0.5rem 0.5rem 0 0 !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            
+            .mobile-menu-header h5 {
+                color: #ffffff !important;
+                margin: 0 !important;
+                font-size: 1.25rem !important;
+                font-weight: 600 !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            }
+            
+            .mobile-menu-close {
+                background: none !important;
+                border: none !important;
+                color: #ffffff !important;
+                font-size: 1.5rem !important;
+                cursor: pointer !important;
+                padding: 0.25rem 0.5rem !important;
+                transition: opacity 0.3s ease !important;
+                border-radius: 0.25rem !important;
+            }
+            
+            .mobile-menu-close:hover {
+                background-color: rgba(255,255,255,0.1) !important;
+                opacity: 0.8 !important;
+            }
+            
+            /* КРИТИЧЕСКИЕ СТИЛИ ДЛЯ МОБИЛЬНОГО МЕНЮ - МАКСИМАЛЬНАЯ СПЕЦИФИЧНОСТЬ */
+            .navbar-collapse.show .navbar-nav .nav-link,
+            .navbar-collapse.show .navbar-nav .nav-link *,
+            .navbar-collapse.show .dropdown-toggle,
+            .navbar-collapse.show .dropdown-toggle * {
+                color: #212529 !important;
+                background-color: transparent !important;
+            }
+            
+            .navbar-collapse.show .navbar-nav .nav-link i,
+            .navbar-collapse.show .dropdown-toggle i {
+                color: #007bff !important;
+            }
+            
+            /* Специально для админ-панели в мобильном меню */
+            .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"],
+            .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"] *,
+            .navbar-collapse.show .navbar-nav a[asp-controller="Admin"],
+            .navbar-collapse.show .navbar-nav a[asp-controller="Admin"] * {
+                color: #212529 !important;
+                background-color: transparent !important;
+            }
+            
+            .navbar-collapse.show .navbar-nav .nav-link[asp-controller="Admin"] i,
+            .navbar-collapse.show .navbar-nav a[asp-controller="Admin"] i {
+                color: #007bff !important;
+            }
+            
+            /* Специально для профиля пользователя */
+            .navbar-collapse.show .dropdown-toggle,
+            .navbar-collapse.show .dropdown-toggle span,
+            .navbar-collapse.show .dropdown-toggle .navbar-username,
+            .navbar-collapse.show .dropdown-toggle .user-name {
+                color: #212529 !important;
+                background-color: transparent !important;
+            }
+            
+            .navbar-collapse.show .dropdown-toggle i,
+            .navbar-collapse.show .dropdown-toggle .navbar-profile-icon {
+                color: #007bff !important;
+            }
+            
+            /* Принудительные стили для всех элементов в мобильном меню */
+            body .navbar-collapse.show,
+            body .navbar-collapse.show * {
+                color: #212529 !important;
+            }
+            
+            body .navbar-collapse.show i,
+            body .navbar-collapse.show .fa,
+            body .navbar-collapse.show .fas,
+            body .navbar-collapse.show .far {
+                color: #007bff !important;
+            }
+            
+            /* Боковое меню - только для мобильных */
+            @@media (max-width: 576px) {
+                .navbar-collapse .navbar-nav .nav-link {
+                    color: #212529 !important;
+                }
+                
+                .navbar-collapse .navbar-nav .nav-link span {
+                    color: #212529 !important;
+                }
+                
+                .navbar-collapse .navbar-nav .nav-link i {
+                    color: #007bff !important;
+                }
+                
+                /* Исправляем цвета для админ панели в мобильном меню */
+                .navbar-collapse .navbar-nav .nav-link[asp-controller="Admin"] {
+                    color: #212529 !important;
+                }
+                
+                .navbar-collapse .navbar-nav .nav-link[asp-controller="Admin"] i {
+                    color: #007bff !important;
+                }
+                
+                /* Исправляем цвета для профиля в мобильном меню */
+                .navbar-collapse .dropdown-toggle {
+                    color: #212529 !important;
+                }
+                
+                .navbar-collapse .dropdown-toggle::after {
+                    border-top-color: #212529 !important;
+                }
+                
+                .navbar-collapse .dropdown-menu .dropdown-item {
+                    color: #212529 !important;
+                }
+            }
+        }
     </style>
     <!-- Font Awesome с оптимизацией -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
@@ -227,34 +694,52 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
+                    <!-- Заголовок мобильного меню -->
+                    <div class="mobile-menu-header d-lg-none">
+                        <h5>Меню</h5>
+                        <button type="button" class="mobile-menu-close" id="mobileMenuClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Поиск для мобильного меню -->
+                    <form class="mobile-search-form d-lg-none" asp-controller="Applications" asp-action="Index" method="get" style="padding: 0 0 1rem 0 !important; border-bottom: 1px solid #e9ecef !important; margin-bottom: 1rem !important;">
+                        <div class="input-group">
+                            <input class="form-control" type="search" name="search" placeholder="🔍 Поиск приложений..." value="@ViewBag.CurrentSearch" style="background-color: #f8f9fa !important; border: 1px solid #dee2e6 !important; color: #212529 !important;">
+                            <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important; border: none !important;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home me-1"></i>Главная
+                            <a class="nav-link mobile-nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home mobile-nav-icon"></i>Главная
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Applications" asp-action="Index">
-                                <i class="fas fa-th-large me-1"></i>Приложения
+                            <a class="nav-link mobile-nav-link" asp-controller="Applications" asp-action="Index">
+                                <i class="fas fa-th-large mobile-nav-icon"></i>Приложения
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Search">
-                                <i class="fas fa-users me-1"></i>Пользователи
+                            <a class="nav-link mobile-nav-link" href="/Search">
+                                <i class="fas fa-users mobile-nav-icon"></i>Пользователи
                             </a>
                         </li>
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-warning" asp-controller="Admin" asp-action="Index">
-                                    <i class="fas fa-cog me-1"></i>Админ панель
+                                <a class="nav-link mobile-admin-link" asp-controller="Admin" asp-action="Index" style="color: rgba(255,255,255,.9) !important;">
+                                    <i class="fas fa-cog mobile-admin-icon" style="color: rgba(255,255,255,.9) !important;"></i>Админ панель
                                 </a>
                             </li>
                         }
                     </ul>
                     
                     <!-- Поиск -->
-                    <form class="d-flex me-3" asp-controller="Applications" asp-action="Index" method="get">
+                    <form class="d-flex me-lg-3 mt-3 mt-lg-0 w-100 w-lg-auto" asp-controller="Applications" asp-action="Index" method="get">
                         <div class="input-group search-input-group">
                             <input class="form-control search-input" type="search" name="search" placeholder="🔍 Поиск..." value="@ViewBag.CurrentSearch">
                             <button class="btn btn-outline-light" type="submit">
@@ -268,11 +753,113 @@
                 </div>
             </div>
         </nav>
+        
+        <!-- Модальное окно профиля для мобильных устройств -->
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="mobile-profile-overlay" id="mobileProfileOverlay"></div>
+            <div class="mobile-profile-modal" id="mobileProfileModal">
+                <div class="mobile-profile-modal-content">
+                    <div class="mobile-profile-header">
+                        <h5>Профиль</h5>
+                        <button type="button" class="mobile-profile-close" id="mobileProfileClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mobile-profile-body">
+                        <div class="mobile-profile-info">
+                            @if (!string.IsNullOrEmpty(ViewBag.UserAvatar))
+                            {
+                                <img src="@ViewBag.UserAvatar" alt="Avatar" class="mobile-profile-avatar">
+                            }
+                            else
+                            {
+                                <div class="mobile-profile-avatar-placeholder">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                            }
+                            <h6 class="mobile-profile-name">@User.Identity.Name</h6>
+                        </div>
+                        <div class="mobile-profile-menu">
+                            <a href="@Url.Action("Profile", "Account")" class="mobile-profile-menu-item">
+                                <i class="fas fa-user"></i>
+                                <span>Мой профиль</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a href="@Url.Action("Settings", "Account")" class="mobile-profile-menu-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Настройки</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a href="@Url.Action("Applications", "Admin")" class="mobile-profile-menu-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Админ панель</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            }
+                            <div class="mobile-profile-divider"></div>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="mobile-profile-logout-form">
+                                <button type="submit" class="mobile-profile-menu-item mobile-profile-logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Выйти</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </header>
+    
+    <!-- Оверлей для мобильного меню -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 
     <main class="flex-grow-1">
         @RenderBody()
     </main>
+    
+    <!-- Нижняя навигационная панель для мобильных -->
+    <nav class="mobile-bottom-nav d-block d-md-none" style="background-color: #007bff !important;">
+        <ul class="mobile-bottom-nav-list">
+            <li class="mobile-bottom-nav-item">
+                <a href="@Url.Action("Index", "Home")" class="mobile-bottom-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" style="color: #ffffff !important;">
+                    <i class="fas fa-home" style="color: #ffffff !important;"></i>
+                    <span style="color: #ffffff !important; display: block !important; visibility: visible !important;">Главная</span>
+                </a>
+            </li>
+            <li class="mobile-bottom-nav-item">
+                <a href="@Url.Action("Index", "Applications")" class="mobile-bottom-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Applications" ? "active" : "")" style="color: #ffffff !important;">
+                    <i class="fas fa-th-large" style="color: #ffffff !important;"></i>
+                    <span style="color: #ffffff !important; display: block !important; visibility: visible !important;">Приложения</span>
+                </a>
+            </li>
+            <li class="mobile-bottom-nav-item">
+                <a href="#" class="mobile-bottom-nav-link" id="mobileSearchBtn" style="color: #ffffff !important;">
+                    <i class="fas fa-search" style="color: #ffffff !important;"></i>
+                    <span style="color: #ffffff !important; display: block !important; visibility: visible !important;">Поиск</span>
+                </a>
+            </li>
+            <li class="mobile-bottom-nav-item">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a href="#" class="mobile-bottom-nav-link" id="mobileProfileBtn" style="color: #ffffff !important;">
+                        <i class="fas fa-user" style="color: #ffffff !important;"></i>
+                        <span style="color: #ffffff !important; display: block !important; visibility: visible !important;">Профиль</span>
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Login", "Account")" class="mobile-bottom-nav-link" style="color: #ffffff !important;">
+                        <i class="fas fa-sign-in-alt" style="color: #ffffff !important;"></i>
+                        <span style="color: #ffffff !important; display: block !important; visibility: visible !important;">Вход</span>
+                    </a>
+                }
+            </li>
+        </ul>
+    </nav>
 
     <footer class="bg-dark text-light py-4 mt-5">
         <div class="container">
@@ -297,6 +884,44 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        // Скрыть прелоадер после загрузки страницы
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.page-loader');
+            if (loader) {
+                loader.classList.add('fade-out');
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 300);
+            }
+        });
+        
+        // Улучшенное мобильное меню
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            // Закрыть меню при клике вне его
+            document.addEventListener('click', function(e) {
+                if (navbarCollapse.classList.contains('show') &&
+                    !navbarCollapse.contains(e.target) &&
+                    !navbarToggler.contains(e.target)) {
+                    navbarToggler.click();
+                }
+            });
+            
+            // Закрыть меню при выборе пункта
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarToggler.click();
+                    }
+                });
+            });
+        });
+    </script>
     
     @await RenderSectionAsync("Scripts", required: false)
 </body>

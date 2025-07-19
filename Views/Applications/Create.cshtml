@@ -22,13 +22,13 @@
                                 <h5 class="border-bottom pb-2 mb-3">Основная информация</h5>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label asp-for="Name" class="form-label">Название приложения *</label>
                                 <input asp-for="Name" class="form-control" placeholder="Введите название приложения" />
                                 <span asp-validation-for="Name" class="text-danger"></span>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label asp-for="Version" class="form-label">Версия *</label>
                                 <input asp-for="Version" class="form-control" placeholder="1.0.0" />
                                 <span asp-validation-for="Version" class="text-danger"></span>
@@ -50,7 +50,7 @@
                                 <div class="form-text">Максимум 2000 символов</div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label asp-for="Category" class="form-label">Категория</label>
                                 <select asp-for="Category" class="form-select">
                                     <option value="">Выберите категорию</option>
@@ -69,7 +69,7 @@
                                 <span asp-validation-for="Category" class="text-danger"></span>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label asp-for="TagsString" class="form-label">Теги</label>
                                 <input type="text" id="tags" class="form-control"
                                        placeholder="Введите теги через запятую" />
@@ -86,7 +86,7 @@
                                 <h5 class="border-bottom pb-2 mb-3">Файлы</h5>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label asp-for="IconFile" class="form-label">Иконка приложения</label>
                                 <input asp-for="IconFile" type="file" id="iconFile" class="form-control"
                                        accept="image/*,.ico" />
@@ -95,7 +95,7 @@
                                 <span asp-validation-for="IconFile" class="text-danger"></span>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label asp-for="AppFile" class="form-label">Файл приложения</label>
                                 <input asp-for="AppFile" type="file" id="appFile" class="form-control"
                                        accept=".exe,.msi,.zip,.rar,.7z,.apk" />

@@ -9,15 +9,15 @@
 <div class="hero-section bg-primary text-white py-5 mb-5">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6">
+            <div class="col-lg-6 mb-4 mb-lg-0">
                 <h1 class="display-4 fw-bold mb-4">
-                    <i class="fas fa-rocket me-3"></i>AppGambit
+                    <i class="fas fa-rocket me-2 me-md-3"></i>AppGambit
                 </h1>
                 <p class="lead mb-4">
-                    Платформа для размещения и скачивания приложений. 
+                    Платформа для размещения и скачивания приложений.
                     Делитесь своими разработками и находите полезные программы.
                 </p>
-                <div class="d-flex gap-3">
+                <div class="d-flex flex-column flex-sm-row gap-3">
                     <a asp-controller="Applications" asp-action="Index" class="btn btn-light btn-lg">
                         <i class="fas fa-th-large me-2"></i>Все приложения
                     </a>
@@ -41,13 +41,13 @@
                         <div class="col-6">
                             <div class="stat-card bg-white bg-opacity-10 rounded p-3">
                                 <h3 class="h2 mb-1">@ViewBag.TotalApps</h3>
-                                <p class="mb-0">Приложений</p>
+                                <p class="mb-0 small">Приложений</p>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="stat-card bg-white bg-opacity-10 rounded p-3">
                                 <h3 class="h2 mb-1">@ViewBag.TotalUsers</h3>
-                                <p class="mb-0">Пользователей</p>
+                                <p class="mb-0 small">Пользователей</p>
                             </div>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
             <div class="row g-4">
                 @foreach (var app in popularApps)
                 {
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
                         <div class="card h-100 shadow-sm app-card">
                             <div class="card-img-top-wrapper">
                                 @if (!string.IsNullOrEmpty(app.IconUrl))
@@ -139,7 +139,7 @@
             <div class="row g-4">
                 @foreach (var app in newApps)
                 {
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
                         <div class="card h-100 shadow-sm app-card">
                             <div class="card-img-top-wrapper">
                                 @if (!string.IsNullOrEmpty(app.IconUrl))
@@ -190,13 +190,14 @@
             <div class="row g-3">
                 @foreach (var category in categories)
                 {
-                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                        <a asp-controller="Applications" asp-action="Index" asp-route-category="@category.Category" 
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <a asp-controller="Applications" asp-action="Index" asp-route-category="@category.Category"
                            class="card text-decoration-none category-card">
-                            <div class="card-body text-center">
+                            <div class="card-body text-center p-2 p-sm-3">
                                 <i class="fas fa-folder fa-2x text-primary mb-2"></i>
-                                <h6 class="card-title mb-1">@category.Category</h6>
-                                <small class="text-muted">@category.Count приложений</small>
+                                <h6 class="card-title mb-1 small">@category.Category</h6>
+                                <small class="text-muted d-none d-sm-block">@category.Count приложений</small>
+                                <small class="text-muted d-block d-sm-none">@category.Count</small>
                             </div>
                         </a>
                     </div>
@@ -241,6 +242,43 @@
         
         .lazy-load.loaded {
             opacity: 1;
+        }
+        
+        /* Мобильные улучшения */
+        @@media (max-width: 576px) {
+            .hero-section h1 {
+                font-size: 2rem !important;
+            }
+            
+            .hero-section .lead {
+                font-size: 1rem !important;
+            }
+            
+            .app-card .card-title {
+                font-size: 0.9rem;
+            }
+            
+            .app-card .card-text {
+                font-size: 0.8rem;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+            }
+            
+            .app-card .card-body {
+                padding: 0.75rem;
+            }
+            
+            .rating small {
+                font-size: 0.7rem;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.25rem !important;
+            }
         }
     </style>
     
