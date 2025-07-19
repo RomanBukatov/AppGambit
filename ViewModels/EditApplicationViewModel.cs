@@ -38,5 +38,8 @@ namespace AppGambit.ViewModels
         
         // Для удаления существующих скриншотов
         public List<string>? ScreenshotsToDelete { get; set; }
+        
+        // Для сохранения нового порядка скриншотов
+        public string? ScreenshotsOrder { get; set; }
     }
 }

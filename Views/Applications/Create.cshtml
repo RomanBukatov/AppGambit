@@ -236,23 +236,20 @@
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             const col = document.createElement('div');
-                            col.className = 'col-md-3 col-sm-4 col-6 mb-2';
+                            col.className = 'col-md-3 col-sm-4 col-6 mb-2 screenshot-new-item';
+                            col.setAttribute('data-index', index);
+                            col.setAttribute('draggable', 'true');
                             col.innerHTML = `
                                 <div class="position-relative">
                                     <img src="${e.target.result}" class="img-thumbnail w-100"
-                                         alt="Скриншот ${index + 1}" style="height: 100px; object-fit: cover;">
+                                         alt="Скриншот ${index + 1}" style="height: 100px; object-fit: cover; cursor: move;">
                                     <div class="position-absolute top-0 end-0 p-1">
-                                        <div class="btn-group-vertical" role="group">
-                                            ${index > 0 ? `<button type="button" class="btn btn-sm btn-primary" onclick="moveScreenshot(${index}, ${index - 1})" title="Переместить влево">
-                                                <i class="fas fa-arrow-left"></i>
-                                            </button>` : ''}
-                                            ${index < screenshotFiles.length - 1 ? `<button type="button" class="btn btn-sm btn-primary" onclick="moveScreenshot(${index}, ${index + 1})" title="Переместить вправо">
-                                                <i class="fas fa-arrow-right"></i>
-                                            </button>` : ''}
-                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeScreenshot(${index})" title="Удалить">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
+                                        <button type="button" class="btn btn-danger btn-xs"
+                                                onclick="removeScreenshot(${index})"
+                                                title="Удалить"
+                                                style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
                                     <div class="position-absolute bottom-0 start-0 bg-dark text-white px-2 py-1 small">
                                         ${index + 1}
@@ -260,6 +257,11 @@
                                 </div>
                             `;
                             screenshotsPreview.appendChild(col);
+                            
+                            // Инициализируем drag and drop после добавления всех элементов
+                            if (index === screenshotFiles.length - 1) {
+                                initDragAndDrop();
+                            }
                         };
                         reader.readAsDataURL(file);
                     }
@@ -287,6 +289,83 @@
                 const dt = new DataTransfer();
                 screenshotFiles.forEach(file => dt.items.add(file));
                 screenshots.files = dt.files;
+            }
+            
+            // Drag and Drop функциональность
+            let draggedElement = null;
+            let draggedIndex = null;
+            
+            function initDragAndDrop() {
+                const items = screenshotsPreview.querySelectorAll('.screenshot-new-item');
+                items.forEach((item) => {
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('drop', handleDrop);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragenter', handleDragEnter);
+                    item.addEventListener('dragleave', handleDragLeave);
+                });
+            }
+            
+            function handleDragStart(e) {
+                draggedElement = this;
+                draggedIndex = parseInt(this.getAttribute('data-index'));
+                
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
+                
+                this.style.opacity = '0.4';
+                this.classList.add('dragging');
+            }
+            
+            function handleDragOver(e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                e.dataTransfer.dropEffect = 'move';
+                return false;
+            }
+            
+            function handleDragEnter(e) {
+                this.classList.add('drag-over');
+            }
+            
+            function handleDragLeave(e) {
+                this.classList.remove('drag-over');
+            }
+            
+            function handleDrop(e) {
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                
+                const targetIndex = parseInt(this.getAttribute('data-index'));
+                
+                if (draggedElement !== this) {
+                    const draggedFile = screenshotFiles[draggedIndex];
+                    screenshotFiles.splice(draggedIndex, 1);
+                    
+                    if (targetIndex > draggedIndex) {
+                        screenshotFiles.splice(targetIndex - 1, 0, draggedFile);
+                    } else {
+                        screenshotFiles.splice(targetIndex, 0, draggedFile);
+                    }
+                    
+                    updateScreenshotsPreview();
+                }
+                
+                this.classList.remove('drag-over');
+                return false;
+            }
+            
+            function handleDragEnd(e) {
+                this.style.opacity = '1';
+                this.classList.remove('dragging');
+                
+                // Удаляем все классы drag-over
+                document.querySelectorAll('.drag-over').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
             }
             
             // Глобальные функции для кнопок

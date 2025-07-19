@@ -825,6 +825,25 @@ namespace AppGambit.Controllers
                     }
                 }
 
+                // Обработка нового порядка скриншотов
+                if (!string.IsNullOrEmpty(model.ScreenshotsOrder))
+                {
+                    var orderedScreenshots = model.ScreenshotsOrder.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .ToList();
+                    
+                    // Проверяем, что все скриншоты из нового порядка существуют в текущих
+                    var validOrderedScreenshots = orderedScreenshots
+                        .Where(s => application.Screenshots.Contains(s))
+                        .ToList();
+                    
+                    // Если есть изменения в порядке, применяем их
+                    if (validOrderedScreenshots.Any())
+                    {
+                        application.Screenshots = validOrderedScreenshots;
+                    }
+                }
+
                 // Удаление выбранных скриншотов
                 if (model.ScreenshotsToDelete != null && model.ScreenshotsToDelete.Any())
                 {

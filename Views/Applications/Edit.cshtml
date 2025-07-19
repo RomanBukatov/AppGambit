@@ -129,21 +129,29 @@
                                     <div id="currentScreenshots" class="row g-2 mb-3">
                                         @for (int i = 0; i < Model.CurrentScreenshots.Count; i++)
                                         {
-                                            <div class="col-md-3 col-sm-4 col-6">
+                                            var screenshotUrl = Model.CurrentScreenshots[i];
+                                            var index = i;
+                                            <div class="col-md-3 col-sm-4 col-6 screenshot-item" data-index="@index" data-url="@screenshotUrl">
                                                 <div class="position-relative">
-                                                    <img src="@Model.CurrentScreenshots[i]" class="img-thumbnail w-100"
-                                                         alt="Скриншот @(i + 1)" style="height: 100px; object-fit: cover;">
+                                                    <img src="@screenshotUrl" class="img-thumbnail w-100"
+                                                         alt="Скриншот @(index + 1)" style="height: 100px; object-fit: cover; cursor: move;">
                                                     <div class="position-absolute top-0 end-0 p-1">
-                                                        <button type="button" class="btn btn-sm btn-danger" 
-                                                                onclick="markScreenshotForDeletion('@Model.CurrentScreenshots[i]', this)" 
-                                                                title="Удалить">
+                                                        <button type="button" class="btn btn-danger btn-xs"
+                                                                onclick="markScreenshotForDeletion('@screenshotUrl', this)"
+                                                                title="Удалить"
+                                                                style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
                                                             <i class="fas fa-times"></i>
                                                         </button>
+                                                    </div>
+                                                    <div class="position-absolute bottom-0 start-0 bg-dark text-white px-2 py-1 small">
+                                                        <span class="screenshot-number">@(index + 1)</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         }
                                     </div>
+                                    <!-- Скрытое поле для сохранения порядка скриншотов -->
+                                    <input type="hidden" id="screenshotsOrder" name="ScreenshotsOrder" value="" />
                                 }
                                 
                                 <label asp-for="Screenshots" class="form-label">Добавить новые скриншоты</label>
@@ -188,9 +196,19 @@
             const fileInfo = document.getElementById('fileInfo');
             const screenshots = document.getElementById('screenshots');
             const screenshotsPreview = document.getElementById('screenshotsPreview');
+            const currentScreenshots = document.getElementById('currentScreenshots');
             
             let tags = [];
             let screenshotsToDelete = [];
+            let existingScreenshots = [];
+            
+            // Инициализация существующих скриншотов
+            @if (Model.CurrentScreenshots != null && Model.CurrentScreenshots.Any())
+            {
+                <text>
+                existingScreenshots = @Html.Raw(Json.Serialize(Model.CurrentScreenshots));
+                </text>
+            }
 
             // Инициализация существующих тегов
             const existingTags = '@Html.Raw(Model.TagsString ?? "")';
@@ -280,37 +298,6 @@
                 updateScreenshotsPreview();
             });
             
-            function updateScreenshotsPreview() {
-                screenshotsPreview.innerHTML = '';
-                
-                screenshotFiles.forEach((file, index) => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const col = document.createElement('div');
-                            col.className = 'col-md-3 col-sm-4 col-6 mb-2';
-                            col.innerHTML = `
-                                <div class="position-relative">
-                                    <img src="${e.target.result}" class="img-thumbnail w-100"
-                                         alt="Новый скриншот ${index + 1}" style="height: 100px; object-fit: cover;">
-                                    <div class="position-absolute top-0 end-0 p-1">
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeNewScreenshot(${index})" title="Удалить">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                    <div class="position-absolute bottom-0 start-0 bg-success text-white px-2 py-1 small">
-                                        Новый
-                                    </div>
-                                </div>
-                            `;
-                            screenshotsPreview.appendChild(col);
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-                
-                updateFileInput();
-            }
             
             function removeNewScreenshot(index) {
                 screenshotFiles.splice(index, 1);
@@ -358,8 +345,240 @@
                 });
             }
             
+            // Функция для перемещения существующих скриншотов
+            window.moveExistingScreenshot = function(fromIndex, toIndex) {
+                if (toIndex >= 0 && toIndex < existingScreenshots.length) {
+                    // Меняем местами элементы в массиве
+                    const temp = existingScreenshots[fromIndex];
+                    existingScreenshots[fromIndex] = existingScreenshots[toIndex];
+                    existingScreenshots[toIndex] = temp;
+                    
+                    // Обновляем отображение
+                    updateExistingScreenshotsDisplay();
+                }
+            };
+            
+            function updateExistingScreenshotsDisplay() {
+                if (!currentScreenshots) return;
+                
+                currentScreenshots.innerHTML = '';
+                existingScreenshots.forEach((url, index) => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 col-sm-4 col-6 screenshot-item';
+                    col.setAttribute('data-index', index);
+                    col.setAttribute('data-url', url);
+                    col.setAttribute('draggable', 'true');
+                    
+                    const isMarkedForDeletion = screenshotsToDelete.includes(url);
+                    const opacity = isMarkedForDeletion ? '0.5' : '1';
+                    
+                    col.innerHTML = `
+                        <div class="position-relative">
+                            <img src="${url}" class="img-thumbnail w-100"
+                                 alt="Скриншот ${index + 1}" style="height: 100px; object-fit: cover; cursor: move; opacity: ${opacity};">
+                            <div class="position-absolute top-0 end-0 p-1">
+                                <button type="button" class="btn btn-danger btn-xs"
+                                        onclick="${isMarkedForDeletion ? `unmarkScreenshotForDeletion('${url}', this)` : `markScreenshotForDeletion('${url}', this)`}"
+                                        title="${isMarkedForDeletion ? 'Отменить удаление' : 'Удалить'}"
+                                        style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
+                                    <i class="fas fa-${isMarkedForDeletion ? 'undo' : 'times'}"></i>
+                                </button>
+                            </div>
+                            <div class="position-absolute bottom-0 start-0 bg-dark text-white px-2 py-1 small">
+                                <span class="screenshot-number">${index + 1}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    currentScreenshots.appendChild(col);
+                });
+                
+                // Обновляем скрытое поле с порядком скриншотов
+                updateScreenshotsOrder();
+                
+                // Инициализируем drag and drop
+                initDragAndDrop();
+            }
+            
+            function updateScreenshotsOrder() {
+                const orderInput = document.getElementById('screenshotsOrder');
+                if (orderInput) {
+                    orderInput.value = existingScreenshots.join(',');
+                }
+            }
+            
+            // Переопределяем функции для работы с удалением
+            window.markScreenshotForDeletion = function(screenshotUrl, button) {
+                if (!screenshotsToDelete.includes(screenshotUrl)) {
+                    screenshotsToDelete.push(screenshotUrl);
+                }
+                updateExistingScreenshotsDisplay();
+                updateScreenshotsToDeleteInputs();
+            };
+
+            window.unmarkScreenshotForDeletion = function(screenshotUrl, button) {
+                screenshotsToDelete = screenshotsToDelete.filter(url => url !== screenshotUrl);
+                updateExistingScreenshotsDisplay();
+                updateScreenshotsToDeleteInputs();
+            };
+            
+            // Drag and Drop функциональность
+            let draggedElement = null;
+            let draggedIndex = null;
+            let draggedType = null; // 'existing' или 'new'
+            
+            function initDragAndDrop() {
+                // Для существующих скриншотов
+                const existingItems = currentScreenshots?.querySelectorAll('.screenshot-item');
+                existingItems?.forEach((item, index) => {
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('drop', handleDrop);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragenter', handleDragEnter);
+                    item.addEventListener('dragleave', handleDragLeave);
+                });
+                
+                // Для новых скриншотов
+                const newItems = screenshotsPreview?.querySelectorAll('.screenshot-new-item');
+                newItems?.forEach((item, index) => {
+                    item.setAttribute('draggable', 'true');
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('drop', handleDrop);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragenter', handleDragEnter);
+                    item.addEventListener('dragleave', handleDragLeave);
+                });
+            }
+            
+            function handleDragStart(e) {
+                draggedElement = this;
+                draggedIndex = parseInt(this.getAttribute('data-index'));
+                draggedType = this.classList.contains('screenshot-new-item') ? 'new' : 'existing';
+                
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
+                
+                this.style.opacity = '0.4';
+            }
+            
+            function handleDragOver(e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                e.dataTransfer.dropEffect = 'move';
+                return false;
+            }
+            
+            function handleDragEnter(e) {
+                this.classList.add('drag-over');
+            }
+            
+            function handleDragLeave(e) {
+                this.classList.remove('drag-over');
+            }
+            
+            function handleDrop(e) {
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                
+                const targetIndex = parseInt(this.getAttribute('data-index'));
+                const targetType = this.classList.contains('screenshot-new-item') ? 'new' : 'existing';
+                
+                // Перемещаем только если это элементы одного типа
+                if (draggedType === targetType && draggedElement !== this) {
+                    if (draggedType === 'existing') {
+                        // Перемещаем существующий скриншот
+                        const draggedUrl = existingScreenshots[draggedIndex];
+                        existingScreenshots.splice(draggedIndex, 1);
+                        
+                        if (targetIndex > draggedIndex) {
+                            existingScreenshots.splice(targetIndex - 1, 0, draggedUrl);
+                        } else {
+                            existingScreenshots.splice(targetIndex, 0, draggedUrl);
+                        }
+                        
+                        updateExistingScreenshotsDisplay();
+                    } else if (draggedType === 'new') {
+                        // Перемещаем новый скриншот
+                        const draggedFile = screenshotFiles[draggedIndex];
+                        screenshotFiles.splice(draggedIndex, 1);
+                        
+                        if (targetIndex > draggedIndex) {
+                            screenshotFiles.splice(targetIndex - 1, 0, draggedFile);
+                        } else {
+                            screenshotFiles.splice(targetIndex, 0, draggedFile);
+                        }
+                        
+                        updateScreenshotsPreview();
+                    }
+                }
+                
+                this.classList.remove('drag-over');
+                return false;
+            }
+            
+            function handleDragEnd(e) {
+                this.style.opacity = '1';
+                
+                // Удаляем все классы drag-over
+                document.querySelectorAll('.drag-over').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+            }
+            
+            // Обновляем функцию предпросмотра новых скриншотов
+            function updateScreenshotsPreview() {
+                screenshotsPreview.innerHTML = '';
+                
+                screenshotFiles.forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-md-3 col-sm-4 col-6 mb-2 screenshot-new-item';
+                            col.setAttribute('data-index', index);
+                            col.setAttribute('draggable', 'true');
+                            col.innerHTML = `
+                                <div class="position-relative">
+                                    <img src="${e.target.result}" class="img-thumbnail w-100"
+                                         alt="Новый скриншот ${index + 1}" style="height: 100px; object-fit: cover; cursor: move;">
+                                    <div class="position-absolute top-0 end-0 p-1">
+                                        <button type="button" class="btn btn-danger btn-xs"
+                                                onclick="removeNewScreenshot(${index})"
+                                                title="Удалить"
+                                                style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="position-absolute bottom-0 start-0 bg-success text-white px-2 py-1 small">
+                                        Новый ${index + 1}
+                                    </div>
+                                </div>
+                            `;
+                            screenshotsPreview.appendChild(col);
+                            
+                            // Инициализируем drag and drop после добавления элемента
+                            if (index === screenshotFiles.length - 1) {
+                                initDragAndDrop();
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                updateFileInput();
+            }
+            
             // Глобальные функции
             window.removeNewScreenshot = removeNewScreenshot;
+            
+            // Инициализация при загрузке
+            if (existingScreenshots.length > 0) {
+                updateExistingScreenshotsDisplay();
+            }
         });
     </script>
 }
