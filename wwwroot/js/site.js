@@ -12,6 +12,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Простая оптимизация форм
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
+        // Пропускаем формы комментариев, которые обрабатываются через AJAX
+        if (form.id === 'comment-form' ||
+            form.closest('.comment-edit-form') ||
+            form.hasAttribute('data-ajax-form')) {
+            console.log('🚫 Пропускаем AJAX форму:', form.id || form.className);
+            return;
+        }
+        
+        console.log('✅ Добавляем обработчик для обычной формы:', form.id || form.className);
         form.addEventListener('submit', function() {
             const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
             if (submitBtn && !submitBtn.disabled) {

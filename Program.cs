@@ -174,7 +174,7 @@ app.MapControllerRoute(
     name: "applicationActions",
     pattern: "Applications/{action}",
     defaults: new { controller = "Applications" },
-    constraints: new { action = @"^(Create|Index|Search)$" });
+    constraints: new { action = @"^(Create|Index|Search|AddComment|UpdateComment|DeleteComment|Rate|Download|Edit)$" });
 
 app.MapControllerRoute(
     name: "applicationByName",

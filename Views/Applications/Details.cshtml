@@ -197,7 +197,7 @@
                     <!-- Форма добавления комментария -->
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <form id="comment-form" onsubmit="addComment(event)" class="mb-4">
+                        <form id="comment-form" onsubmit="addComment(event)" class="mb-4" data-ajax-form="true">
                             <input type="hidden" name="applicationId" value="@Model.Id" />
                             <div class="mb-3">
                                 <textarea name="content" class="form-control" rows="3" placeholder="Напишите ваш комментарий..." required maxlength="1000" id="commentTextarea"></textarea>
@@ -246,7 +246,15 @@
                                                 }
                                             </div>
                                             <div class="d-flex align-items-center gap-2">
-                                                <small class="text-muted">@comment.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                                <small class="text-muted">
+                                                    @comment.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                                    @if (comment.UpdatedAt > comment.CreatedAt.AddMinutes(1))
+                                                    {
+                                                        <span class="badge bg-secondary ms-1" title="Изменено @comment.UpdatedAt.ToString("dd.MM.yyyy HH:mm")">
+                                                            <i class="fas fa-edit"></i> изменено
+                                                        </span>
+                                                    }
+                                                </small>
                                                 @if (User.Identity?.IsAuthenticated == true && (comment.UserId == ViewBag.CurrentUserId || ViewBag.IsAdmin == true))
                                                 {
                                                     <div class="dropdown">
@@ -490,12 +498,19 @@
     </style>
     
     <script>
+        console.log('🎬 Загрузка скрипта Details.cshtml');
+        
         // Глобальные переменные для управления скриншотами
         let currentScreenshotIndex = 0;
         const screenshots = @Html.Raw(Json.Serialize(Model.Screenshots ?? new List<string>()));
         
+        console.log('📸 Скриншоты:', screenshots);
+        console.log('👤 Текущий пользователь ID:', '@ViewBag.CurrentUserId');
+        console.log('🔐 Пользователь аутентифицирован:', @(User.Identity?.IsAuthenticated == true ? "true" : "false"));
+        
         // Обработка модального окна для скриншотов
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM загружен, инициализируем функции');
             const screenshotModal = document.getElementById('screenshotModal');
             const modalImage = document.getElementById('modalImage');
             
@@ -736,44 +751,108 @@
         }
 
         async function updateComment(event, commentId) {
+            console.log('🔄 Начало процесса обновления комментария');
             event.preventDefault();
             
             const form = event.target;
             const textarea = form.querySelector('textarea');
             const newContent = textarea.value.trim();
             
+            console.log('📝 Данные для обновления:', {
+                commentId: commentId,
+                newContent: newContent,
+                contentLength: newContent.length
+            });
+            
             if (!newContent) {
+                console.log('❌ Ошибка: пустой комментарий');
                 alert('Комментарий не может быть пустым');
                 return;
             }
 
+            if (newContent.length > 1000) {
+                console.log('❌ Ошибка: комментарий слишком длинный');
+                alert('Комментарий не может быть длиннее 1000 символов');
+                return;
+            }
+
+            const requestData = {
+                commentId: commentId,
+                content: newContent
+            };
+
+            console.log('📤 Отправляем запрос на обновление:', requestData);
+            console.log('🌐 URL запроса:', '/Applications/UpdateComment');
+
             try {
-                const response = await fetch('@Url.Action("UpdateComment", "Applications")', {
+                const response = await fetch('/Applications/UpdateComment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        commentId: commentId,
-                        content: newContent
-                    })
+                    body: JSON.stringify(requestData)
+                });
+
+                console.log('📥 Получен ответ от сервера:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
                 });
 
                 if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('✅ Успешный ответ сервера:', responseData);
+                    
                     const commentDiv = document.getElementById(`comment-${commentId}`);
                     const contentDiv = commentDiv.querySelector('.comment-content p');
                     const editForm = commentDiv.querySelector('.comment-edit-form');
+                    const dateElement = commentDiv.querySelector('.text-muted');
                     
+                    console.log('🔄 Обновляем DOM элементы');
                     contentDiv.textContent = newContent;
                     contentDiv.parentElement.style.display = 'block';
                     editForm.style.display = 'none';
                     
+                    // Добавляем индикатор "изменено"
+                    const now = new Date();
+                    const formattedDate = now.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Проверяем, есть ли уже индикатор "изменено"
+                    let editedBadge = dateElement.querySelector('.badge');
+                    if (!editedBadge) {
+                        editedBadge = document.createElement('span');
+                        editedBadge.className = 'badge bg-secondary ms-1';
+                        editedBadge.innerHTML = '<i class="fas fa-edit"></i> изменено';
+                        dateElement.appendChild(editedBadge);
+                    }
+                    editedBadge.title = `Изменено ${formattedDate}`;
+                    
+                    console.log('✅ DOM обновлен успешно');
                     showNotification('Комментарий обновлен', 'success');
                 } else {
-                    throw new Error('Ошибка при обновлении комментария');
+                    console.log('❌ Ошибка ответа сервера');
+                    const errorText = await response.text();
+                    console.log('📄 Текст ошибки:', errorText);
+                    
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        console.log('📋 Данные ошибки (JSON):', errorData);
+                        showNotification(errorData.message || 'Ошибка при обновлении комментария', 'error');
+                    } catch (parseError) {
+                        console.log('❌ Не удалось распарсить JSON ошибки:', parseError);
+                        showNotification('Ошибка при обновлении комментария', 'error');
+                    }
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('💥 Критическая ошибка:', error);
+                console.error('📍 Stack trace:', error.stack);
                 showNotification('Ошибка при обновлении комментария', 'error');
             }
         }
@@ -787,7 +866,7 @@
             const scrollPosition = window.pageYOffset;
 
             try {
-                const response = await fetch('@Url.Action("DeleteComment", "Applications")', {
+                const response = await fetch('/Applications/DeleteComment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -940,10 +1019,19 @@
 
         // Счетчик символов для комментариев
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔢 Инициализация счетчика символов');
             const commentTextarea = document.getElementById('commentTextarea');
             const charCount = document.getElementById('commentCharCount');
+            const commentForm = document.getElementById('comment-form');
+            
+            console.log('🔍 Найденные элементы:', {
+                commentTextarea: !!commentTextarea,
+                charCount: !!charCount,
+                commentForm: !!commentForm
+            });
             
             if (commentTextarea && charCount) {
+                console.log('✅ Элементы найдены, настраиваем счетчик');
                 function updateCharCount() {
                     const currentLength = commentTextarea.value.length;
                     charCount.textContent = currentLength;
@@ -959,15 +1047,51 @@
                 
                 commentTextarea.addEventListener('input', updateCharCount);
                 updateCharCount(); // Инициализация
+                console.log('✅ Счетчик символов настроен');
+            } else {
+                console.log('❌ Не найдены элементы для счетчика символов');
+            }
+            
+            // Проверяем форму комментариев
+            if (commentForm) {
+                console.log('✅ Форма комментариев найдена');
+                console.log('📋 Атрибуты формы:', {
+                    id: commentForm.id,
+                    onsubmit: commentForm.getAttribute('onsubmit'),
+                    'data-ajax-form': commentForm.getAttribute('data-ajax-form')
+                });
+            } else {
+                console.log('❌ Форма комментариев не найдена');
             }
         });
 
         // Функция для создания HTML комментария
-        function createCommentHtml(content, displayName, date, userId, commentId, profileImageUrl = null) {
+        function createCommentHtml(content, displayName, date, userId, commentId, profileImageUrl = null, createdAt = null, updatedAt = null) {
             const isLongComment = content.length > 300;
             const shortContent = isLongComment ? content.substring(0, 300) + "..." : content;
             const currentUserId = '@ViewBag.CurrentUserId';
             const isCurrentUser = userId === currentUserId;
+            
+            // Проверяем, был ли комментарий изменен (разница больше 1 минуты)
+            let editedBadge = '';
+            if (createdAt && updatedAt) {
+                const created = new Date(createdAt);
+                const updated = new Date(updatedAt);
+                const diffMinutes = (updated - created) / (1000 * 60);
+                
+                if (diffMinutes > 1) {
+                    const updatedFormatted = updated.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    editedBadge = `<span class="badge bg-secondary ms-1" title="Изменено ${updatedFormatted}">
+                        <i class="fas fa-edit"></i> изменено
+                    </span>`;
+                }
+            }
             
             const avatarHtml = profileImageUrl ?
                 `<a href="/${displayName}" style="text-decoration: none;"><img src="/${profileImageUrl}" class="rounded-circle" alt="${displayName}" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;"></a>` :
@@ -988,7 +1112,10 @@
                                     ${isCurrentUser ? '<span class="badge bg-primary ms-2">Автор</span>' : ''}
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <small class="text-muted">${date}</small>
+                                    <small class="text-muted">
+                                        ${date}
+                                        ${editedBadge}
+                                    </small>
                                     ${isCurrentUser ? `
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -1021,6 +1148,17 @@
                                     <p class="mb-0">${content}</p>
                                 `}
                             </div>
+                            <div class="comment-edit-form" style="display: none;">
+                                <form onsubmit="updateComment(event, ${commentId})">
+                                    <div class="mb-2">
+                                        <textarea class="form-control" rows="3" required maxlength="1000">${content}</textarea>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit(${commentId})">Отмена</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1029,6 +1167,7 @@
 
         // Функция для добавления комментария через AJAX
         async function addComment(event) {
+            console.log('🚀 Начало процесса добавления комментария');
             event.preventDefault();
             
             const form = event.target;
@@ -1037,67 +1176,92 @@
             const content = textarea.value.trim();
             const applicationId = form.querySelector('input[name="applicationId"]').value;
             
+            console.log('📝 Данные формы:', {
+                content: content,
+                applicationId: applicationId,
+                contentLength: content.length
+            });
+            
             if (!content) {
+                console.log('❌ Ошибка: пустой комментарий');
                 showNotification('Комментарий не может быть пустым', 'error');
                 return;
             }
             
             if (content.length > 1000) {
+                console.log('❌ Ошибка: комментарий слишком длинный');
                 showNotification('Комментарий не может быть длиннее 1000 символов', 'error');
                 return;
             }
             
             // Блокируем кнопку отправки
+            console.log('🔒 Блокируем кнопку отправки');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Отправка...';
             
+            const requestData = {
+                applicationId: parseInt(applicationId),
+                content: content
+            };
+            
+            console.log('📤 Отправляем запрос:', requestData);
+            console.log('🌐 URL запроса:', '/Applications/AddComment');
+
             try {
-                const response = await fetch('@Url.Action("AddComment", "Applications")', {
+                const response = await fetch('/Applications/AddComment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        applicationId: parseInt(applicationId),
-                        content: content
-                    })
+                    body: JSON.stringify(requestData)
+                });
+                
+                console.log('📥 Получен ответ от сервера:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
                 });
                 
                 if (response.ok) {
                     const responseData = await response.json();
+                    console.log('✅ Успешный ответ сервера:', responseData);
                     
                     // Очищаем форму
                     textarea.value = '';
                     document.getElementById('commentCharCount').textContent = '0';
+                    console.log('🧹 Форма очищена');
                     
                     // Показываем уведомление
                     showNotification('Комментарий успешно добавлен', 'success');
                     
                     // Обновляем счетчик комментариев
                     const commentsHeader = document.getElementById('comments-header');
-                    console.log('Adding comment - found header:', commentsHeader);
+                    console.log('🔢 Обновляем счетчик комментариев, найден заголовок:', commentsHeader);
                     
                     if (commentsHeader) {
                         const match = commentsHeader.textContent.match(/\((\d+)\)/);
-                        console.log('Current header text:', commentsHeader.textContent);
-                        console.log('Match result:', match);
+                        console.log('📊 Текущий текст заголовка:', commentsHeader.textContent);
+                        console.log('🔍 Результат поиска числа:', match);
                         
                         if (match) {
                             const currentCount = parseInt(match[1]);
                             const newCount = currentCount + 1;
                             commentsHeader.innerHTML = `<i class="fas fa-comments me-2"></i>Комментарии (${newCount})`;
-                            console.log('Updated count from', currentCount, 'to', newCount);
+                            console.log('📈 Счетчик обновлен с', currentCount, 'на', newCount);
                         } else {
                             // Если нет скобок, значит счетчик равен 0
                             commentsHeader.innerHTML = `<i class="fas fa-comments me-2"></i>Комментарии (1)`;
-                            console.log('No match found, setting count to 1');
+                            console.log('🆕 Установлен счетчик в 1 (первый комментарий)');
                         }
                     } else {
-                        console.error('Comments header not found!');
+                        console.error('❌ Заголовок комментариев не найден!');
                     }
                     
                     // Создаем новый элемент комментария используя данные из ответа сервера
                     const commentData = responseData.comment;
+                    console.log('🏗️ Создаем HTML для нового комментария:', commentData);
+                    
                     const createdAt = new Date(commentData.createdAt);
                     const formattedDate = createdAt.toLocaleDateString('ru-RU', {
                         day: '2-digit',
@@ -1113,7 +1277,9 @@
                         formattedDate,
                         commentData.user.id,
                         commentData.id,
-                        commentData.user.profileImageUrl
+                        commentData.user.profileImageUrl,
+                        commentData.createdAt,
+                        commentData.createdAt // Для нового комментария createdAt = updatedAt
                     );
                     
                     // Удаляем сообщение "Комментариев пока нет", если оно есть
@@ -1122,22 +1288,38 @@
                                             Array.from(document.querySelectorAll('.text-muted.text-center.py-3')).find(el => el.textContent.includes('Комментариев пока нет'));
                     if (noCommentsMessage) {
                         noCommentsMessage.remove();
+                        console.log('🗑️ Удалено сообщение "Комментариев пока нет"');
                     }
                     
                     // Находим форму комментариев и добавляем новый комментарий сразу после неё
                     const commentForm = document.getElementById('comment-form');
                     if (commentForm) {
                         commentForm.insertAdjacentHTML('afterend', newCommentHtml);
+                        console.log('✨ Новый комментарий добавлен в DOM');
+                    } else {
+                        console.error('❌ Форма комментариев не найдена!');
                     }
                 } else {
-                    const errorData = await response.json();
-                    showNotification(errorData.message || 'Ошибка при добавлении комментария', 'error');
+                    console.log('❌ Ошибка ответа сервера');
+                    const errorText = await response.text();
+                    console.log('📄 Текст ошибки:', errorText);
+                    
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        console.log('📋 Данные ошибки (JSON):', errorData);
+                        showNotification(errorData.message || 'Ошибка при добавлении комментария', 'error');
+                    } catch (parseError) {
+                        console.log('❌ Не удалось распарсить JSON ошибки:', parseError);
+                        showNotification('Ошибка при добавлении комментария', 'error');
+                    }
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('💥 Критическая ошибка:', error);
+                console.error('📍 Stack trace:', error.stack);
                 showNotification('Ошибка при добавлении комментария', 'error');
             } finally {
                 // Разблокируем кнопку
+                console.log('🔓 Разблокируем кнопку отправки');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Отправить';
             }

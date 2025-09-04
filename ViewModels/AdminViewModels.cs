@@ -29,6 +29,7 @@ namespace AppGambit.ViewModels
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public string UserDisplayName { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string ApplicationName { get; set; } = string.Empty;

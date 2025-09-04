@@ -57,6 +57,7 @@ namespace AppGambit.Controllers
                         Id = c.Id,
                         Content = c.Content,
                         CreatedAt = c.CreatedAt,
+                        UpdatedAt = c.UpdatedAt,
                         UserDisplayName = c.User.DisplayName ?? c.User.Email ?? "Неизвестный",
                         ApplicationName = c.Application.Name,
                         ApplicationId = c.ApplicationId
@@ -138,6 +139,7 @@ namespace AppGambit.Controllers
                     Id = c.Id,
                     Content = c.Content,
                     CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
                     UserDisplayName = c.User.DisplayName ?? c.User.Email ?? "Неизвестный",
                     UserId = c.UserId,
                     ApplicationName = c.Application.Name,

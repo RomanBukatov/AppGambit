@@ -235,19 +235,17 @@ namespace AppGambit.Controllers
             }
 
             // Получаем комментарии отдельно
-            var comments = await _cache.GetOrCreateAsync($"application_comments_{application.Id}", async entry =>
-            {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-                entry.Size = 1;
-                
-                return await _context.Comments
-                    .Include(c => c.User)
-                    .Where(c => c.ApplicationId == application.Id)
-                    .OrderByDescending(c => c.CreatedAt)
-                    .Take(50)
-                    .AsNoTracking()
-                    .ToListAsync();
-            });
+            // Временно отключаем кэш для диагностики проблемы
+            _logger.LogInformation("🔍 Загружаем комментарии для приложения {ApplicationId} (DetailsByName)", application.Id);
+            var comments = await _context.Comments
+                .Include(c => c.User)
+                .Where(c => c.ApplicationId == application.Id)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(50)
+                .AsNoTracking()
+                .ToListAsync();
+            
+            _logger.LogInformation("📊 Найдено комментариев: {CommentsCount} (DetailsByName)", comments.Count);
 
             application.Comments = comments;
 
@@ -297,19 +295,22 @@ namespace AppGambit.Controllers
             }
 
             // Получаем комментарии отдельно для лучшей производительности
-            var comments = await _cache.GetOrCreateAsync($"application_comments_{id}", async entry =>
+            // Временно отключаем кэш для диагностики проблемы
+            _logger.LogInformation("🔍 Загружаем комментарии для приложения {ApplicationId}", id);
+            var comments = await _context.Comments
+                .Include(c => c.User)
+                .Where(c => c.ApplicationId == id)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(50) // Ограничиваем количество комментариев
+                .AsNoTracking()
+                .ToListAsync();
+            
+            _logger.LogInformation("📊 Найдено комментариев: {CommentsCount}", comments.Count);
+            foreach (var comment in comments)
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-                entry.Size = 1;
-                
-                return await _context.Comments
-                    .Include(c => c.User)
-                    .Where(c => c.ApplicationId == id)
-                    .OrderByDescending(c => c.CreatedAt)
-                    .Take(50) // Ограничиваем количество комментариев
-                    .AsNoTracking()
-                    .ToListAsync();
-            });
+                _logger.LogInformation("💬 Комментарий ID: {CommentId}, Автор: {UserId}, Содержимое: {Content}",
+                    comment.Id, comment.UserId, comment.Content.Substring(0, Math.Min(50, comment.Content.Length)));
+            }
 
             application.Comments = comments;
 
@@ -556,20 +557,63 @@ namespace AppGambit.Controllers
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> AddComment([FromBody] AddCommentRequest request)
         {
+            _logger.LogInformation("🚀 Начало обработки запроса на добавление комментария");
+            _logger.LogInformation("📝 Данные запроса: ApplicationId={ApplicationId}, Content='{Content}' (длина: {ContentLength})",
+                request.ApplicationId, request.Content, request.Content?.Length ?? 0);
+            
+            // Проверяем подключение к базе данных
             try
             {
+                var canConnect = await _context.Database.CanConnectAsync();
+                _logger.LogInformation("🔌 Подключение к БД: {CanConnect}", canConnect);
+                
+                if (!canConnect)
+                {
+                    _logger.LogError("❌ Не удается подключиться к базе данных");
+                    return StatusCode(500, new { success = false, message = "Ошибка подключения к базе данных" });
+                }
+            }
+            catch (Exception dbEx)
+            {
+                _logger.LogError(dbEx, "💥 Ошибка при проверке подключения к БД");
+                return StatusCode(500, new { success = false, message = "Ошибка подключения к базе данных" });
+            }
+            
+            try
+            {
+                // Проверяем аутентификацию пользователя
+                if (!User.Identity?.IsAuthenticated == true)
+                {
+                    _logger.LogWarning("❌ Пользователь не аутентифицирован");
+                    return Unauthorized(new { success = false, message = "Необходима авторизация" });
+                }
+
+                var userId = _userManager.GetUserId(User);
+                _logger.LogInformation("👤 ID пользователя: {UserId}", userId);
+
                 if (string.IsNullOrWhiteSpace(request.Content))
                 {
+                    _logger.LogWarning("❌ Пустой комментарий от пользователя {UserId}", userId);
                     return BadRequest(new { success = false, message = "Комментарий не может быть пустым" });
                 }
 
                 var content = request.Content.Trim();
                 if (content.Length > 1000)
                 {
+                    _logger.LogWarning("❌ Слишком длинный комментарий от пользователя {UserId}: {Length} символов", userId, content.Length);
                     return BadRequest(new { success = false, message = "Комментарий не может быть длиннее 1000 символов" });
                 }
 
-                var userId = _userManager.GetUserId(User);
+                // Проверяем существование приложения
+                var applicationExists = await _context.Applications.AnyAsync(a => a.Id == request.ApplicationId);
+                if (!applicationExists)
+                {
+                    _logger.LogWarning("❌ Приложение с ID {ApplicationId} не найдено", request.ApplicationId);
+                    return NotFound(new { success = false, message = "Приложение не найдено" });
+                }
+
+                _logger.LogInformation("✅ Валидация прошла успешно, создаем комментарий");
+
                 var comment = new Comment
                 {
                     ApplicationId = request.ApplicationId,
@@ -579,14 +623,42 @@ namespace AppGambit.Controllers
                     UpdatedAt = DateTime.UtcNow
                 };
 
+                _logger.LogInformation("💾 Добавляем комментарий в контекст БД");
+                _logger.LogInformation("🔧 Текущий режим отслеживания: {TrackingBehavior}", _context.ChangeTracker.QueryTrackingBehavior);
+                
                 _context.Comments.Add(comment);
-                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("💾 Сохраняем изменения в БД");
+                var savedChanges = await _context.SaveChangesAsync();
+                _logger.LogInformation("💾 Количество сохраненных записей: {SavedChanges}", savedChanges);
+                
+                _logger.LogInformation("✅ Комментарий сохранен с ID: {CommentId}", comment.Id);
+                
+                // Проверяем, что комментарий действительно сохранился
+                var savedComment = await _context.Comments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Id == comment.Id);
+                
+                if (savedComment != null)
+                {
+                    _logger.LogInformation("✅ Подтверждение: комментарий найден в БД с ID: {CommentId}", savedComment.Id);
+                }
+                else
+                {
+                    _logger.LogError("❌ Комментарий не найден в БД после сохранения!");
+                    return StatusCode(500, new { success = false, message = "Ошибка сохранения комментария" });
+                }
 
+                // Очищаем кэш комментариев для этого приложения
+                _logger.LogInformation("🗑️ Очищаем кэш комментариев для приложения {ApplicationId}", request.ApplicationId);
+                _cache.Remove($"application_comments_{request.ApplicationId}");
+                _cache.Remove($"application_details_{request.ApplicationId}");
+                
                 // Получаем данные пользователя для ответа
+                _logger.LogInformation("👤 Получаем данные пользователя для ответа");
                 var user = await _userManager.GetUserAsync(User);
                 
-                _logger.LogInformation("Комментарий успешно добавлен пользователем {UserId} для приложения {ApplicationId}", userId, request.ApplicationId);
-                return Ok(new {
+                var responseData = new {
                     success = true,
                     message = "Комментарий успешно добавлен",
                     comment = new {
@@ -599,11 +671,18 @@ namespace AppGambit.Controllers
                             id = userId
                         }
                     }
-                });
+                };
+
+                _logger.LogInformation("📤 Отправляем успешный ответ: {@ResponseData}", responseData);
+                _logger.LogInformation("✅ Комментарий успешно добавлен пользователем {UserId} для приложения {ApplicationId}", userId, request.ApplicationId);
+                
+                return Ok(responseData);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при добавлении комментария для приложения {ApplicationId}", request.ApplicationId);
+                _logger.LogError(ex, "💥 Критическая ошибка при добавлении комментария для приложения {ApplicationId}. Сообщение: {Message}",
+                    request.ApplicationId, ex.Message);
+                _logger.LogError("📍 Stack trace: {StackTrace}", ex.StackTrace);
                 return StatusCode(500, new { success = false, message = "Произошла ошибка при добавлении комментария" });
             }
         }
@@ -614,32 +693,98 @@ namespace AppGambit.Controllers
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentRequest request)
         {
+            _logger.LogInformation("🔄 Начало обработки запроса на обновление комментария");
+            _logger.LogInformation("📝 Данные запроса: CommentId={CommentId}, Content='{Content}' (длина: {ContentLength})",
+                request.CommentId, request.Content, request.Content?.Length ?? 0);
+            
             try
             {
+                // Проверяем аутентификацию пользователя
+                if (!User.Identity?.IsAuthenticated == true)
+                {
+                    _logger.LogWarning("❌ Пользователь не аутентифицирован");
+                    return Unauthorized(new { success = false, message = "Необходима авторизация" });
+                }
+
+                var currentUserId = _userManager.GetUserId(User);
+                _logger.LogInformation("👤 ID пользователя: {UserId}", currentUserId);
+
+                if (string.IsNullOrWhiteSpace(request.Content))
+                {
+                    _logger.LogWarning("❌ Пустой комментарий от пользователя {UserId}", currentUserId);
+                    return BadRequest(new { success = false, message = "Комментарий не может быть пустым" });
+                }
+
+                if (request.Content.Trim().Length > 1000)
+                {
+                    _logger.LogWarning("❌ Слишком длинный комментарий от пользователя {UserId}: {Length} символов", currentUserId, request.Content.Trim().Length);
+                    return BadRequest(new { success = false, message = "Комментарий не может быть длиннее 1000 символов" });
+                }
+
+                _logger.LogInformation("🔍 Ищем комментарий с ID: {CommentId}", request.CommentId);
+                
+                // Включаем отслеживание для операции обновления
                 var comment = await _context.Comments
+                    .AsTracking()
                     .FirstOrDefaultAsync(c => c.Id == request.CommentId);
 
                 if (comment == null)
                 {
-                    return NotFound();
+                    _logger.LogWarning("❌ Комментарий с ID {CommentId} не найден", request.CommentId);
+                    return NotFound(new { success = false, message = "Комментарий не найден" });
                 }
 
-                var currentUserId = _userManager.GetUserId(User);
+                _logger.LogInformation("✅ Комментарий найден. Автор: {AuthorId}, Текущий пользователь: {CurrentUserId}", comment.UserId, currentUserId);
+
                 if (comment.UserId != currentUserId)
                 {
+                    _logger.LogWarning("❌ Пользователь {UserId} пытается редактировать чужой комментарий {CommentId} (автор: {AuthorId})",
+                        currentUserId, request.CommentId, comment.UserId);
                     return Forbid();
                 }
 
-                comment.Content = request.Content;
+                _logger.LogInformation("💾 Обновляем содержимое комментария с '{OldContent}' на '{NewContent}'",
+                    comment.Content, request.Content.Trim());
+                
+                comment.Content = request.Content.Trim();
                 comment.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
-                return Ok();
+                // Явно помечаем сущность как измененную
+                _context.Entry(comment).State = EntityState.Modified;
+
+                _logger.LogInformation("💾 Сохраняем изменения в БД");
+                var savedChanges = await _context.SaveChangesAsync();
+                _logger.LogInformation("💾 Количество сохраненных записей: {SavedChanges}", savedChanges);
+                
+                // Очищаем кэш комментариев
+                _logger.LogInformation("🗑️ Очищаем кэш комментариев для приложения {ApplicationId}", comment.ApplicationId);
+                _cache.Remove($"application_comments_{comment.ApplicationId}");
+                _cache.Remove($"application_details_{comment.ApplicationId}");
+                
+                // Проверяем, что изменения сохранились
+                var updatedComment = await _context.Comments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Id == request.CommentId);
+                
+                if (updatedComment != null && updatedComment.Content == request.Content.Trim())
+                {
+                    _logger.LogInformation("✅ Подтверждение: комментарий обновлен в БД. Новое содержимое: '{Content}'", updatedComment.Content);
+                }
+                else
+                {
+                    _logger.LogError("❌ Комментарий не обновился в БД!");
+                    return StatusCode(500, new { success = false, message = "Ошибка обновления комментария" });
+                }
+                
+                _logger.LogInformation("✅ Комментарий {CommentId} успешно обновлен пользователем {UserId}", request.CommentId, currentUserId);
+                return Ok(new { success = true, message = "Комментарий успешно обновлен" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при обновлении комментария {CommentId}", request.CommentId);
-                return StatusCode(500);
+                _logger.LogError(ex, "💥 Критическая ошибка при обновлении комментария {CommentId}. Сообщение: {Message}",
+                    request.CommentId, ex.Message);
+                _logger.LogError("📍 Stack trace: {StackTrace}", ex.StackTrace);
+                return StatusCode(500, new { success = false, message = "Произошла ошибка при обновлении комментария" });
             }
         }
 
