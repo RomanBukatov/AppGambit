@@ -284,7 +284,7 @@
     <script>
         function confirmDelete(appId, appName) {
             document.getElementById('appName').textContent = appName;
-            document.getElementById('deleteForm').action = '@Url.Action("DeleteApplication", "Admin")/' + appId;
+            document.getElementById('deleteForm').action = '@Url.Action("DeleteApplication", "Admin")';
             
             // Добавляем скрытое поле с ID
             const existingInput = document.querySelector('#deleteForm input[name="id"]');

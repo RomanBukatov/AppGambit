@@ -62,6 +62,12 @@ namespace AppGambit.Data
                     .HasForeignKey<Models.Application>(e => e.IconImageId)
                     .OnDelete(DeleteBehavior.SetNull);
 
+                // Связь с файлом приложения
+                entity.HasOne(e => e.AppFile)
+                    .WithOne()
+                    .HasForeignKey<Models.Application>(e => e.AppFileId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 // Связь со скриншотами
                 entity.HasMany(e => e.ScreenshotImages)
                     .WithOne(i => i.Application)

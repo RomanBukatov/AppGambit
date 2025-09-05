@@ -17,6 +17,7 @@ namespace AppGambit.Controllers
         private readonly IFileService _fileService;
         private readonly IImageService _imageService;
         private readonly IDatabaseImageService _databaseImageService;
+        private readonly IDatabaseFileService _databaseFileService;
         private readonly ILogger<ApplicationsController> _logger;
         private readonly IMemoryCache _cache;
         private readonly IWebHostEnvironment _environment;
@@ -27,6 +28,7 @@ namespace AppGambit.Controllers
             IFileService fileService,
             IImageService imageService,
             IDatabaseImageService databaseImageService,
+            IDatabaseFileService databaseFileService,
             ILogger<ApplicationsController> logger,
             IMemoryCache cache,
             IWebHostEnvironment environment)
@@ -36,6 +38,7 @@ namespace AppGambit.Controllers
             _fileService = fileService;
             _imageService = imageService;
             _databaseImageService = databaseImageService;
+            _databaseFileService = databaseFileService;
             _logger = logger;
             _cache = cache;
             _environment = environment;
@@ -412,15 +415,21 @@ namespace AppGambit.Controllers
                     application.IconUrl = $"/Image/{iconImage.Id}";
                 }
 
-                // Сохранение файла приложения - делаем необязательным
+                // Сохранение файла приложения в БД - делаем необязательным
                 if (model.AppFile != null)
                 {
-                    var allowedExtensions = new[] { ".exe", ".msi", ".zip", ".rar", ".7z", ".apk" };
-                    if (_fileService.IsValidFileType(model.AppFile, allowedExtensions))
+                    if (_databaseFileService.IsValidFileType(model.AppFile))
                     {
-                        _logger.LogInformation("Сохранение файла приложения {AppName}", application.Name);
-                        application.DownloadUrl = await _fileService.SaveFileAsync(model.AppFile, "apps");
+                        _logger.LogInformation("Сохранение файла приложения {AppName} в БД", application.Name);
+                        var appFile = await _databaseFileService.SaveFileAsync(
+                            model.AppFile,
+                            ImageType.ApplicationFile,
+                            application.Id);
+                        application.AppFileId = appFile.Id;
                         application.FileSize = model.AppFile.Length;
+                        
+                        // Сохраняем также старый URL для совместимости (теперь указывает на БД)
+                        application.DownloadUrl = $"/Applications/DownloadFile/{appFile.Id}";
                     }
                     else
                     {
@@ -500,23 +509,23 @@ namespace AppGambit.Controllers
                 _cache.Remove($"user_profile_{application.UserId}");
             }
 
-            // Проверяем наличие URL для скачивания
-            if (string.IsNullOrEmpty(application.DownloadUrl))
+            // Проверяем наличие файла в БД
+            if (application.AppFileId == null)
             {
                 return NotFound("Файл для скачивания не указан");
             }
 
-            // Убираем начальный слеш, если он есть
-            var downloadUrl = application.DownloadUrl.TrimStart('/');
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", downloadUrl);
-            
-            if (!System.IO.File.Exists(filePath))
+            var fileData = await _databaseFileService.GetFileDataAsync(application.AppFileId.Value);
+            if (fileData == null || fileData.Length == 0)
             {
                 return NotFound("Файл не найден");
             }
 
-            var fileName = Path.GetFileName(downloadUrl);
-            return PhysicalFile(filePath, "application/octet-stream", fileName);
+            var fileName = await _databaseFileService.GetFileNameAsync(application.AppFileId.Value);
+            var contentType = await _databaseFileService.GetFileContentTypeAsync(application.AppFileId.Value);
+            
+            _logger.LogInformation("Скачивание файла: {FileName} для приложения {AppId}", fileName, id);
+            return File(fileData, contentType, fileName);
         }
 
         // POST: Applications/Rate
@@ -940,24 +949,29 @@ namespace AppGambit.Controllers
                     application.IconUrl = $"/Image/{iconImage.Id}";
                 }
 
-                // Обновление файла приложения
+                // Обновление файла приложения в БД
                 if (model.AppFile != null)
                 {
-                    var allowedExtensions = new[] { ".exe", ".msi", ".zip", ".rar", ".7z", ".apk" };
-                    if (_fileService.IsValidFileType(model.AppFile, allowedExtensions))
+                    if (_databaseFileService.IsValidFileType(model.AppFile))
                     {
-                        // Удаляем старый файл
-                        if (!string.IsNullOrEmpty(application.DownloadUrl))
+                        // Удаляем старый файл из БД, если он есть
+                        if (application.AppFileId.HasValue)
                         {
-                            var oldFilePath = Path.Combine(_environment.WebRootPath, application.DownloadUrl);
-                            if (System.IO.File.Exists(oldFilePath))
-                            {
-                                System.IO.File.Delete(oldFilePath);
-                            }
+                            await _databaseFileService.DeleteFileAsync(application.AppFileId.Value);
+                            _logger.LogInformation("Удален старый файл приложения с ID {FileId}", application.AppFileId.Value);
                         }
 
-                        application.DownloadUrl = await _fileService.SaveFileAsync(model.AppFile, "apps");
+                        // Сохраняем новый файл в БД
+                        _logger.LogInformation("Сохранение нового файла приложения {AppName} в БД", application.Name);
+                        var appFile = await _databaseFileService.SaveFileAsync(
+                            model.AppFile,
+                            ImageType.ApplicationFile,
+                            application.Id);
+                        application.AppFileId = appFile.Id;
                         application.FileSize = model.AppFile.Length;
+                        
+                        // Обновляем URL для совместимости
+                        application.DownloadUrl = $"/Applications/DownloadFile/{appFile.Id}";
                     }
                     else
                     {
@@ -1042,6 +1056,110 @@ namespace AppGambit.Controllers
                 model.CurrentScreenshots = application.Screenshots;
                 model.CurrentTags = application.Tags;
                 return View(model);
+            }
+        }
+
+        // GET: Applications/Delete/5
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var application = await _context.Applications
+                .Include(a => a.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            // Проверяем, что пользователь является создателем приложения
+            var currentUserId = _userManager.GetUserId(User);
+            if (application.UserId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            return View(application);
+        }
+
+        // POST: Applications/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var application = await _context.Applications
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (application == null)
+                {
+                    return NotFound();
+                }
+
+                // Проверяем, что пользователь является создателем приложения
+                var currentUserId = _userManager.GetUserId(User);
+                if (application.UserId != currentUserId)
+                {
+                    return Forbid();
+                }
+
+                // Удаляем связанный файл из БД, если он есть
+                if (application.AppFileId.HasValue)
+                {
+                    await _databaseFileService.DeleteFileAsync(application.AppFileId.Value);
+                }
+
+                // Удаляем связанную иконку из БД, если она есть
+                if (application.IconImageId.HasValue)
+                {
+                    await _databaseImageService.DeleteImageAsync(application.IconImageId.Value);
+                }
+
+                // Удаляем связанные скриншоты из БД
+                var screenshots = await _context.Images
+                    .Where(i => i.ApplicationId == id && i.Type == ImageType.ApplicationScreenshot)
+                    .ToListAsync();
+
+                foreach (var screenshot in screenshots)
+                {
+                    await _databaseImageService.DeleteImageAsync(screenshot.Id);
+                }
+
+                // Удаляем приложение (комментарии и рейтинги удалятся автоматически благодаря CASCADE)
+                _context.Applications.Remove(application);
+                await _context.SaveChangesAsync();
+
+                // Очищаем кэш
+                _cache.Remove($"application_details_{id}");
+                _cache.Remove($"application_by_name_{application.Name.ToLower()}");
+                _cache.Remove($"application_by_name_{application.Name.ToLower().Replace(" ", "-")}");
+                _cache.Remove("applications_index");
+
+                if (application.UserId != null)
+                {
+                    _cache.Remove($"user_profile_{application.UserId}");
+                }
+
+                _logger.LogInformation("Приложение {AppId} '{AppName}' успешно удалено пользователем {UserId}",
+                    id, application.Name, currentUserId);
+
+                TempData["SuccessMessage"] = "Приложение успешно удалено";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при удалении приложения {AppId}", id);
+                TempData["ErrorMessage"] = "Произошла ошибка при удалении приложения";
+                return RedirectToAction(nameof(Details), new { id });
             }
         }
     }

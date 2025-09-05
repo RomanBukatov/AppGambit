@@ -78,33 +78,87 @@ p {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Стили для аватарки в навигации */
-.navbar-profile-img {
+/* Старые стили удалены - используем новые стили ниже */
+
+/* Новые стили для профиля пользователя в навбаре */
+.user-profile-link {
+  padding: 0.5rem 0.75rem !important;
+  color: rgba(255,255,255,.9) !important;
+}
+
+.user-profile-link:hover {
+  color: rgba(255,255,255,1) !important;
+}
+
+.user-profile-container {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.user-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50%;
+  object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
   transition: all 0.3s ease;
 }
 
-.navbar-profile-img:hover {
+.user-avatar:hover {
   border-color: rgba(255, 255, 255, 0.6);
   transform: scale(1.05);
 }
 
-.navbar-profile-icon {
-  color: rgba(255, 255, 255, 0.9);
+.user-avatar-icon {
+  font-size: 40px !important;
+  color: rgba(255,255,255,.9) !important;
+  flex-shrink: 0;
   transition: all 0.3s ease;
 }
 
-.navbar-profile-icon:hover {
+.user-avatar-icon:hover {
   color: white;
   transform: scale(1.05);
 }
 
-.navbar-username {
+.user-name {
+  color: rgba(255,255,255,.9) !important;
   font-weight: 500;
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 1.1rem;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dropdown-arrow {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,.9) !important;
+  margin-left: 0.25rem;
+  flex-shrink: 0;
+}
+
+/* Убираем стандартную стрелку Bootstrap */
+.user-profile-link::after {
+  display: none !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .user-avatar {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  
+  .user-avatar-icon {
+    font-size: 44px !important;
+  }
+  
+  .user-name {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* Адаптация высоты навбара под увеличенную аватарку */

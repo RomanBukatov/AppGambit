@@ -33,6 +33,10 @@ namespace AppGambit.Models
         
         public string DownloadUrl { get; set; } = string.Empty;
         
+        // Новое поле для хранения файла приложения в БД
+        public int? AppFileId { get; set; }
+        public virtual ImageData? AppFile { get; set; }
+        
         public long FileSize { get; set; }
         
         public string? Category { get; set; }

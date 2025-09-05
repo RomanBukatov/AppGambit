@@ -108,7 +108,10 @@
                                 <label asp-for="Screenshots" class="form-label">Скриншоты</label>
                                 <input asp-for="Screenshots" type="file" id="screenshots" class="form-control"
                                        accept="image/*" multiple />
-                                <div class="form-text">Можно загрузить несколько изображений. Форматы: JPG, PNG, GIF</div>
+                                <div class="form-text">
+                                    Можно загрузить несколько изображений. Форматы: JPG, PNG, GIF<br>
+                                    <small class="text-muted"><i class="fas fa-arrows-alt me-1"></i>Перетаскивайте скриншоты для изменения порядка</small>
+                                </div>
                                 <div id="screenshotsPreview" class="mt-2 row g-2"></div>
                                 <span asp-validation-for="Screenshots" class="text-danger"></span>
                             </div>
@@ -132,6 +135,39 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <style>
+        .screenshot-new-item {
+            transition: all 0.3s ease;
+        }
+        
+        .screenshot-new-item.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+        
+        .screenshot-new-item.drag-over {
+            border: 2px dashed #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .screenshot-new-item img {
+            cursor: move;
+        }
+        
+        .screenshot-new-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .screenshot-new-item .position-absolute {
+            transition: opacity 0.2s ease;
+        }
+        
+        .screenshot-new-item:hover .position-absolute {
+            opacity: 1;
+        }
+    </style>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -230,6 +266,12 @@
             
             function updateScreenshotsPreview() {
                 screenshotsPreview.innerHTML = '';
+                let loadedCount = 0;
+                
+                if (screenshotFiles.length === 0) {
+                    updateFileInput();
+                    return;
+                }
                 
                 screenshotFiles.forEach((file, index) => {
                     if (file.type.startsWith('image/')) {
@@ -258,17 +300,16 @@
                             `;
                             screenshotsPreview.appendChild(col);
                             
-                            // Инициализируем drag and drop после добавления всех элементов
-                            if (index === screenshotFiles.length - 1) {
+                            loadedCount++;
+                            // Инициализируем drag and drop после загрузки всех изображений
+                            if (loadedCount === screenshotFiles.length) {
                                 initDragAndDrop();
+                                updateFileInput();
                             }
                         };
                         reader.readAsDataURL(file);
                     }
                 });
-                
-                // Обновляем input с файлами
-                updateFileInput();
             }
             
             function moveScreenshot(fromIndex, toIndex) {
@@ -298,6 +339,15 @@
             function initDragAndDrop() {
                 const items = screenshotsPreview.querySelectorAll('.screenshot-new-item');
                 items.forEach((item) => {
+                    // Удаляем старые обработчики, если они есть
+                    item.removeEventListener('dragstart', handleDragStart);
+                    item.removeEventListener('dragover', handleDragOver);
+                    item.removeEventListener('drop', handleDrop);
+                    item.removeEventListener('dragend', handleDragEnd);
+                    item.removeEventListener('dragenter', handleDragEnter);
+                    item.removeEventListener('dragleave', handleDragLeave);
+                    
+                    // Добавляем новые обработчики
                     item.addEventListener('dragstart', handleDragStart);
                     item.addEventListener('dragover', handleDragOver);
                     item.addEventListener('drop', handleDrop);
@@ -341,15 +391,13 @@
                 
                 const targetIndex = parseInt(this.getAttribute('data-index'));
                 
-                if (draggedElement !== this) {
+                if (draggedElement !== this && draggedIndex !== targetIndex) {
+                    // Простая перестановка элементов
                     const draggedFile = screenshotFiles[draggedIndex];
-                    screenshotFiles.splice(draggedIndex, 1);
+                    const targetFile = screenshotFiles[targetIndex];
                     
-                    if (targetIndex > draggedIndex) {
-                        screenshotFiles.splice(targetIndex - 1, 0, draggedFile);
-                    } else {
-                        screenshotFiles.splice(targetIndex, 0, draggedFile);
-                    }
+                    screenshotFiles[draggedIndex] = targetFile;
+                    screenshotFiles[targetIndex] = draggedFile;
                     
                     updateScreenshotsPreview();
                 }
@@ -366,6 +414,10 @@
                 document.querySelectorAll('.drag-over').forEach(el => {
                     el.classList.remove('drag-over');
                 });
+                
+                // Сбрасываем переменные
+                draggedElement = null;
+                draggedIndex = null;
             }
             
             // Глобальные функции для кнопок

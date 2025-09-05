@@ -1,0 +1,95 @@
+@model AppGambit.Models.Application
+@{
+    ViewData["Title"] = "Удалить приложение";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Удалить приложение
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning me-2"></i>
+                        <strong>Внимание!</strong> Это действие нельзя отменить. Все данные приложения будут удалены безвозвратно.
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            @if (!string.IsNullOrEmpty(Model.IconUrl))
+                            {
+                                <img src="@Model.IconUrl" class="img-fluid rounded mb-3" alt="@Model.Name" style="max-height: 120px;">
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 120px;">
+                                    <i class="fas fa-desktop fa-3x text-muted"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-9">
+                            <h5>@Model.Name</h5>
+                            <p class="text-muted">@Model.Description</p>
+                            
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Версия</small>
+                                    <strong>@Model.Version</strong>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Создано</small>
+                                    <strong>@Model.CreatedAt.ToString("dd.MM.yyyy")</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-2">
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Скачиваний</small>
+                                    <strong>@Model.DownloadCount</strong>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Рейтинг</small>
+                                    <strong>@Model.AverageRating.ToString("F1") (@Model.TotalRatings отзывов)</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Что будет удалено:</h6>
+                        <ul class="mb-0">
+                            <li>Само приложение и его описание</li>
+                            <li>Файл приложения (@(Model.FileSize / 1024 / 1024) МБ)</li>
+                            @if (!string.IsNullOrEmpty(Model.IconUrl))
+                            {
+                                <li>Иконка приложения</li>
+                            }
+                            @if (Model.Screenshots != null && Model.Screenshots.Any())
+                            {
+                                <li>Скриншоты (@Model.Screenshots.Count шт.)</li>
+                            }
+                            <li>Все комментарии (@Model.Comments?.Count ?? 0 шт.)</li>
+                            <li>Все рейтинги (@Model.TotalRatings шт.)</li>
+                        </ul>
+                    </div>
+
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить это приложение? Это действие нельзя отменить!')">
+                                <i class="fas fa-trash me-1"></i>Удалить приложение
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -122,6 +122,7 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IDatabaseImageService, DatabaseImageService>();
+builder.Services.AddScoped<IDatabaseFileService, DatabaseFileService>();
 builder.Services.AddScoped<ImageMigrationService>();
 builder.Services.AddScoped<IUserCacheService, UserCacheService>();
 

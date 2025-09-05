@@ -13,17 +13,19 @@
             var displayName = currentUser?.DisplayName ?? currentUser?.Email?.Split('@')[0] ?? User.Identity?.Name ?? "Пользователь";
             var profileImageUrl = currentUser?.ProfileImageUrl;
         }
-        <a class="nav-link dropdown-toggle d-flex align-items-center mobile-profile-dropdown" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: rgba(255,255,255,.9) !important; padding: 0.5rem 0.75rem; white-space: nowrap; min-width: auto; max-width: none;">
-            @if (!string.IsNullOrEmpty(profileImageUrl))
-            {
-                <img src="@profileImageUrl" class="rounded-circle navbar-profile-img mobile-profile-img"
-                     alt="Профиль" style="width: 28px; height: 28px; object-fit: cover; margin-right: 0.5rem; flex-shrink: 0;">
-            }
-            else
-            {
-                <i class="fas fa-user-circle navbar-profile-icon mobile-profile-icon" style="font-size: 28px; color: rgba(255,255,255,.9) !important; margin-right: 0.5rem; flex-shrink: 0;"></i>
-            }
-            <span class="navbar-username mobile-profile-username" style="color: rgba(255,255,255,.9) !important; font-weight: 500; min-width: 100px; max-width: 200px; overflow: visible; text-overflow: clip; flex-shrink: 0;">@displayName</span>
+        <a class="nav-link user-profile-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="user-profile-container">
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" alt="Профиль">
+                }
+                else
+                {
+                    <i class="fas fa-user-circle user-avatar-icon"></i>
+                }
+                <span class="user-name">@displayName</span>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </div>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <li>

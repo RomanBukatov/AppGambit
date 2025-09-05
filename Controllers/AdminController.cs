@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using AppGambit.Data;
 using AppGambit.Models;
 using AppGambit.ViewModels;
+using AppGambit.Services;
 
 namespace AppGambit.Controllers
 {
@@ -14,15 +15,21 @@ namespace AppGambit.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AdminController> _logger;
+        private readonly IDatabaseImageService _databaseImageService;
+        private readonly IDatabaseFileService _databaseFileService;
 
         public AdminController(
             ApplicationDbContext context,
             UserManager<User> userManager,
-            ILogger<AdminController> logger)
+            ILogger<AdminController> logger,
+            IDatabaseImageService databaseImageService,
+            IDatabaseFileService databaseFileService)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
+            _databaseImageService = databaseImageService;
+            _databaseFileService = databaseFileService;
         }
 
         // GET: Admin
@@ -173,43 +180,40 @@ namespace AppGambit.Controllers
                 }
 
                 var currentUserId = _userManager.GetUserId(User);
-                _logger.LogWarning("Администратор {AdminId} удаляет приложение {AppId} '{AppName}' пользователя {UserId}", 
+                _logger.LogWarning("Администратор {AdminId} удаляет приложение {AppId} '{AppName}' пользователя {UserId}",
                     currentUserId, application.Id, application.Name, application.UserId);
 
-                // Удаляем связанные файлы
-                if (!string.IsNullOrEmpty(application.IconUrl))
+                // Удаляем связанный файл из БД, если он есть
+                if (application.AppFileId.HasValue)
                 {
-                    var iconPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", application.IconUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(iconPath))
-                    {
-                        System.IO.File.Delete(iconPath);
-                    }
+                    await _databaseFileService.DeleteFileAsync(application.AppFileId.Value);
+                    _logger.LogInformation("Удален файл приложения с ID {FileId}", application.AppFileId.Value);
                 }
 
-                if (!string.IsNullOrEmpty(application.DownloadUrl))
+                // Удаляем связанную иконку из БД, если она есть
+                if (application.IconImageId.HasValue)
                 {
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", application.DownloadUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
+                    await _databaseImageService.DeleteImageAsync(application.IconImageId.Value);
+                    _logger.LogInformation("Удалена иконка приложения с ID {ImageId}", application.IconImageId.Value);
                 }
 
-                // Удаляем скриншоты
-                if (application.Screenshots != null)
+                // Удаляем связанные скриншоты из БД
+                var screenshots = await _context.Images
+                    .Where(i => i.ApplicationId == id && i.Type == ImageType.ApplicationScreenshot)
+                    .ToListAsync();
+
+                foreach (var screenshot in screenshots)
                 {
-                    foreach (var screenshot in application.Screenshots)
-                    {
-                        var screenshotPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", screenshot.TrimStart('/'));
-                        if (System.IO.File.Exists(screenshotPath))
-                        {
-                            System.IO.File.Delete(screenshotPath);
-                        }
-                    }
+                    await _databaseImageService.DeleteImageAsync(screenshot.Id);
+                    _logger.LogInformation("Удален скриншот с ID {ImageId}", screenshot.Id);
                 }
 
+                // Удаляем приложение (комментарии и рейтинги удалятся автоматически благодаря CASCADE)
                 _context.Applications.Remove(application);
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Приложение {AppId} '{AppName}' успешно удалено администратором {AdminId}",
+                    id, application.Name, currentUserId);
 
                 TempData["SuccessMessage"] = $"Приложение '{application.Name}' успешно удалено.";
                 return RedirectToAction(nameof(Applications));
