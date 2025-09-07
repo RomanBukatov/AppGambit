@@ -3,7 +3,7 @@
     ViewData["Title"] = "Управление приложениями";
 }
 
-<div class="container-fluid">
+<div class="container-fluid admin-page-content">
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <!-- Поиск -->
+    <!-- Поиск и массовые операции -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -40,6 +40,29 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Массовые операции -->
+    <div class="row mb-3" id="bulkActionsRow" style="display: none;">
+        <div class="col-12">
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    Выбрано приложений: <span id="selectedCount">0</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">
+                        <i class="fas fa-check-square me-1"></i>Выбрать все
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">
+                        <i class="fas fa-square me-1"></i>Снять выделение
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" id="bulkDelete">
+                        <i class="fas fa-trash me-1"></i>Удалить выбранные
+                    </button>
                 </div>
             </div>
         </div>
@@ -66,6 +89,11 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th style="width: 40px;">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                                            </div>
+                                        </th>
                                         <th>ID</th>
                                         <th>Название</th>
                                         <th>Описание</th>
@@ -80,6 +108,11 @@
                                     @foreach (var app in Model)
                                     {
                                         <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input app-checkbox" type="checkbox" value="@app.Id">
+                                                </div>
+                                            </td>
                                             <td>@app.Id</td>
                                             <td>
                                                 <strong>@app.Name</strong>
@@ -282,6 +315,183 @@
     </style>
     
     <script>
+        class BulkOperations {
+            constructor() {
+                this.selectedItems = new Set();
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.updateUI();
+            }
+            
+            bindEvents() {
+                // Главный чекбокс
+                const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.addEventListener('change', (e) => {
+                        this.toggleAll(e.target.checked);
+                    });
+                }
+                
+                // Индивидуальные чекбоксы
+                document.querySelectorAll('.app-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        this.toggleItem(e.target.value, e.target.checked);
+                    });
+                });
+                
+                // Кнопки массовых операций
+                document.getElementById('selectAll')?.addEventListener('click', () => {
+                    this.selectAll();
+                });
+                
+                document.getElementById('deselectAll')?.addEventListener('click', () => {
+                    this.deselectAll();
+                });
+                
+                document.getElementById('bulkDelete')?.addEventListener('click', () => {
+                    this.bulkDelete();
+                });
+            }
+            
+            toggleAll(checked) {
+                document.querySelectorAll('.app-checkbox').forEach(checkbox => {
+                    checkbox.checked = checked;
+                    this.toggleItem(checkbox.value, checked);
+                });
+            }
+            
+            toggleItem(itemId, checked) {
+                if (checked) {
+                    this.selectedItems.add(itemId);
+                } else {
+                    this.selectedItems.delete(itemId);
+                }
+                this.updateUI();
+            }
+            
+            selectAll() {
+                document.querySelectorAll('.app-checkbox').forEach(checkbox => {
+                    checkbox.checked = true;
+                    this.selectedItems.add(checkbox.value);
+                });
+                document.getElementById('selectAllCheckbox').checked = true;
+                this.updateUI();
+            }
+            
+            deselectAll() {
+                document.querySelectorAll('.app-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                document.getElementById('selectAllCheckbox').checked = false;
+                this.selectedItems.clear();
+                this.updateUI();
+            }
+            
+            updateUI() {
+                const count = this.selectedItems.size;
+                const bulkActionsRow = document.getElementById('bulkActionsRow');
+                const selectedCountSpan = document.getElementById('selectedCount');
+                
+                if (count > 0) {
+                    bulkActionsRow.style.display = 'block';
+                    selectedCountSpan.textContent = count;
+                } else {
+                    bulkActionsRow.style.display = 'none';
+                }
+                
+                // Обновляем состояние главного чекбокса
+                const allCheckboxes = document.querySelectorAll('.app-checkbox');
+                const checkedCheckboxes = document.querySelectorAll('.app-checkbox:checked');
+                const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                
+                if (selectAllCheckbox) {
+                    if (checkedCheckboxes.length === 0) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (checkedCheckboxes.length === allCheckboxes.length) {
+                        selectAllCheckbox.checked = true;
+                        selectAllCheckbox.indeterminate = false;
+                    } else {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = true;
+                    }
+                }
+            }
+            
+            async bulkDelete() {
+                if (this.selectedItems.size === 0) {
+                    this.showNotification('Не выбраны приложения для удаления', 'warning');
+                    return;
+                }
+                
+                const count = this.selectedItems.size;
+                const message = `Вы уверены, что хотите удалить ${count} приложений? Это действие нельзя отменить.`;
+                
+                if (!confirm(message)) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('@Url.Action("BulkDeleteApplications", "Admin")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify(Array.from(this.selectedItems).map(id => parseInt(id)))
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showNotification(result.message, 'success');
+                        // Перезагружаем страницу через небольшую задержку
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        this.showNotification(result.error || 'Ошибка при удалении приложений', 'error');
+                    }
+                } catch (error) {
+                    console.error('Ошибка при массовом удалении:', error);
+                    this.showNotification('Произошла ошибка при удалении приложений', 'error');
+                }
+            }
+            
+            showNotification(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' :
+                                 type === 'error' ? 'alert-danger' :
+                                 type === 'warning' ? 'alert-warning' : 'alert-info';
+                
+                const icon = type === 'success' ? 'fa-check-circle' :
+                            type === 'error' ? 'fa-exclamation-circle' :
+                            type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+                
+                const alert = document.createElement('div');
+                alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+                alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                alert.innerHTML = `
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 5000);
+            }
+        }
+        
+        // Инициализация массовых операций
+        let bulkOperations;
+        
         function confirmDelete(appId, appName) {
             document.getElementById('appName').textContent = appName;
             document.getElementById('deleteForm').action = '@Url.Action("DeleteApplication", "Admin")';
@@ -301,6 +511,11 @@
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
         }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            bulkOperations = new BulkOperations();
+        });
 
         // Показываем уведомления
         @if (TempData["SuccessMessage"] != null)

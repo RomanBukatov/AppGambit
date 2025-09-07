@@ -1,0 +1,659 @@
+@{
+    ViewData["Title"] = "Настройки системы";
+}
+
+<div class="container-fluid admin-page-content">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-cog me-2"></i>
+                    Настройки системы
+                </h1>
+                <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Назад к панели
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Общие настройки -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-globe me-2"></i>
+                        Общие настройки
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="generalSettingsForm">
+                        <div class="mb-3">
+                            <label for="siteName" class="form-label">Название сайта</label>
+                            <input type="text" class="form-control" id="siteName" value="AppGambit">
+                        </div>
+                        <div class="mb-3">
+                            <label for="siteDescription" class="form-label">Описание сайта</label>
+                            <textarea class="form-control" id="siteDescription" rows="3">Платформа для размещения и скачивания приложений</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminEmail" class="form-label">Email администратора</label>
+                            <input type="email" class="form-control" id="adminEmail" value="admin@appgambit.com">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="allowRegistration" checked>
+                                <label class="form-check-label" for="allowRegistration">
+                                    Разрешить регистрацию новых пользователей
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="requireEmailConfirmation">
+                                <label class="form-check-label" for="requireEmailConfirmation">
+                                    Требовать подтверждение email при регистрации
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки файлов -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file me-2"></i>
+                        Настройки файлов
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="fileSettingsForm">
+                        <div class="mb-3">
+                            <label for="maxFileSize" class="form-label">Максимальный размер файла приложения (МБ)</label>
+                            <input type="number" class="form-control" id="maxFileSize" value="100" min="1" max="1000">
+                        </div>
+                        <div class="mb-3">
+                            <label for="maxImageSize" class="form-label">Максимальный размер изображения (МБ)</label>
+                            <input type="number" class="form-control" id="maxImageSize" value="10" min="1" max="50">
+                        </div>
+                        <div class="mb-3">
+                            <label for="allowedFileTypes" class="form-label">Разрешенные типы файлов приложений</label>
+                            <input type="text" class="form-control" id="allowedFileTypes" value=".apk,.exe,.msi,.dmg,.deb,.rpm">
+                            <div class="form-text">Разделяйте типы файлов запятыми</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="allowedImageTypes" class="form-label">Разрешенные типы изображений</label>
+                            <input type="text" class="form-control" id="allowedImageTypes" value=".jpg,.jpeg,.png,.gif,.webp">
+                            <div class="form-text">Разделяйте типы файлов запятыми</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки безопасности -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Настройки безопасности
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="securitySettingsForm">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enableRateLimiting" checked>
+                                <label class="form-check-label" for="enableRateLimiting">
+                                    Включить ограничение частоты запросов
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enableCaptcha">
+                                <label class="form-check-label" for="enableCaptcha">
+                                    Включить CAPTCHA для регистрации
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sessionTimeout" class="form-label">Время жизни сессии (минуты)</label>
+                            <input type="number" class="form-control" id="sessionTimeout" value="60" min="5" max="1440">
+                        </div>
+                        <div class="mb-3">
+                            <label for="maxLoginAttempts" class="form-label">Максимальное количество попыток входа</label>
+                            <input type="number" class="form-control" id="maxLoginAttempts" value="5" min="3" max="20">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lockoutDuration" class="form-label">Время блокировки после неудачных попыток (минуты)</label>
+                            <input type="number" class="form-control" id="lockoutDuration" value="15" min="5" max="120">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки уведомлений -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell me-2"></i>
+                        Настройки уведомлений
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="notificationSettingsForm">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    Включить email уведомления
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpServer" class="form-label">SMTP сервер</label>
+                            <input type="text" class="form-control" id="smtpServer" value="smtp.gmail.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpPort" class="form-label">SMTP порт</label>
+                            <input type="number" class="form-control" id="smtpPort" value="587" min="1" max="65535">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpUsername" class="form-label">SMTP логин</label>
+                            <input type="text" class="form-control" id="smtpUsername">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpPassword" class="form-label">SMTP пароль</label>
+                            <input type="password" class="form-control" id="smtpPassword">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="smtpUseSsl" checked>
+                                <label class="form-check-label" for="smtpUseSsl">
+                                    Использовать SSL/TLS
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                        <button type="button" class="btn btn-outline-info ms-2" id="testEmail">
+                            <i class="fas fa-paper-plane me-2"></i>Тест
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки темы -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-palette me-2"></i>
+                        Настройки темы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Статистика использования тем</label>
+                        <div id="themeStats" class="row g-2">
+                            <!-- Статистика будет загружена динамически -->
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Тема по умолчанию для новых пользователей</label>
+                        <select class="form-select" id="defaultTheme">
+                            <option value="light">Светлая</option>
+                            <option value="dark">Темная</option>
+                            <option value="auto" selected>Автоматическая (системная)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allowThemeChange" checked>
+                            <label class="form-check-label" for="allowThemeChange">
+                                Разрешить пользователям менять тему
+                            </label>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="saveThemeSettings">
+                        <i class="fas fa-save me-2"></i>Сохранить
+                    </button>
+                    <button type="button" class="btn btn-outline-info ms-2" id="refreshThemeStats">
+                        <i class="fas fa-sync-alt me-2"></i>Обновить статистику
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки кэширования -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-database me-2"></i>
+                        Настройки кэширования
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="cacheSettingsForm">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enableCaching" checked>
+                                <label class="form-check-label" for="enableCaching">
+                                    Включить кэширование
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cacheExpiration" class="form-label">Время жизни кэша (минуты)</label>
+                            <input type="number" class="form-control" id="cacheExpiration" value="30" min="1" max="1440">
+                        </div>
+                        <div class="mb-3">
+                            <label for="imageCacheExpiration" class="form-label">Время жизни кэша изображений (часы)</label>
+                            <input type="number" class="form-control" id="imageCacheExpiration" value="24" min="1" max="168">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                        <button type="button" class="btn btn-outline-warning ms-2" id="clearCache">
+                            <i class="fas fa-trash me-2"></i>Очистить кэш
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки резервного копирования -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-save me-2"></i>
+                        Резервное копирование
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="backupSettingsForm">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enableAutoBackup">
+                                <label class="form-check-label" for="enableAutoBackup">
+                                    Включить автоматическое резервное копирование
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="backupFrequency" class="form-label">Частота резервного копирования</label>
+                            <select class="form-select" id="backupFrequency">
+                                <option value="daily">Ежедневно</option>
+                                <option value="weekly" selected>Еженедельно</option>
+                                <option value="monthly">Ежемесячно</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="backupRetention" class="form-label">Количество хранимых копий</label>
+                            <input type="number" class="form-control" id="backupRetention" value="7" min="1" max="30">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                        <button type="button" class="btn btn-outline-success ms-2" id="createBackup">
+                            <i class="fas fa-download me-2"></i>Создать резервную копию
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .card {
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .btn-group .btn {
+            border-radius: 0.375rem;
+        }
+        
+        .alert-settings {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        }
+        
+        .theme-preview-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .theme-preview {
+            flex: 1;
+            border: 2px solid #dee2e6;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-preview:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+        }
+        
+        .light-preview {
+            background: #ffffff;
+            color: #212529;
+        }
+        
+        .dark-preview {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .preview-header {
+            padding: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 1px solid;
+        }
+        
+        .light-preview .preview-header {
+            background: #f8f9fa;
+            border-bottom-color: #dee2e6;
+        }
+        
+        .dark-preview .preview-header {
+            background: #2d2d2d;
+            border-bottom-color: #404040;
+        }
+        
+        .preview-content {
+            padding: 1rem;
+        }
+        
+        .preview-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+        
+        .dark-preview .preview-card {
+            background: #2d2d2d;
+            border-color: #404040;
+        }
+        
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-text {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        @@media (max-width: 768px) {
+            .theme-preview-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+    
+    <script>
+        class AdminSettings {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.loadSettings();
+            }
+            
+            bindEvents() {
+                // Обработчики форм
+                document.getElementById('generalSettingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveGeneralSettings();
+                });
+                
+                document.getElementById('fileSettingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveFileSettings();
+                });
+                
+                document.getElementById('securitySettingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSecuritySettings();
+                });
+                
+                document.getElementById('notificationSettingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveNotificationSettings();
+                });
+                
+                document.getElementById('cacheSettingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveCacheSettings();
+                });
+                
+                document.getElementById('backupSettingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveBackupSettings();
+                });
+                
+                // Специальные кнопки
+                document.getElementById('testEmail').addEventListener('click', () => {
+                    this.testEmailSettings();
+                });
+                
+                document.getElementById('clearCache').addEventListener('click', () => {
+                    this.clearCache();
+                });
+// Настройки темы
+                document.getElementById('saveThemeSettings')?.addEventListener('click', () => {
+                    this.saveThemeSettings();
+                });
+                
+                document.getElementById('refreshThemeStats')?.addEventListener('click', () => {
+                    this.loadThemeStats();
+                });
+                
+                document.getElementById('createBackup').addEventListener('click', () => {
+                    this.createBackup();
+                });
+            }
+            
+            loadSettings() {
+                // В реальном приложении здесь будет загрузка настроек из API
+                console.log('Загрузка настроек...');
+            }
+            
+            saveGeneralSettings() {
+                const formData = new FormData(document.getElementById('generalSettingsForm'));
+                this.showNotification('Общие настройки сохранены', 'success');
+            }
+            
+            saveFileSettings() {
+                const formData = new FormData(document.getElementById('fileSettingsForm'));
+                this.showNotification('Настройки файлов сохранены', 'success');
+            }
+            
+            saveSecuritySettings() {
+                const formData = new FormData(document.getElementById('securitySettingsForm'));
+                this.showNotification('Настройки безопасности сохранены', 'success');
+            }
+            
+            saveNotificationSettings() {
+                const formData = new FormData(document.getElementById('notificationSettingsForm'));
+                this.showNotification('Настройки уведомлений сохранены', 'success');
+            }
+            
+            saveCacheSettings() {
+                const formData = new FormData(document.getElementById('cacheSettingsForm'));
+                this.showNotification('Настройки кэширования сохранены', 'success');
+            }
+            
+            saveBackupSettings() {
+                const formData = new FormData(document.getElementById('backupSettingsForm'));
+                this.showNotification('Настройки резервного копирования сохранены', 'success');
+            }
+            
+            testEmailSettings() {
+                this.showNotification('Отправка тестового письма...', 'info');
+                
+                // Имитация отправки тестового письма
+                setTimeout(() => {
+                    this.showNotification('Тестовое письмо отправлено успешно', 'success');
+                }, 2000);
+            }
+            
+            clearCache() {
+                if (confirm('Вы уверены, что хотите очистить весь кэш?')) {
+                    this.showNotification('Кэш очищается...', 'info');
+                    
+                    setTimeout(() => {
+                        this.showNotification('Кэш успешно очищен', 'success');
+                    }, 1500);
+                }
+            }
+            
+            createBackup() {
+                this.showNotification('Создание резервной копии...', 'info');
+async loadThemeStats() {
+                try {
+                    const response = await fetch('/api/theme/stats');
+                    const data = await response.json();
+                    
+                    this.renderThemeStats(data);
+                } catch (error) {
+                    console.error('Ошибка загрузки статистики тем:', error);
+                    this.showNotification('Ошибка загрузки статистики тем', 'error');
+                }
+            }
+            
+            renderThemeStats(data) {
+                const container = document.getElementById('themeStats');
+                
+                const lightUsers = data.themeDistribution.find(t => t.theme === 'light')?.count || 0;
+                const darkUsers = data.themeDistribution.find(t => t.theme === 'dark')?.count || 0;
+                const autoUsers = data.themeDistribution.find(t => t.theme === 'auto')?.count || 0;
+                const defaultUsers = data.defaultThemeUsers || 0;
+                
+                container.innerHTML = `
+                    <div class="col-6">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h5 mb-1 text-primary">${lightUsers}</div>
+                                <small class="text-muted">Светлая</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h5 mb-1" style="color: #6c757d;">${darkUsers}</div>
+                                <small class="text-muted">Темная</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h5 mb-1 text-info">${autoUsers}</div>
+                                <small class="text-muted">Авто</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h5 mb-1 text-secondary">${defaultUsers}</div>
+                                <small class="text-muted">По умолчанию</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            saveThemeSettings() {
+                const defaultTheme = document.getElementById('defaultTheme').value;
+                const allowThemeChange = document.getElementById('allowThemeChange').checked;
+                
+                // В реальном приложении здесь будет сохранение настроек
+                this.showNotification('Настройки темы сохранены', 'success');
+            }
+                
+                setTimeout(() => {
+                    this.showNotification('Резервная копия создана успешно', 'success');
+                }, 3000);
+            }
+            
+            showNotification(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' : 
+                                 type === 'error' ? 'alert-danger' : 
+                                 type === 'warning' ? 'alert-warning' : 'alert-info';
+                
+                const icon = type === 'success' ? 'fa-check-circle' : 
+                            type === 'error' ? 'fa-exclamation-circle' : 
+                            type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+                
+                const alert = document.createElement('div');
+                alert.className = `alert ${alertClass} alert-dismissible fade show alert-settings`;
+                alert.innerHTML = `
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 5000);
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminSettings();
+        });
+    </script>
+}

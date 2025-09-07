@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AppGambit</title>
     
+    <!-- Мета-теги для темной темы -->
+    <meta name="theme-color" content="#007bff" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="color-scheme" content="light dark" />
+    
     <!-- Критические стили для полей ввода - ДОЛЖНЫ БЫТЬ ПЕРВЫМИ -->
     <style>
         /* Максимальный приоритет для полей ввода */
@@ -54,6 +59,15 @@
     
     <!-- Критические исправления для полей ввода -->
     <link rel="stylesheet" href="~/css/input-fix.css" asp-append-version="true" />
+    
+    <!-- Enhanced Search CSS -->
+    <link rel="stylesheet" href="~/css/enhanced-search.css" asp-append-version="true" />
+    
+    <!-- Admin Panel CSS -->
+    <link rel="stylesheet" href="~/css/admin-panel.css" asp-append-version="true" />
+    
+    <!-- Dark Theme CSS -->
+    <link rel="stylesheet" href="~/css/dark-theme.css" asp-append-version="true" />
     
     <!-- Критические исправления стилей -->
     <style>
@@ -673,6 +687,30 @@
                 }
             }
         }
+        
+        /* Исправление для переключателя темы */
+        @@media (max-width: 991px) {
+            /* Контейнер для переключателя темы на мобильных */
+            .theme-toggle-container {
+                display: flex !important;
+                align-items: center !important;
+            }
+            
+            .theme-toggle-container .theme-toggle {
+                margin: 0 !important;
+                padding: 0.25rem !important;
+                background: rgba(255, 255, 255, 0.1) !important;
+                border-radius: 0.5rem !important;
+                scale: 0.8;
+            }
+            
+            /* Убираем проблемные стили */
+            .navbar-collapse {
+                margin-right: 0 !important;
+                padding-right: 1rem !important;
+                padding-left: 1rem !important;
+            }
+        }
     </style>
     <!-- Font Awesome с оптимизацией -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
@@ -690,9 +728,16 @@
                 <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="fas fa-rocket me-2"></i>AppGambit
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <!-- Контейнер для элементов справа от бренда -->
+                <div class="d-flex align-items-center">
+                    <!-- Переключатель темы для мобильных (вне collapse) -->
+                    <div class="theme-toggle-container d-lg-none me-2">
+                        <!-- Переключатель будет добавлен через JavaScript -->
+                    </div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <!-- Заголовок мобильного меню -->
                     <div class="mobile-menu-header d-lg-none">
@@ -884,6 +929,8 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/enhanced-search.js" asp-append-version="true"></script>
+    <script src="~/js/theme-manager.js" asp-append-version="true"></script>
     
     <script>
         // Скрыть прелоадер после загрузки страницы

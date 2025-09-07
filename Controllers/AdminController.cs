@@ -299,5 +299,135 @@ namespace AppGambit.Controllers
 
             return View(users);
         }
+
+        // GET: Admin/Analytics
+        public IActionResult Analytics()
+        {
+            return View();
+        }
+
+        // GET: Admin/Settings
+        public async Task<IActionResult> Settings()
+        {
+            // Здесь будут настройки системы
+            return View();
+        }
+
+        // GET: Admin/Logs
+        public async Task<IActionResult> Logs(string level = "", int page = 1, int pageSize = 50)
+        {
+            // Здесь будут логи системы
+            return View();
+        }
+
+        // POST: Admin/BulkDeleteApplications
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkDeleteApplications([FromBody] int[] applicationIds)
+        {
+            if (applicationIds == null || applicationIds.Length == 0)
+            {
+                return BadRequest(new { error = "Не выбраны приложения для удаления" });
+            }
+
+            try
+            {
+                var applications = await _context.Applications
+                    .Where(a => applicationIds.Contains(a.Id))
+                    .Include(a => a.Comments)
+                    .Include(a => a.Ratings)
+                    .ToListAsync();
+
+                var currentUserId = _userManager.GetUserId(User);
+                var deletedCount = 0;
+
+                foreach (var application in applications)
+                {
+                    _logger.LogWarning("Администратор {AdminId} массово удаляет приложение {AppId} '{AppName}' пользователя {UserId}",
+                        currentUserId, application.Id, application.Name, application.UserId);
+
+                    // Удаляем связанный файл из БД, если он есть
+                    if (application.AppFileId.HasValue)
+                    {
+                        await _databaseFileService.DeleteFileAsync(application.AppFileId.Value);
+                    }
+
+                    // Удаляем связанную иконку из БД, если она есть
+                    if (application.IconImageId.HasValue)
+                    {
+                        await _databaseImageService.DeleteImageAsync(application.IconImageId.Value);
+                    }
+
+                    // Удаляем связанные скриншоты из БД
+                    var screenshots = await _context.Images
+                        .Where(i => i.ApplicationId == application.Id && i.Type == ImageType.ApplicationScreenshot)
+                        .ToListAsync();
+
+                    foreach (var screenshot in screenshots)
+                    {
+                        await _databaseImageService.DeleteImageAsync(screenshot.Id);
+                    }
+
+                    _context.Applications.Remove(application);
+                    deletedCount++;
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Администратор {AdminId} массово удалил {Count} приложений",
+                    currentUserId, deletedCount);
+
+                return Ok(new { message = $"Успешно удалено {deletedCount} приложений", count = deletedCount });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при массовом удалении приложений");
+                return BadRequest(new { error = "Произошла ошибка при удалении приложений" });
+            }
+        }
+
+        // POST: Admin/BulkDeleteComments
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkDeleteComments([FromBody] int[] commentIds)
+        {
+            if (commentIds == null || commentIds.Length == 0)
+            {
+                return BadRequest(new { error = "Не выбраны комментарии для удаления" });
+            }
+
+            try
+            {
+                var comments = await _context.Comments
+                    .Where(c => commentIds.Contains(c.Id))
+                    .Include(c => c.User)
+                    .Include(c => c.Application)
+                    .ToListAsync();
+
+                var currentUserId = _userManager.GetUserId(User);
+                var deletedCount = 0;
+
+                foreach (var comment in comments)
+                {
+                    _logger.LogWarning("Администратор {AdminId} массово удаляет комментарий {CommentId} пользователя {UserId} к приложению '{AppName}'",
+                        currentUserId, comment.Id, comment.UserId, comment.Application.Name);
+
+                    _context.Comments.Remove(comment);
+                    deletedCount++;
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Администратор {AdminId} массово удалил {Count} комментариев",
+                    currentUserId, deletedCount);
+
+                return Ok(new { message = $"Успешно удалено {deletedCount} комментариев", count = deletedCount });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при массовом удалении комментариев");
+                return BadRequest(new { error = "Произошла ошибка при удалении комментариев" });
+            }
+        }
     }
 }

@@ -3,7 +3,7 @@
     ViewData["Title"] = "Админ панель";
 }
 
-<div class="container-fluid">
+<div class="container-fluid admin-page-content">
     <div class="row">
         <div class="col-12">
             <h1 class="h3 mb-4">
@@ -102,6 +102,26 @@
                             <a href="@Url.Action("Users", "Admin")" class="btn btn-outline-success w-100">
                                 <i class="fas fa-users me-2"></i>
                                 Управление пользователями
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Analytics", "Admin")" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Аналитика
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Settings", "Admin")" class="btn btn-outline-dark w-100">
+                                <i class="fas fa-cog me-2"></i>
+                                Настройки системы
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Logs", "Admin")" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Логи системы
                             </a>
                         </div>
                         <div class="col-md-3 mb-2">

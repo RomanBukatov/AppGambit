@@ -204,9 +204,6 @@ using (var scope = app.Services.CreateScope())
 {
     AppGambit.Data.SeedData.InitializeAsync(scope.ServiceProvider).Wait();
     
-    // Миграция существующих изображений в базу данных (отключена для тестирования)
-    // var migrationService = scope.ServiceProvider.GetRequiredService<ImageMigrationService>();
-    // migrationService.MigrateAllImagesAsync().Wait();
 }
 
 app.Run();

@@ -1,0 +1,705 @@
+@{
+    ViewData["Title"] = "Аналитика";
+}
+
+<div class="container-fluid admin-page-content">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Аналитика
+                </h1>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" id="refreshData">
+                        <i class="fas fa-sync-alt me-2"></i>Обновить
+                    </button>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Назад к панели
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Загрузчик -->
+    <div id="analyticsLoader" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-3 text-muted">Загрузка данных аналитики...</p>
+    </div>
+
+    <!-- Основной контент -->
+    <div id="analyticsContent" style="display: none;">
+        <!-- Обзорная статистика -->
+        <div class="row mb-4" id="overviewStats">
+            <!-- Статистика будет загружена динамически -->
+        </div>
+
+        <!-- Графики -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Динамика роста
+                            </h5>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="chartPeriod" id="period7" value="7">
+                                <label class="btn btn-outline-primary btn-sm" for="period7">7 дней</label>
+                                
+                                <input type="radio" class="btn-check" name="chartPeriod" id="period30" value="30" checked>
+                                <label class="btn btn-outline-primary btn-sm" for="period30">30 дней</label>
+                                
+                                <input type="radio" class="btn-check" name="chartPeriod" id="period90" value="90">
+                                <label class="btn btn-outline-primary btn-sm" for="period90">90 дней</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Рост пользователей</h6>
+                                <canvas id="usersGrowthChart" height="200"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Рост приложений</h6>
+                                <canvas id="appsGrowthChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительные графики -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-download me-2"></i>
+                            Скачивания по дням
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="downloadsChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-folder me-2"></i>
+                            Распределение по категориям
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoriesChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Топ списки -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-trophy me-2"></i>
+                            Топ приложения
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="topApps" class="list-group list-group-flush">
+                            <!-- Данные загружаются динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            Активные пользователи
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="topUsers" class="list-group list-group-flush">
+                            <!-- Данные загружаются динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tags me-2"></i>
+                            Популярные категории
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="topCategories" class="list-group list-group-flush">
+                            <!-- Данные загружаются динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Системная информация -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-server me-2"></i>
+                            Системная информация
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="systemInfo">
+                            <!-- Данные загружаются динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .stat-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+        }
+        
+        .stat-change.positive {
+            color: #28a745;
+        }
+        
+        .stat-change.negative {
+            color: #dc3545;
+        }
+        
+        .top-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .top-item:last-child {
+            border-bottom: none;
+        }
+        
+        .top-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .top-item-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .top-item-subtitle {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .top-item-value {
+            font-weight: 600;
+            color: #007bff;
+        }
+        
+        .system-info-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .system-info-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .system-info-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .system-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .system-info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .system-info-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .system-info-value {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        @@media (max-width: 768px) {
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .stat-icon {
+                font-size: 1.5rem;
+            }
+            
+            .top-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .system-info-item {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    </style>
+    
+    <script>
+        class AdminAnalytics {
+            constructor() {
+                this.charts = {};
+                this.currentPeriod = 30;
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.loadData();
+            }
+            
+            bindEvents() {
+                // Обновление данных
+                document.getElementById('refreshData').addEventListener('click', () => {
+                    this.loadData();
+                });
+                
+                // Изменение периода графиков
+                document.querySelectorAll('input[name="chartPeriod"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.currentPeriod = parseInt(e.target.value);
+                        this.loadCharts();
+                    });
+                });
+            }
+            
+            async loadData() {
+                this.showLoader();
+                
+                try {
+                    await Promise.all([
+                        this.loadOverview(),
+                        this.loadCharts(),
+                        this.loadSystemInfo()
+                    ]);
+                    
+                    this.hideLoader();
+                } catch (error) {
+                    console.error('Ошибка загрузки данных:', error);
+                    this.showError('Ошибка загрузки данных аналитики');
+                }
+            }
+            
+            async loadOverview() {
+                const response = await fetch('/api/analytics/dashboard');
+                const data = await response.json();
+                
+                this.renderOverview(data.overview);
+                this.renderTopLists(data.topApps, data.topUsers, data.topCategories);
+            }
+            
+            async loadCharts() {
+                const [usersData, appsData, downloadsData, categoriesData] = await Promise.all([
+                    fetch(`/api/analytics/charts/users-growth?days=${this.currentPeriod}`).then(r => r.json()),
+                    fetch(`/api/analytics/charts/apps-growth?days=${this.currentPeriod}`).then(r => r.json()),
+                    fetch(`/api/analytics/charts/downloads?days=${this.currentPeriod}`).then(r => r.json()),
+                    fetch('/api/analytics/charts/categories').then(r => r.json())
+                ]);
+                
+                this.renderUsersGrowthChart(usersData);
+                this.renderAppsGrowthChart(appsData);
+                this.renderDownloadsChart(downloadsData);
+                this.renderCategoriesChart(categoriesData);
+            }
+            
+            async loadSystemInfo() {
+                const response = await fetch('/api/analytics/system-info');
+                const data = await response.json();
+                
+                this.renderSystemInfo(data);
+            }
+            
+            renderOverview(data) {
+                const container = document.getElementById('overviewStats');
+                
+                const stats = [
+                    {
+                        title: 'Пользователи',
+                        value: data.totalUsers,
+                        change: data.newUsersLast30Days,
+                        changeLabel: 'за 30 дней',
+                        icon: 'fas fa-users',
+                        color: 'primary'
+                    },
+                    {
+                        title: 'Приложения',
+                        value: data.totalApplications,
+                        change: data.newAppsLast30Days,
+                        changeLabel: 'за 30 дней',
+                        icon: 'fas fa-mobile-alt',
+                        color: 'success'
+                    },
+                    {
+                        title: 'Комментарии',
+                        value: data.totalComments,
+                        change: data.newCommentsLast30Days,
+                        changeLabel: 'за 30 дней',
+                        icon: 'fas fa-comments',
+                        color: 'info'
+                    },
+                    {
+                        title: 'Скачивания',
+                        value: data.totalDownloads,
+                        change: null,
+                        changeLabel: 'всего',
+                        icon: 'fas fa-download',
+                        color: 'warning'
+                    }
+                ];
+                
+                container.innerHTML = stats.map(stat => `
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-${stat.color} text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-value">${stat.value.toLocaleString()}</div>
+                                        <div class="stat-title">${stat.title}</div>
+                                        ${stat.change !== null ? `
+                                            <div class="stat-change">
+                                                <i class="fas fa-arrow-up me-1"></i>
+                                                +${stat.change} ${stat.changeLabel}
+                                            </div>
+                                        ` : `
+                                            <div class="stat-change">${stat.changeLabel}</div>
+                                        `}
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="${stat.icon}"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            renderTopLists(apps, users, categories) {
+                // Топ приложения
+                const appsContainer = document.getElementById('topApps');
+                appsContainer.innerHTML = apps.map((app, index) => `
+                    <div class="top-item">
+                        <div class="top-item-info">
+                            <div class="top-item-title">${index + 1}. ${app.name}</div>
+                            <div class="top-item-subtitle">
+                                ${app.author} • ${app.category || 'Без категории'}
+                            </div>
+                        </div>
+                        <div class="top-item-value">
+                            ${app.downloads} <small class="text-muted">скач.</small>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Активные пользователи
+                const usersContainer = document.getElementById('topUsers');
+                usersContainer.innerHTML = users.map((user, index) => `
+                    <div class="top-item">
+                        <div class="top-item-info">
+                            <div class="top-item-title">${index + 1}. ${user.displayName}</div>
+                            <div class="top-item-subtitle">
+                                ${user.appsCount} прил. • ${user.commentsCount} комм.
+                            </div>
+                        </div>
+                        <div class="top-item-value">
+                            ${user.totalDownloads} <small class="text-muted">скач.</small>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Популярные категории
+                const categoriesContainer = document.getElementById('topCategories');
+                categoriesContainer.innerHTML = categories.map((cat, index) => `
+                    <div class="top-item">
+                        <div class="top-item-info">
+                            <div class="top-item-title">${index + 1}. ${cat.category}</div>
+                            <div class="top-item-subtitle">
+                                ${cat.downloads.toLocaleString()} скачиваний
+                            </div>
+                        </div>
+                        <div class="top-item-value">
+                            ${cat.count} <small class="text-muted">прил.</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            renderUsersGrowthChart(data) {
+                const ctx = document.getElementById('usersGrowthChart').getContext('2d');
+                
+                if (this.charts.usersGrowth) {
+                    this.charts.usersGrowth.destroy();
+                }
+                
+                this.charts.usersGrowth = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => new Date(d.date).toLocaleDateString('ru-RU')),
+                        datasets: [{
+                            label: 'Новые пользователи',
+                            data: data.map(d => d.dailyCount),
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            renderAppsGrowthChart(data) {
+                const ctx = document.getElementById('appsGrowthChart').getContext('2d');
+                
+                if (this.charts.appsGrowth) {
+                    this.charts.appsGrowth.destroy();
+                }
+                
+                this.charts.appsGrowth = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => new Date(d.date).toLocaleDateString('ru-RU')),
+                        datasets: [{
+                            label: 'Новые приложения',
+                            data: data.map(d => d.dailyCount),
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            renderDownloadsChart(data) {
+                const ctx = document.getElementById('downloadsChart').getContext('2d');
+                
+                if (this.charts.downloads) {
+                    this.charts.downloads.destroy();
+                }
+                
+                this.charts.downloads = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => new Date(d.date).toLocaleDateString('ru-RU')),
+                        datasets: [{
+                            label: 'Скачивания',
+                            data: data.map(d => d.downloads),
+                            backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                            borderColor: '#ffc107',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            renderCategoriesChart(data) {
+                const ctx = document.getElementById('categoriesChart').getContext('2d');
+                
+                if (this.charts.categories) {
+                    this.charts.categories.destroy();
+                }
+                
+                this.charts.categories = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.map(d => d.category),
+                        datasets: [{
+                            data: data.map(d => d.count),
+                            backgroundColor: [
+                                '#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1',
+                                '#fd7e14', '#20c997', '#6c757d', '#e83e8c', '#17a2b8'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            renderSystemInfo(data) {
+                const container = document.getElementById('systemInfo');
+                
+                container.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="system-info-section">
+                                <div class="system-info-title">База данных</div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">Размер:</span>
+                                    <span class="system-info-value">${data.database.size}</span>
+                                </div>
+                                ${data.database.tables.map(table => `
+                                    <div class="system-info-item">
+                                        <span class="system-info-label">${table.name}:</span>
+                                        <span class="system-info-value">${table.count.toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="system-info-section">
+                                <div class="system-info-title">Файлы</div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">Изображений:</span>
+                                    <span class="system-info-value">${data.files.totalImages.toLocaleString()}</span>
+                                </div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">Размер:</span>
+                                    <span class="system-info-value">${data.files.totalImageSize}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="system-info-section">
+                                <div class="system-info-title">Сервер</div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">Окружение:</span>
+                                    <span class="system-info-value">${data.server.environment}</span>
+                                </div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">.NET:</span>
+                                    <span class="system-info-value">${data.server.dotnetVersion}</span>
+                                </div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">ОС:</span>
+                                    <span class="system-info-value">${data.server.osVersion}</span>
+                                </div>
+                                <div class="system-info-item">
+                                    <span class="system-info-label">Память:</span>
+                                    <span class="system-info-value">${data.server.workingSet}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            showLoader() {
+                document.getElementById('analyticsLoader').style.display = 'block';
+                document.getElementById('analyticsContent').style.display = 'none';
+            }
+            
+            hideLoader() {
+                document.getElementById('analyticsLoader').style.display = 'none';
+                document.getElementById('analyticsContent').style.display = 'block';
+            }
+            
+            showError(message) {
+                const container = document.getElementById('analyticsLoader');
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminAnalytics();
+        });
+    </script>
+}
