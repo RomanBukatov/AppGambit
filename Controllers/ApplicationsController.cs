@@ -1097,11 +1097,15 @@ namespace AppGambit.Controllers
         {
             try
             {
+                _logger.LogInformation("Начинаем удаление приложения {AppId}", id);
+
                 var application = await _context.Applications
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (application == null)
                 {
+                    _logger.LogWarning("Приложение {AppId} не найдено для удаления", id);
                     return NotFound();
                 }
 
@@ -1109,36 +1113,84 @@ namespace AppGambit.Controllers
                 var currentUserId = _userManager.GetUserId(User);
                 if (application.UserId != currentUserId)
                 {
+                    _logger.LogWarning("Пользователь {UserId} пытается удалить чужое приложение {AppId}", currentUserId, id);
                     return Forbid();
                 }
 
-                // Удаляем связанный файл из БД, если он есть
+                _logger.LogInformation("Приложение {AppId} найдено: {AppName}, пользователь: {UserId}", id, application.Name, currentUserId);
+
+                // Шаг 1: Удаляем комментарии (может быть много, делаем отдельно)
+                _logger.LogInformation("Шаг 1: Удаление комментариев для приложения {AppId}", id);
+                var commentsDeleted = await _context.Comments
+                    .Where(c => c.ApplicationId == id)
+                    .ExecuteDeleteAsync();
+                _logger.LogInformation("Удалено комментариев: {Count}", commentsDeleted);
+
+                // Шаг 2: Удаляем рейтинги
+                _logger.LogInformation("Шаг 2: Удаление рейтингов для приложения {AppId}", id);
+                var ratingsDeleted = await _context.Ratings
+                    .Where(r => r.ApplicationId == id)
+                    .ExecuteDeleteAsync();
+                _logger.LogInformation("Удалено рейтингов: {Count}", ratingsDeleted);
+
+                // Шаг 3: Удаляем связанные файлы и изображения
+                _logger.LogInformation("Шаг 3: Удаление связанных файлов и изображений");
+
+                // Удаляем файл приложения
                 if (application.AppFileId.HasValue)
                 {
-                    await _databaseFileService.DeleteFileAsync(application.AppFileId.Value);
+                    try
+                    {
+                        await _databaseFileService.DeleteFileAsync(application.AppFileId.Value);
+                        _logger.LogInformation("Файл приложения {FileId} удален", application.AppFileId.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при удалении файла приложения {FileId}", application.AppFileId.Value);
+                    }
                 }
 
-                // Удаляем связанную иконку из БД, если она есть
+                // Удаляем иконку
                 if (application.IconImageId.HasValue)
                 {
-                    await _databaseImageService.DeleteImageAsync(application.IconImageId.Value);
+                    try
+                    {
+                        await _databaseImageService.DeleteImageAsync(application.IconImageId.Value);
+                        _logger.LogInformation("Иконка приложения {IconId} удалена", application.IconImageId.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при удалении иконки приложения {IconId}", application.IconImageId.Value);
+                    }
                 }
 
-                // Удаляем связанные скриншоты из БД
+                // Удаляем скриншоты
                 var screenshots = await _context.Images
                     .Where(i => i.ApplicationId == id && i.Type == ImageType.ApplicationScreenshot)
                     .ToListAsync();
 
                 foreach (var screenshot in screenshots)
                 {
-                    await _databaseImageService.DeleteImageAsync(screenshot.Id);
+                    try
+                    {
+                        await _databaseImageService.DeleteImageAsync(screenshot.Id);
+                        _logger.LogInformation("Скриншот {ScreenshotId} удален", screenshot.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при удалении скриншота {ScreenshotId}", screenshot.Id);
+                    }
                 }
 
-                // Удаляем приложение (комментарии и рейтинги удалятся автоматически благодаря CASCADE)
-                _context.Applications.Remove(application);
-                await _context.SaveChangesAsync();
+                // Шаг 4: Удаляем само приложение
+                _logger.LogInformation("Шаг 4: Удаление приложения {AppId}", id);
+                var appDeleted = await _context.Applications
+                    .Where(a => a.Id == id)
+                    .ExecuteDeleteAsync();
+                _logger.LogInformation("Удалено приложений: {Count}", appDeleted);
 
                 // Очищаем кэш
+                _logger.LogInformation("Очистка кэша для приложения {AppId}", id);
                 _cache.Remove($"application_details_{id}");
                 _cache.Remove($"application_by_name_{application.Name.ToLower()}");
                 _cache.Remove($"application_by_name_{application.Name.ToLower().Replace(" ", "-")}");
@@ -1149,7 +1201,7 @@ namespace AppGambit.Controllers
                     _cache.Remove($"user_profile_{application.UserId}");
                 }
 
-                _logger.LogInformation("Приложение {AppId} '{AppName}' успешно удалено пользователем {UserId}",
+                _logger.LogInformation("✅ Приложение {AppId} '{AppName}' успешно удалено пользователем {UserId}",
                     id, application.Name, currentUserId);
 
                 TempData["SuccessMessage"] = "Приложение успешно удалено";
@@ -1157,8 +1209,10 @@ namespace AppGambit.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при удалении приложения {AppId}", id);
-                TempData["ErrorMessage"] = "Произошла ошибка при удалении приложения";
+                _logger.LogError(ex, "❌ Критическая ошибка при удалении приложения {AppId}", id);
+                _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+
+                TempData["ErrorMessage"] = "Произошла ошибка при удалении приложения. Попробуйте еще раз.";
                 return RedirectToAction(nameof(Details), new { id });
             }
         }

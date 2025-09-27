@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AppGambit.Models;
 using System.Text.Json;
+using System.Text;
 
 namespace AppGambit.Data
 {
@@ -10,6 +11,21 @@ namespace AppGambit.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+        }
+
+        // Метод для проверки подключения к базе данных
+        public async Task<bool> CanConnectAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                await Database.OpenConnectionAsync(cancellationToken);
+                await Database.CloseConnectionAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public DbSet<Models.Application> Applications { get; set; }
@@ -39,16 +55,22 @@ namespace AppGambit.Data
                 entity.HasIndex(e => new { e.Name, e.Category });
                 entity.HasIndex(e => new { e.CreatedAt, e.Category });
                 
-                // Конвертация списков в JSON
+                // Конвертация списков в JSON с обработкой encoding
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                };
+
                 entity.Property(e => e.Screenshots)
                     .HasConversion(
-                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                        v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
-                
+                        v => JsonSerializer.Serialize(v, jsonOptions),
+                        v => JsonSerializer.Deserialize<List<string>>(v, jsonOptions) ?? new List<string>());
+
                 entity.Property(e => e.Tags)
                     .HasConversion(
-                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                        v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+                        v => JsonSerializer.Serialize(v, jsonOptions),
+                        v => JsonSerializer.Deserialize<List<string>>(v, jsonOptions) ?? new List<string>());
 
                 // Связи
                 entity.HasOne(e => e.User)
