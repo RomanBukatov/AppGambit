@@ -15,17 +15,23 @@
                 <div class="card-body">
                     <form asp-action="Register" method="post">
                         <div asp-validation-summary="All" class="text-danger mb-3"></div>
-                        
+
                         <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" placeholder="Введите ваш email" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <label asp-for="UserName" class="form-label"></label>
+                            <input asp-for="UserName" class="form-control" placeholder="Введите имя пользователя" />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                            <div class="form-text">
+                                Это имя будет использоваться для входа в систему
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="DisplayName" class="form-label"></label>
                             <input asp-for="DisplayName" class="form-control" placeholder="Введите отображаемое имя" />
                             <span asp-validation-for="DisplayName" class="text-danger"></span>
+                            <div class="form-text">
+                                Это имя будет отображаться в вашем профиле и приложениях
+                            </div>
                         </div>
 
                         <div class="mb-3">

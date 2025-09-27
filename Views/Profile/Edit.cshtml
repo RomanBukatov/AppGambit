@@ -70,10 +70,11 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Имя пользователя</label>
-                                    <input value="@Model.UserName" class="form-control" readonly />
-                                    <div class="form-text text-muted">
-                                        Имя пользователя нельзя изменить
+                                    <label asp-for="UserName" class="form-label">Имя пользователя</label>
+                                    <input asp-for="UserName" class="form-control" placeholder="Введите новое имя пользователя" />
+                                    <span asp-validation-for="UserName" class="text-danger"></span>
+                                    <div class="form-text">
+                                        Это имя используется для входа в систему. Изменение потребует повторного входа.
                                     </div>
                                 </div>
 

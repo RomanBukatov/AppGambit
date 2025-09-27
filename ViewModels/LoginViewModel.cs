@@ -4,10 +4,9 @@ namespace AppGambit.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Email обязателен")]
-        [EmailAddress(ErrorMessage = "Неверный формат email")]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Имя пользователя обязательно")]
+        [Display(Name = "Имя пользователя")]
+        public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Пароль обязателен")]
         [DataType(DataType.Password)]

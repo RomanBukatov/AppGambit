@@ -96,7 +96,7 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="/@user.DisplayName"
+                                                    <a href="@Url.Action("ByDisplayName", "Profile", new { displayName = user.DisplayName })"
                                                        class="btn btn-sm btn-outline-primary" title="Просмотр профиля">
                                                         <i class="fas fa-user"></i>
                                                     </a>

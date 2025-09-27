@@ -31,8 +31,8 @@ namespace AppGambit.Controllers
             {
                 var user = new User
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
+                    UserName = model.UserName,
+                    Email = $"{model.UserName}@appgambit.local", // Генерируем фиктивный email
                     DisplayName = model.DisplayName,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -69,14 +69,14 @@ namespace AppGambit.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {
                     return RedirectToAction("Index", "Home");
                 }
 
-                ModelState.AddModelError(string.Empty, "Неверный email или пароль.");
+                ModelState.AddModelError(string.Empty, "Неверное имя пользователя или пароль.");
             }
 
             return View(model);

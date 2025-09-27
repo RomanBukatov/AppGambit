@@ -4,10 +4,10 @@ namespace AppGambit.ViewModels
 {
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "Email обязателен")]
-        [EmailAddress(ErrorMessage = "Неверный формат email")]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Имя пользователя обязательно")]
+        [StringLength(50, ErrorMessage = "Имя пользователя не может быть длиннее 50 символов")]
+        [Display(Name = "Имя пользователя")]
+        public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Отображаемое имя обязательно")]
         [StringLength(50, ErrorMessage = "Отображаемое имя не может быть длиннее 50 символов")]

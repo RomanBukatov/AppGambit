@@ -189,16 +189,22 @@ namespace AppGambit.Controllers
 
             try
             {
-                // Обновление отображаемого имени
-                if (!string.IsNullOrWhiteSpace(model.DisplayName))
+                // Обновление имени пользователя
+                if (!string.IsNullOrWhiteSpace(model.UserName) && model.UserName != user.UserName)
                 {
-                    user.DisplayName = model.DisplayName.Trim();
-                }
+                    var setUserNameResult = await _userManager.SetUserNameAsync(user, model.UserName);
+                    if (!setUserNameResult.Succeeded)
+                    {
+                        foreach (var error in setUserNameResult.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+                        return View(model);
+                    }
 
-                // Обновление email
-                if (!string.IsNullOrWhiteSpace(model.Email) && model.Email != user.Email)
-                {
-                    var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
+                    // Обновляем email чтобы он соответствовал новому имени пользователя
+                    var newEmail = $"{model.UserName}@appgambit.local";
+                    var setEmailResult = await _userManager.SetEmailAsync(user, newEmail);
                     if (!setEmailResult.Succeeded)
                     {
                         foreach (var error in setEmailResult.Errors)
@@ -207,6 +213,12 @@ namespace AppGambit.Controllers
                         }
                         return View(model);
                     }
+                }
+
+                // Обновление отображаемого имени
+                if (!string.IsNullOrWhiteSpace(model.DisplayName))
+                {
+                    user.DisplayName = model.DisplayName.Trim();
                 }
 
                 // Обновление изображения профиля

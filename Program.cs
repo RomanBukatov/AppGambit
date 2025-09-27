@@ -199,11 +199,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Инициализация ролей
-using (var scope = app.Services.CreateScope())
-{
-    AppGambit.Data.SeedData.InitializeAsync(scope.ServiceProvider).Wait();
-    
-}
+// Инициализация ролей уже выполнена
 
 app.Run();

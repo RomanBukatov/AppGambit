@@ -146,7 +146,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <small class="text-muted">
                                     <i class="fas fa-user me-1"></i>
-                                    <a href="/@app.UserDisplayName" class="text-decoration-none text-muted">@app.UserDisplayName</a>
+                                    <a href="@Url.Action("ByDisplayName", "Profile", new { displayName = app.UserDisplayName })" class="text-decoration-none text-muted">@app.UserDisplayName</a>
                                 </small>
                                 <small class="text-muted">
                                     @app.CreatedAt.ToString("dd.MM.yyyy")

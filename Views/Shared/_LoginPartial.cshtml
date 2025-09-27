@@ -10,7 +10,7 @@
         @{
             var userId = UserManager.GetUserId(User);
             var currentUser = await UserCacheService.GetCurrentUserAsync(userId);
-            var displayName = currentUser?.DisplayName ?? currentUser?.Email?.Split('@')[0] ?? User.Identity?.Name ?? "Пользователь";
+            var displayName = currentUser?.DisplayName ?? currentUser?.UserName ?? User.Identity?.Name ?? "Пользователь";
             var profileImageUrl = currentUser?.ProfileImageUrl;
         }
         <a class="nav-link user-profile-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
