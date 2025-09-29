@@ -4,6 +4,10 @@ using AppGambit.Data;
 using AppGambit.Models;
 using AppGambit.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using DotNetEnv;
+
+// Загружаем переменные окружения из .env файла
+Env.Load();
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
