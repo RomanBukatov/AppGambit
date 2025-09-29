@@ -369,6 +369,8 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Custom - Application specific
+
+appsettings.json
 appsettings.Development.json
 appsettings.Production.json
 wwwroot/uploads/*
