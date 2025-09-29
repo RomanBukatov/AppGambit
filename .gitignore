@@ -370,6 +370,6 @@ FodyWeavers.xsd
 
 # Custom - Application specific
 
-
 .env
+wwwroot/uploads/*
 !wwwroot/uploads/.gitkeep
