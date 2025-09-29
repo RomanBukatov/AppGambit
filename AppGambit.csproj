@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -10,6 +10,7 @@
     <GenerateStaticWebAssetsPropsFile>false</GenerateStaticWebAssetsPropsFile>
     <EnableStaticWebAssetsCompression>false</EnableStaticWebAssetsCompression>
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+    <UserSecretsId>5671c3a5-0609-42d9-8785-b795f36ea7a9</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
