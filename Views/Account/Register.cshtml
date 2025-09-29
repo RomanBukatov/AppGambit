@@ -36,13 +36,16 @@
 
                         <div class="mb-3">
                             <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password" class="form-control" placeholder="Введите пароль" />
+                            <input asp-for="Password" class="form-control" placeholder="Введите пароль" onblur="validatePassword(this)" />
                             <span asp-validation-for="Password" class="text-danger"></span>
+                            <div class="form-text">
+                                Пароль должен содержать минимум 6 символов
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Подтвердите пароль" />
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Подтвердите пароль" onblur="validateConfirmPassword(this)" />
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
 
@@ -64,4 +67,103 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        function validatePassword(passwordInput) {
+            const password = passwordInput.value;
+            const errorSpan = passwordInput.nextElementSibling;
+
+            // Clear previous validation messages
+            if (errorSpan && errorSpan.classList.contains('text-danger')) {
+                errorSpan.textContent = '';
+            }
+
+            // Check if password is empty
+            if (!password) {
+                if (errorSpan) {
+                    errorSpan.textContent = 'Пароль обязателен';
+                }
+                return;
+            }
+
+            // Check minimum length
+            if (password.length < 6) {
+                if (errorSpan) {
+                    errorSpan.textContent = 'Пароль должен содержать минимум 6 символов.';
+                }
+                return;
+            }
+
+            // If validation passes, clear any error messages
+            if (errorSpan) {
+                errorSpan.textContent = '';
+            }
+        }
+
+        function validateConfirmPassword(confirmPasswordInput) {
+            const confirmPassword = confirmPasswordInput.value;
+            const passwordInput = document.querySelector('input[name="Password"]');
+            const password = passwordInput ? passwordInput.value : '';
+            const errorSpan = confirmPasswordInput.nextElementSibling;
+
+            // Clear previous validation messages
+            if (errorSpan && errorSpan.classList.contains('text-danger')) {
+                errorSpan.textContent = '';
+            }
+
+            // Check if confirm password is empty
+            if (!confirmPassword) {
+                if (errorSpan) {
+                    errorSpan.textContent = 'Подтверждение пароля обязательно';
+                }
+                return;
+            }
+
+            // Check if passwords match
+            if (password && confirmPassword !== password) {
+                if (errorSpan) {
+                    errorSpan.textContent = 'Пароли не совпадают.';
+                }
+                return;
+            }
+
+            // If validation passes, clear any error messages
+            if (errorSpan) {
+                errorSpan.textContent = '';
+            }
+        }
+
+        // Also validate on form submission to ensure consistency
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const passwordInput = document.querySelector('input[name="Password"]');
+                    const confirmPasswordInput = document.querySelector('input[name="ConfirmPassword"]');
+
+                    let hasErrors = false;
+
+                    if (passwordInput) {
+                        validatePassword(passwordInput);
+                        const passwordErrorSpan = passwordInput.nextElementSibling;
+                        if (passwordErrorSpan && passwordErrorSpan.textContent) {
+                            hasErrors = true;
+                        }
+                    }
+
+                    if (confirmPasswordInput) {
+                        validateConfirmPassword(confirmPasswordInput);
+                        const confirmErrorSpan = confirmPasswordInput.nextElementSibling;
+                        if (confirmErrorSpan && confirmErrorSpan.textContent) {
+                            hasErrors = true;
+                        }
+                    }
+
+                    if (hasErrors) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
 }

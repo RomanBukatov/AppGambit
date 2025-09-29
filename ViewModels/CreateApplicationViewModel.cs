@@ -16,7 +16,7 @@ namespace AppGambit.ViewModels
         public string? DetailedDescription { get; set; }
         
         [Required(ErrorMessage = "Версия обязательна")]
-        public string Version { get; set; } = "1.0.0";
+        public string Version { get; set; } = "1.0";
         
         public string? Category { get; set; }
         
@@ -24,6 +24,7 @@ namespace AppGambit.ViewModels
         
         public IFormFile? IconFile { get; set; }
         
+        [Required(ErrorMessage = "Файл приложения обязателен")]
         public IFormFile? AppFile { get; set; }
         
         public List<IFormFile>? Screenshots { get; set; }

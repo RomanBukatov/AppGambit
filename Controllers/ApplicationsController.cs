@@ -415,27 +415,30 @@ namespace AppGambit.Controllers
                     application.IconUrl = $"/Image/{iconImage.Id}";
                 }
 
-                // Сохранение файла приложения в БД - делаем необязательным
-                if (model.AppFile != null)
+                // Сохранение файла приложения в БД - обязательное поле
+                if (model.AppFile == null)
                 {
-                    if (_databaseFileService.IsValidFileType(model.AppFile))
-                    {
-                        _logger.LogInformation("Сохранение файла приложения {AppName} в БД", application.Name);
-                        var appFile = await _databaseFileService.SaveFileAsync(
-                            model.AppFile,
-                            ImageType.ApplicationFile,
-                            application.Id);
-                        application.AppFileId = appFile.Id;
-                        application.FileSize = model.AppFile.Length;
-                        
-                        // Сохраняем также старый URL для совместимости (теперь указывает на БД)
-                        application.DownloadUrl = $"/Applications/DownloadFile/{appFile.Id}";
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("AppFile", "Недопустимый тип файла приложения");
-                        return View(model);
-                    }
+                    ModelState.AddModelError("AppFile", "Файл приложения обязателен");
+                    return View(model);
+                }
+
+                if (_databaseFileService.IsValidFileType(model.AppFile))
+                {
+                    _logger.LogInformation("Сохранение файла приложения {AppName} в БД", application.Name);
+                    var appFile = await _databaseFileService.SaveFileAsync(
+                        model.AppFile,
+                        ImageType.ApplicationFile,
+                        application.Id);
+                    application.AppFileId = appFile.Id;
+                    application.FileSize = model.AppFile.Length;
+
+                    // Сохраняем также старый URL для совместимости (теперь указывает на БД)
+                    application.DownloadUrl = $"/Applications/DownloadFile/{appFile.Id}";
+                }
+                else
+                {
+                    ModelState.AddModelError("AppFile", "Недопустимый тип файла приложения");
+                    return View(model);
                 }
 
                 // Сохранение скриншотов в БД

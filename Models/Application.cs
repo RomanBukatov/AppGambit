@@ -18,7 +18,7 @@ namespace AppGambit.Models
         public string? DetailedDescription { get; set; }
         
         [Required]
-        public string Version { get; set; } = "1.0.0";
+        public string Version { get; set; } = "1.0";
         
         public string? IconUrl { get; set; }
         
