@@ -4,10 +4,19 @@ using AppGambit.Data;
 using AppGambit.Models;
 using AppGambit.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using DotNetEnv;
 
-// Загружаем переменные окружения из .env файла
-Env.Load();
+// Загружаем переменные окружения из .env файла только для Development
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    try
+    {
+        DotNetEnv.Env.Load();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Could not load .env file: {ex.Message}");
+    }
+}
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
