@@ -69,31 +69,13 @@ builder.Services.AddResponseCaching(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-var isProduction = !builder.Environment.IsDevelopment();
-
-// Если Production (VDS) - используем переменные окружения напрямую
-if (isProduction)
-{
-    var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new InvalidOperationException("DB_HOST environment variable not found.");
-    var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? throw new InvalidOperationException("DB_PORT environment variable not found.");
-    var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? throw new InvalidOperationException("DB_USER environment variable not found.");
-    var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new InvalidOperationException("DB_PASSWORD environment variable not found.");
-    var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new InvalidOperationException("DB_NAME environment variable not found.");
-
-    connectionString = $"Host={dbHost};Port={dbPort};Username={dbUser};Password={dbPassword};Database={dbName};Pooling=false;Include Error Detail=true";
-    Console.WriteLine($"Production connection string: {connectionString}");
-}
-// Если Development (локально) - используем конфигурацию с заменой переменных
-else
-{
-    connectionString = connectionString
-        .Replace("${DB_HOST}", Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost")
-        .Replace("${DB_PORT}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432")
-        .Replace("${DB_USER}", Environment.GetEnvironmentVariable("DB_USER") ?? "romka")
-        .Replace("${DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "aflttdf102")
-        .Replace("${DB_NAME}", Environment.GetEnvironmentVariable("DB_NAME") ?? "appgambit");
-    Console.WriteLine($"Development connection string: {connectionString}");
-}
+// Заменяем переменные окружения в строке подключения
+connectionString = connectionString
+    .Replace("${DB_HOST}", Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost")
+    .Replace("${DB_PORT}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432")
+    .Replace("${DB_USER}", Environment.GetEnvironmentVariable("DB_USER") ?? "romka")
+    .Replace("${DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "aflttdf102")
+    .Replace("${DB_NAME}", Environment.GetEnvironmentVariable("DB_NAME") ?? "appgambit");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -136,26 +118,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // Настройка аутентификации через Google (только если настроены ключи)
-string googleClientId;
-string googleClientSecret;
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
-if (isProduction)
-{
-    // На Production (VDS) - читаем только из переменных окружения
+// Fallback к переменным окружения если конфигурация не сработала
+if (string.IsNullOrEmpty(googleClientId))
     googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+if (string.IsNullOrEmpty(googleClientSecret))
     googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
-}
-else
-{
-    // На Development (локально) - читаем из конфигурации с fallback на переменные окружения
-    googleClientId = builder.Configuration["Authentication:Google:ClientId"];
-    googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-
-    if (string.IsNullOrEmpty(googleClientId))
-        googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
-    if (string.IsNullOrEmpty(googleClientSecret))
-        googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
-}
 
 if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
 {
