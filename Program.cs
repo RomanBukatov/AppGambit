@@ -63,8 +63,16 @@ builder.Services.AddResponseCaching(options =>
 });
 
 // Настройка Entity Framework и Identity
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Строим строку подключения напрямую из переменных окружения для полной надежности
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? throw new InvalidOperationException("DB_USER environment variable not found.");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new InvalidOperationException("DB_PASSWORD environment variable not found.");
+var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new InvalidOperationException("DB_NAME environment variable not found.");
+
+var connectionString = $"Host={dbHost};Port={dbPort};Username={dbUser};Password={dbPassword};Database={dbName};Pooling=false;Include Error Detail=true";
+
+Console.WriteLine($"Built connection string: {connectionString}");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -106,6 +114,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Настройка аутентификации через Google (только если настроены ключи)
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+// Fallback к переменным окружения если конфигурация не сработала
+if (string.IsNullOrEmpty(googleClientId))
+    googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+if (string.IsNullOrEmpty(googleClientSecret))
+    googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
 
 if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
 {
