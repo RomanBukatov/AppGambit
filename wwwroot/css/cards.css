@@ -1,0 +1,268 @@
+/* Карточки приложений - переиспользуемые компоненты */
+
+/* Новый дизайн карточек */
+.app-card-new {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.app-card-new:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Заголовок карточки с иконкой слева */
+.app-card-header {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  gap: 0.75rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.app-icon-wrapper {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-icon-small {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.25rem;
+}
+
+.app-icon-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.app-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #212529 !important;
+}
+
+.app-subtitle {
+  font-size: 0.85rem;
+  color: #495057 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
+/* Скриншоты в центре */
+.app-screenshots {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: white;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.app-screenshots::-webkit-scrollbar {
+  height: 4px;
+}
+
+.app-screenshots::-webkit-scrollbar-thumb {
+  background: #dee2e6;
+  border-radius: 2px;
+}
+
+.screenshot-item {
+  flex-shrink: 0;
+  width: 200px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.screenshot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-screenshots-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  min-height: 150px;
+}
+
+/* Старые стили карточек для совместимости */
+.app-card {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.app-card:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.app-card .card-img-top {
+  transition: transform 0.3s ease;
+  width: 128px;
+  height: 128px;
+  max-width: 100%;
+  object-fit: contain;
+  margin: 1rem auto;
+  display: block;
+  background: #f8f9fa;
+  padding: 0.5rem;
+  will-change: transform;
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.app-card .card-body {
+  padding: 1.5rem;
+}
+
+.app-card .card-title {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.app-card .card-text {
+  color: #6c757d;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Карточки категорий */
+.category-card {
+  border: none;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  color: inherit;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.category-card:hover {
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Рейтинг звездами */
+.rating {
+  display: inline-flex;
+  align-items: center;
+}
+
+.rating .fa-star {
+  font-size: 1rem;
+  margin-right: 2px;
+}
+
+/* Цвета для звезд рейтинга */
+.rating .fa-star.text-warning,
+.rating .fas.fa-star.text-warning {
+  color: #ffc107 !important;
+}
+
+.rating .fa-star.text-muted,
+.rating .far.fa-star.text-muted {
+  color: #6c757d !important;
+}
+
+/* Цвета для лайков и дизлайков */
+.likes-dislikes .text-success,
+.likes-dislikes .fa-thumbs-up {
+  color: #28a745 !important;
+}
+
+.likes-dislikes .text-danger,
+.likes-dislikes .fa-thumbs-down {
+  color: #dc3545 !important;
+}
+
+/* Дополнительные стили для иконок в карточках */
+.app-card .rating .fa-star.text-warning {
+  color: #ffc107 !important;
+}
+
+.app-card .rating .fa-star.text-muted {
+  color: #dee2e6 !important;
+}
+
+/* Мобильная адаптация для карточек */
+@media (max-width: 768px) {
+  .app-card-new .app-card-header {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .app-icon-wrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .app-title {
+    font-size: 1rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .screenshot-item {
+    width: 150px;
+    height: 90px;
+  }
+
+  .app-screenshots {
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+}

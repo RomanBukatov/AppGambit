@@ -14,8 +14,9 @@ namespace AppGambit.ViewModels
         
         [StringLength(2000, ErrorMessage = "Подробное описание не должно превышать 2000 символов")]
         public string? DetailedDescription { get; set; }
-        
+
         [Required(ErrorMessage = "Версия обязательна")]
+        [StringLength(10, ErrorMessage = "Версия не должна превышать 5 символов")]
         public string Version { get; set; } = "1.0";
         
         public string? Category { get; set; }

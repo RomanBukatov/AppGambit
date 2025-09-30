@@ -1,0 +1,375 @@
+/* Стили для страницы приложений */
+
+/* Типография */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+p {
+  margin-bottom: 1.2rem;
+}
+
+/* Навигация */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-nav .nav-link i {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+  vertical-align: middle;
+}
+
+.navbar-nav .nav-link:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Поиск и фильтры */
+.search-results-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-highlight {
+  background-color: #fff3cd;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Улучшенная анимация для карточек поиска */
+.search-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e9ecef;
+}
+
+.search-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+/* Стили для пустого состояния поиска */
+.search-empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.search-empty-state .fa-4x {
+  opacity: 0.3;
+  margin-bottom: 1.5rem;
+}
+
+.search-empty-state h3 {
+  color: #6c757d;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.search-empty-state p {
+  color: #adb5bd;
+  font-size: 1.1rem;
+}
+
+/* Кнопки */
+.btn {
+  border-radius: 10px;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.35);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  border: none;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.25);
+
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+  box-shadow: 0 6px 15px rgba(40, 167, 69, 0.35);
+}
+
+/* Бейджи */
+.badge {
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* Теги */
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  margin: 0.125rem;
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  color: #495057;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.tag:hover {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.tag-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+}
+
+.tag-success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  color: white;
+}
+
+.tag-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+  color: white;
+}
+
+.tag-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #212529;
+}
+
+.tag-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+/* Формы */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Модальные окна */
+.modal-content {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
+}
+
+/* Пагинация */
+.pagination .page-link {
+  border-radius: 8px;
+  margin: 0 2px;
+  border: 1px solid #dee2e6;
+  color: #007bff;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-color: #007bff;
+}
+
+/* Алерты */
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+  color: #0c5460;
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 0;
+  }
+
+  .hero-section .display-4 {
+    font-size: 2rem;
+  }
+
+  .app-card:hover,
+  .user-card:hover,
+  .category-card:hover {
+    transform: none;
+  }
+}
+
+/* Предотвращение layout shift */
+.card-img-top-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Мобильные улучшения */
+@media (max-width: 576px) {
+  .hero-section h1 {
+    font-size: 2rem !important;
+  }
+
+  .hero-section .lead {
+    font-size: 1rem !important;
+  }
+
+  .app-card .card-title {
+    font-size: 0.9rem;
+  }
+
+  .app-card .card-text {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .app-card .card-body {
+    padding: 0.75rem;
+  }
+
+  .rating small {
+    font-size: 0.7rem;
+  }
+
+  .stat-card {
+    padding: 1rem !important;
+  }
+
+  .stat-card h3 {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Улучшения для тач-устройств */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .dropdown-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .app-card:hover,
+  .category-card:hover,
+  .user-card:hover {
+    transform: none;
+  }
+
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Адаптивные изображения */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Дополнительные утилиты */
+.text-shadow {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.box-shadow-sm {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.box-shadow {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.box-shadow-lg {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.border-radius-lg {
+  border-radius: 12px;
+}
+
+.border-radius-xl {
+  border-radius: 16px;
+}

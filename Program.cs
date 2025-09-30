@@ -38,15 +38,18 @@ builder.Services.AddControllersWithViews(options =>
     });
 });
 
-// Добавляем сжатие ответов
-builder.Services.AddResponseCompression(options =>
+// Добавляем сжатие ответов только для Production
+if (!builder.Environment.IsDevelopment())
 {
-    options.EnableForHttps = true;
-    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
-    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
-    options.MimeTypes = Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.MimeTypes.Concat(
-        new[] { "application/javascript", "text/css", "text/json", "text/xml" });
-});
+    builder.Services.AddResponseCompression(options =>
+    {
+        options.EnableForHttps = true;
+        options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
+        options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+        options.MimeTypes = Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.MimeTypes.Concat(
+            new[] { "application/javascript", "text/css", "text/json", "text/xml" });
+    });
+}
 
 // Добавляем кэширование в памяти с оптимизированными настройками
 builder.Services.AddMemoryCache(options =>
@@ -70,7 +73,7 @@ var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? throw new InvalidO
 var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new InvalidOperationException("DB_PASSWORD environment variable not found.");
 var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new InvalidOperationException("DB_NAME environment variable not found.");
 
-var connectionString = $"Host={dbHost};Port={dbPort};Username={dbUser};Password={dbPassword};Database={dbName};Pooling=false;Include Error Detail=true";
+var connectionString = $"Host={dbHost};Port={dbPort};Username={dbUser};Password={dbPassword};Database={dbName};Pooling=true;Minimum Pool Size=0;Maximum Pool Size=10;Connection Idle Lifetime=300;Connection Pruning Interval=10;Include Error Detail=true;Timeout=15;Command Timeout=30";
 
 Console.WriteLine($"Built connection string: {connectionString}");
 
@@ -78,8 +81,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(connectionString, npgsqlOptions =>
     {
-        npgsqlOptions.CommandTimeout(30);
-        npgsqlOptions.EnableRetryOnFailure(3);
+        npgsqlOptions.CommandTimeout(15);
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 2,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null);
     });
     
     // Оптимизации для производительности
@@ -168,8 +174,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Включаем сжатие ответов
-app.UseResponseCompression();
+// Включаем сжатие ответов только для Production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseResponseCompression();
+}
 
 // app.UseHttpsRedirection(); // Отключено для локальной разработки
 

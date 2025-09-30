@@ -33,6 +33,7 @@ namespace AppGambit.Controllers
                     .AsNoTracking()
                     .Include(a => a.User)
                     .Include(a => a.Ratings)
+                    .Include(a => a.ScreenshotImages)
                     .OrderByDescending(a => a.DownloadCount)
                     .Take(8)
                     .ToListAsync();
@@ -41,6 +42,7 @@ namespace AppGambit.Controllers
                 var newApps = await _context.Applications
                     .AsNoTracking()
                     .Include(a => a.User)
+                    .Include(a => a.ScreenshotImages)
                     .OrderByDescending(a => a.CreatedAt)
                     .Take(8)
                     .ToListAsync();

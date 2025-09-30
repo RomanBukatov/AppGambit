@@ -74,27 +74,56 @@
                 @foreach (var app in popularApps)
                 {
                     <div class="col-6 col-sm-6 col-md-4 col-lg-3">
-                        <div class="card h-100 shadow-sm app-card">
-                            <div class="card-img-top-wrapper">
-                                @if (!string.IsNullOrEmpty(app.IconUrl))
-                                {
-                                    <img src="@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="card-img-placeholder d-none align-items-center justify-content-center bg-light" style="height: 150px;">
-                                        <i class="fas fa-desktop fa-3x text-muted"></i>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="card-img-placeholder d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                        <i class="fas fa-desktop fa-3x text-muted"></i>
-                                    </div>
-                                }
+                        <div class="card h-100 shadow-sm app-card-new">
+                            <!-- Верхняя часть: иконка слева + название -->
+                            <div class="app-card-header">
+                                <div class="app-icon-wrapper">
+                                    @if (!string.IsNullOrEmpty(app.IconUrl))
+                                    {
+                                        <img src="@app.IconUrl"
+                                             class="app-icon-small"
+                                             alt="@app.Name"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="app-icon-placeholder d-none">
+                                            <i class="fas fa-desktop fa-2x text-muted"></i>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="app-icon-placeholder d-flex">
+                                            <i class="fas fa-desktop fa-2x text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="app-header-info">
+                                    <h5 class="app-title mb-1">@app.Name</h5>
+                                    <p class="app-subtitle mb-0 small">@app.Description</p>
+                                </div>
                             </div>
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">@app.Name</h5>
-                                <p class="card-text text-muted small flex-grow-1">@app.Description</p>
-                                <div class="d-flex justify-content-between align-items-center mt-auto">
+
+                            <!-- Скриншоты в центре -->
+                            @if (app.ScreenshotUrls != null && app.ScreenshotUrls.Any())
+                            {
+                                <div class="app-screenshots">
+                                    @foreach (var screenshot in app.ScreenshotUrls.Take(3))
+                                    {
+                                        <div class="screenshot-item">
+                                            <img src="@screenshot" alt="Screenshot" class="screenshot-img">
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="app-screenshots-placeholder">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                    <p class="text-muted small mt-2">Нет скриншотов</p>
+                                </div>
+                            }
+
+                            <div class="card-body d-flex flex-column pt-2">
+                                <!-- Рейтинг и статистика -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="rating">
                                         @for (int i = 1; i <= 5; i++)
                                         {
@@ -113,9 +142,13 @@
                                         <i class="fas fa-download me-1"></i>@app.DownloadCount
                                     </small>
                                 </div>
-                                <a href="/Applications/@app.Name.Replace(" ", "-").ToLower()" class="btn btn-primary mt-2">
-                                    Подробнее
-                                </a>
+
+                                <!-- Кнопка действия -->
+                                <div class="d-grid gap-2">
+                                    <a href="/Applications/@app.Name.Replace(" ", "-").ToLower()" class="btn btn-primary">
+                                        Подробнее
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -140,28 +173,59 @@
                 @foreach (var app in newApps)
                 {
                     <div class="col-6 col-sm-6 col-md-4 col-lg-3">
-                        <div class="card h-100 shadow-sm app-card">
-                            <div class="card-img-top-wrapper">
-                                @if (!string.IsNullOrEmpty(app.IconUrl))
-                                {
-                                    <img src="@app.IconUrl" class="card-img-top" alt="@app.Name" style="height: 150px; object-fit: cover;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="card-img-placeholder d-none align-items-center justify-content-center bg-light" style="height: 150px;">
-                                        <i class="fas fa-desktop fa-3x text-muted"></i>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="card-img-placeholder d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                                        <i class="fas fa-desktop fa-3x text-muted"></i>
-                                    </div>
-                                }
-                                <div class="badge bg-success position-absolute top-0 end-0 m-2">Новое</div>
+                        <div class="card h-100 shadow-sm app-card-new">
+                            <!-- Бейдж "Новое" -->
+                            <div class="badge bg-success position-absolute top-0 end-0 m-2">Новое</div>
+
+                            <!-- Верхняя часть: иконка слева + название -->
+                            <div class="app-card-header">
+                                <div class="app-icon-wrapper">
+                                    @if (!string.IsNullOrEmpty(app.IconUrl))
+                                    {
+                                        <img src="@app.IconUrl"
+                                             class="app-icon-small"
+                                             alt="@app.Name"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="app-icon-placeholder d-none">
+                                            <i class="fas fa-desktop fa-2x text-muted"></i>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="app-icon-placeholder d-flex">
+                                            <i class="fas fa-desktop fa-2x text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="app-header-info">
+                                    <h5 class="app-title mb-1">@app.Name</h5>
+                                    <p class="app-subtitle mb-0 small">@app.Description</p>
+                                </div>
                             </div>
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">@app.Name</h5>
-                                <p class="card-text text-muted small flex-grow-1">@app.Description</p>
-                                <div class="d-flex justify-content-between align-items-center mt-auto">
+
+                            <!-- Скриншоты в центре -->
+                            @if (app.ScreenshotUrls != null && app.ScreenshotUrls.Any())
+                            {
+                                <div class="app-screenshots">
+                                    @foreach (var screenshot in app.ScreenshotUrls.Take(3))
+                                    {
+                                        <div class="screenshot-item">
+                                            <img src="@screenshot" alt="Screenshot" class="screenshot-img">
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="app-screenshots-placeholder">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                    <p class="text-muted small mt-2">Нет скриншотов</p>
+                                </div>
+                            }
+
+                            <div class="card-body d-flex flex-column pt-2">
+                                <!-- Информация об авторе -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <small class="text-muted">
                                         Автор: <a href="@Url.Action("ByDisplayName", "Profile", new { displayName = app.User.DisplayName })" class="text-decoration-none text-muted">@app.User.DisplayName</a>
                                     </small>
@@ -169,9 +233,13 @@
                                         @app.CreatedAt.ToString("dd.MM.yyyy")
                                     </small>
                                 </div>
-                                <a href="/Applications/@app.Name.Replace(" ", "-").ToLower()" class="btn btn-primary mt-2">
-                                    Подробнее
-                                </a>
+
+                                <!-- Кнопка действия -->
+                                <div class="d-grid gap-2">
+                                    <a href="/Applications/@app.Name.Replace(" ", "-").ToLower()" class="btn btn-primary">
+                                        Подробнее
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -208,79 +276,9 @@
 </div>
 
 @section Scripts {
-    <style>
-        .hero-section {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        }
-        
-        .app-card {
-            transition: transform 0.2s ease-in-out;
-        }
-        
-        .app-card:hover {
-            /* Убираем эффект подпрыгивания */
-        }
-        
-        .category-card {
-            transition: all 0.2s ease-in-out;
-        }
-        
-        .category-card:hover {
-            /* Убираем эффект подпрыгивания */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .card-img-top-wrapper {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .lazy-load {
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .lazy-load.loaded {
-            opacity: 1;
-        }
-        
-        /* Мобильные улучшения */
-        @@media (max-width: 576px) {
-            .hero-section h1 {
-                font-size: 2rem !important;
-            }
-            
-            .hero-section .lead {
-                font-size: 1rem !important;
-            }
-            
-            .app-card .card-title {
-                font-size: 0.9rem;
-            }
-            
-            .app-card .card-text {
-                font-size: 0.8rem;
-                -webkit-line-clamp: 2;
-                line-clamp: 2;
-            }
-            
-            .app-card .card-body {
-                padding: 0.75rem;
-            }
-            
-            .rating small {
-                font-size: 0.7rem;
-            }
-            
-            .stat-card {
-                padding: 1rem !important;
-            }
-            
-            .stat-card h3 {
-                font-size: 1.25rem !important;
-            }
-        }
-    </style>
+    <!-- Подключаем модульные CSS файлы -->
+    <link rel="stylesheet" href="~/css/cards.css" />
+    <link rel="stylesheet" href="~/css/home.css" />
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {

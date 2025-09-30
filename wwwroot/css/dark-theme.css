@@ -344,21 +344,56 @@
 }
 
 /* Карточки приложений */
-[data-theme="dark"] .app-card {
+[data-theme="dark"] .app-card,
+[data-theme="dark"] .app-card-new {
     background-color: var(--bg-card) !important;
     border-color: var(--border-primary) !important;
 }
 
-[data-theme="dark"] .app-card:hover {
+[data-theme="dark"] .app-card:hover,
+[data-theme="dark"] .app-card-new:hover {
     box-shadow: var(--shadow-lg);
 }
 
-[data-theme="dark"] .app-card .card-title {
+[data-theme="dark"] .app-card .card-title,
+[data-theme="dark"] .app-title {
     color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] .app-card .card-text {
+[data-theme="dark"] .app-card .card-text,
+[data-theme="dark"] .app-subtitle {
     color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .app-card-header {
+    background-color: var(--bg-secondary) !important;
+    border-bottom-color: var(--border-primary) !important;
+}
+
+[data-theme="dark"] .app-icon-wrapper {
+    background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="dark"] .app-screenshots {
+    background-color: var(--bg-card) !important;
+}
+
+[data-theme="dark"] .screenshot-item {
+    background-color: var(--bg-tertiary) !important;
+}
+
+[data-theme="dark"] .app-screenshots-placeholder {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* Дополнительные стили для главной страницы */
+[data-theme="dark"] .app-card-new {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-primary) !important;
+}
+
+[data-theme="dark"] .app-card-new:hover {
+    box-shadow: var(--shadow-lg);
 }
 
 /* Категории */

@@ -6,6 +6,7 @@ namespace AppGambit.ViewModels
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string? IconUrl { get; set; }
+        public List<string> Screenshots { get; set; } = new List<string>();
         public DateTime CreatedAt { get; set; }
         public int DownloadCount { get; set; }
         public string? Category { get; set; }

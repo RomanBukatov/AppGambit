@@ -61,6 +61,9 @@ namespace AppGambit.Models
         public int TotalRatings => Ratings?.Count ?? 0;
         public int LikesCount => Ratings?.Count(r => r.IsLike) ?? 0;
         public int DislikesCount => Ratings?.Count(r => !r.IsLike) ?? 0;
+
+        // Свойство для получения URL скриншотов
+        public List<string> ScreenshotUrls => ScreenshotImages?.Select(img => $"/Image/{img.Id}").ToList() ?? new List<string>();
         
         // Свойство для обработки тегов в форме
         public string TagsString

@@ -140,6 +140,7 @@ namespace AppGambit.Controllers
                         Name = x.App.Name,
                         Description = x.App.Description,
                         IconUrl = x.App.IconUrl,
+                        Screenshots = x.App.Screenshots,
                         CreatedAt = x.App.CreatedAt,
                         DownloadCount = x.App.DownloadCount,
                         Category = x.App.Category,
